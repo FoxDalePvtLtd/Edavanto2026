@@ -1,0 +1,10 @@
+<svg width="420" height="617" viewBox="0 0 420 617" fill="none" xmlns="http://www.w3.org/2000/svg">
+<foreignObject x="0" y="0" width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(10.9px);clip-path:url(#bgblur_0_4193_13_clip_path);height:100%;width:100%"></div></foreignObject><rect data-figma-bg-blur-radius="21.7986" x="2" y="2" width="416" height="613" rx="16" stroke="url(#paint0_linear_4193_13)" stroke-width="4"/>
+<defs>
+<clipPath id="bgblur_0_4193_13_clip_path" transform="translate(0 0)"><rect x="2" y="2" width="416" height="613" rx="16"/>
+</clipPath><linearGradient id="paint0_linear_4193_13" x1="210.243" y1="308.5" x2="402.035" y2="308.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFAD5F"/>
+<stop offset="1" stop-color="#723EC3"/>
+</linearGradient>
+</defs>
+</svg>

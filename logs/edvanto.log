@@ -1,0 +1,1927 @@
+INFO 2026-09-18 10:26:50,238 autoreload 14820 16460 Watching for file changes with StatReloader
+INFO 2026-09-18 10:28:31,049 autoreload 13872 6872 Watching for file changes with StatReloader
+ERROR 2026-09-18 10:28:34,955 log 13872 14208 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "core/home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: core/home.html
+WARNING 2026-09-18 10:28:35,240 log 13872 14208 Not Found: /favicon.ico
+INFO 2026-09-18 10:28:50,084 autoreload 13872 6872 D:\edvanto\core\views.py changed, reloading.
+INFO 2026-09-18 10:28:51,299 autoreload 15708 14228 Watching for file changes with StatReloader
+INFO 2026-09-18 10:28:52,764 autoreload 15708 14228 D:\edvanto\core\views.py changed, reloading.
+INFO 2026-09-18 10:28:54,057 autoreload 4652 14068 Watching for file changes with StatReloader
+ERROR 2026-09-18 10:28:54,626 log 4652 14264 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: home.html
+ERROR 2026-09-18 10:29:03,113 log 4652 14264 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: home.html
+ERROR 2026-09-18 10:30:51,043 log 4652 12340 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: home.html
+WARNING 2026-09-18 10:30:51,405 log 4652 12340 Not Found: /favicon.ico
+INFO 2026-09-18 10:33:17,712 autoreload 4652 14068 D:\edvanto\config\settings.py changed, reloading.
+INFO 2026-09-18 10:33:19,265 autoreload 5628 8520 Watching for file changes with StatReloader
+ERROR 2026-09-18 10:34:01,562 log 5628 3456 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: home.html
+ERROR 2026-09-18 10:34:10,567 log 5628 3456 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: home.html
+INFO 2026-09-18 10:42:22,073 autoreload 16628 10544 Watching for file changes with StatReloader
+INFO 2026-09-18 10:42:38,262 autoreload 16628 10544 D:\edvanto\config\settings.py changed, reloading.
+INFO 2026-09-18 10:42:40,514 autoreload 11716 3628 Watching for file changes with StatReloader
+INFO 2026-09-18 10:42:53,480 autoreload 11716 3628 D:\edvanto\config\settings.py changed, reloading.
+INFO 2026-09-18 10:42:55,815 autoreload 15236 11248 Watching for file changes with StatReloader
+INFO 2026-09-18 10:42:57,439 autoreload 15236 11248 D:\edvanto\config\settings.py changed, reloading.
+INFO 2026-09-18 10:42:58,970 autoreload 14156 8592 Watching for file changes with StatReloader
+INFO 2026-09-18 10:43:07,797 autoreload 14156 8592 D:\edvanto\config\settings.py changed, reloading.
+INFO 2026-09-18 10:43:09,713 autoreload 15372 11260 Watching for file changes with StatReloader
+INFO 2026-09-18 10:43:19,549 autoreload 15372 11260 D:\edvanto\config\settings.py changed, reloading.
+INFO 2026-09-18 10:44:05,369 autoreload 16396 8656 Watching for file changes with StatReloader
+INFO 2026-09-18 10:44:26,408 autoreload 12904 3688 Watching for file changes with StatReloader
+INFO 2026-09-18 13:56:21,947 autoreload 18880 18884 Watching for file changes with StatReloader
+ERROR 2026-09-18 13:56:26,875 log 18880 18708 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 109, in render
+    reraise(exc, self.backend)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+INFO 2026-09-18 13:58:42,549 autoreload 5932 18724 Watching for file changes with StatReloader
+INFO 2026-09-18 14:21:59,275 autoreload 9764 19292 Watching for file changes with StatReloader
+INFO 2026-09-18 16:53:01,551 autoreload 6096 19272 Watching for file changes with StatReloader
+WARNING 2026-09-18 16:53:01,952 log 6096 18932 Not Found: /assets/css/bootstrap.min.css
+WARNING 2026-09-18 16:53:01,959 log 6096 15656 Not Found: /assets/css/edunex-icons.css
+WARNING 2026-09-18 16:53:01,965 log 6096 5184 Not Found: /assets/css/nice-select.css
+WARNING 2026-09-18 16:53:01,978 log 6096 15656 Not Found: /assets/css/venobox.min.css
+WARNING 2026-09-18 16:53:01,985 log 6096 18932 Not Found: /assets/css/swiper.min.css
+WARNING 2026-09-18 16:53:01,993 log 6096 5184 Not Found: /assets/css/meanmenu.css
+WARNING 2026-09-18 16:53:02,002 log 6096 15656 Not Found: /assets/css/main.css
+WARNING 2026-09-18 16:53:02,015 log 6096 18932 Not Found: /assets/js/jquery.min.js
+WARNING 2026-09-18 16:53:02,020 log 6096 15436 Not Found: /assets/images/logos/logo-icon.png
+WARNING 2026-09-18 16:53:02,029 log 6096 17396 Not Found: /assets/images/logos/logo.png
+WARNING 2026-09-18 16:53:02,035 log 6096 18932 Not Found: /assets/images/icons/fire.svg
+WARNING 2026-09-18 16:53:02,044 log 6096 15436 Not Found: /assets/js/bootstrap.bundle.min.js
+WARNING 2026-09-18 16:53:02,052 log 6096 17396 Not Found: /assets/js/gsap.min.js
+WARNING 2026-09-18 16:53:02,063 log 6096 18932 Not Found: /assets/js/gsap-scroll-smoother.js
+WARNING 2026-09-18 16:53:02,065 log 6096 15436 Not Found: /assets/js/gsap-scroll-to-plugin.min.js
+WARNING 2026-09-18 16:53:02,078 log 6096 18932 Not Found: /assets/js/gsap-scroll-trigger.min.js
+WARNING 2026-09-18 16:53:02,083 log 6096 17396 Not Found: /assets/js/gsap-split-text.min.js
+WARNING 2026-09-18 16:53:02,090 log 6096 15436 Not Found: /assets/js/jquery.nice-select.min.js
+WARNING 2026-09-18 16:53:02,103 log 6096 17396 Not Found: /assets/js/venobox.min.js
+WARNING 2026-09-18 16:53:02,113 log 6096 18932 Not Found: /assets/js/swiper.min.js
+WARNING 2026-09-18 16:53:02,119 log 6096 15436 Not Found: /assets/js/gsap-animation.js
+WARNING 2026-09-18 16:53:02,146 log 6096 18932 Not Found: /assets/js/meanmenu.js
+WARNING 2026-09-18 16:53:02,152 log 6096 15436 Not Found: /assets/js/imagesloaded-pkgd.js
+WARNING 2026-09-18 16:53:02,160 log 6096 17396 Not Found: /assets/js/isotope.pkgd.min.js
+WARNING 2026-09-18 16:53:02,165 log 6096 18932 Not Found: /assets/js/main.js
+WARNING 2026-09-18 16:53:02,180 log 6096 15436 Not Found: /assets/images/hero/hero-img.png
+WARNING 2026-09-18 16:53:02,186 log 6096 17396 Not Found: /assets/images/hero/hero-course-img.webp
+WARNING 2026-09-18 16:53:02,193 log 6096 18932 Not Found: /assets/images/icons/idea.svg
+WARNING 2026-09-18 16:53:02,202 log 6096 18932 Not Found: /assets/images/users/user-img-8.png
+WARNING 2026-09-18 16:53:02,209 log 6096 15436 Not Found: /assets/images/clients/client-img-2.png
+WARNING 2026-09-18 16:53:02,213 log 6096 17396 Not Found: /assets/images/clients/client-img-1.png
+WARNING 2026-09-18 16:53:02,227 log 6096 17396 Not Found: /assets/images/clients/client-img-3.png
+WARNING 2026-09-18 16:53:02,230 log 6096 15436 Not Found: /assets/images/clients/client-img-4.png
+WARNING 2026-09-18 16:53:02,234 log 6096 18932 Not Found: /assets/images/clients/client-img-5.png
+WARNING 2026-09-18 16:53:02,250 log 6096 18932 Not Found: /assets/images/clients/client-img-6.png
+WARNING 2026-09-18 16:53:02,255 log 6096 15436 Not Found: /assets/images/clients/client-img-7.png
+WARNING 2026-09-18 16:53:02,263 log 6096 17396 Not Found: /assets/images/clients/client-img-8.png
+WARNING 2026-09-18 16:53:02,269 log 6096 18932 Not Found: /assets/images/course/course-img-1.webp
+WARNING 2026-09-18 16:53:02,280 log 6096 17396 Not Found: /assets/images/course/course-img-2.webp
+WARNING 2026-09-18 16:53:02,285 log 6096 18932 Not Found: /assets/images/users/user-img-7.png
+WARNING 2026-09-18 16:53:02,291 log 6096 15436 Not Found: /assets/images/course/course-img-3.webp
+WARNING 2026-09-18 16:53:02,303 log 6096 15436 Not Found: /assets/images/users/user-img-4.png
+WARNING 2026-09-18 16:53:02,310 log 6096 18932 Not Found: /assets/images/course/course-img-4.webp
+WARNING 2026-09-18 16:53:02,313 log 6096 17396 Not Found: /assets/images/users/user-img-3.png
+WARNING 2026-09-18 16:53:02,328 log 6096 15436 Not Found: /assets/images/course/course-img-6.webp
+WARNING 2026-09-18 16:53:02,332 log 6096 18932 Not Found: /assets/images/course/course-img-5.webp
+WARNING 2026-09-18 16:53:02,336 log 6096 17396 Not Found: /assets/images/users/user-img-1.png
+WARNING 2026-09-18 16:53:02,350 log 6096 17396 Not Found: /assets/images/users/user-img-2.png
+WARNING 2026-09-18 16:53:02,357 log 6096 18932 Not Found: /assets/images/about/about-img.webp
+WARNING 2026-09-18 16:53:02,361 log 6096 15436 Not Found: /assets/images/shapes/dotted-shape.svg
+WARNING 2026-09-18 16:53:02,373 log 6096 15436 Not Found: /assets/images/event/event-img-1.webp
+WARNING 2026-09-18 16:53:02,378 log 6096 17396 Not Found: /assets/images/event/event-img-3.webp
+WARNING 2026-09-18 16:53:02,380 log 6096 18932 Not Found: /assets/images/event/event-img-2.webp
+WARNING 2026-09-18 16:53:02,395 log 6096 18932 Not Found: /assets/images/instructor/instructor-1.png
+WARNING 2026-09-18 16:53:02,398 log 6096 17396 Not Found: /assets/images/instructor/instructor-3.png
+WARNING 2026-09-18 16:53:02,402 log 6096 15436 Not Found: /assets/images/instructor/instructor-2.png
+WARNING 2026-09-18 16:53:02,414 log 6096 15436 Not Found: /assets/images/blog/blog-img-1.webp
+WARNING 2026-09-18 16:53:02,420 log 6096 18932 Not Found: /assets/images/blog/blog-img-2.webp
+WARNING 2026-09-18 16:53:02,426 log 6096 17396 Not Found: /assets/images/blog/blog-img-3.webp
+WARNING 2026-09-18 16:53:02,436 log 6096 18932 Not Found: /assets/images/users/user-img-6.png
+WARNING 2026-09-18 16:53:02,443 log 6096 15436 Not Found: /assets/images/logos/logo-2.png
+WARNING 2026-09-18 16:53:02,447 log 6096 17396 Not Found: /assets/images/users/user-img-5.png
+WARNING 2026-09-18 16:53:02,460 log 6096 15436 Not Found: /assets/images/footer/play-store.svg
+WARNING 2026-09-18 16:53:02,462 log 6096 17396 Not Found: /assets/images/footer/app-store.svg
+WARNING 2026-09-18 16:53:02,562 log 6096 17396 Not Found: /assets/images/favicon.png
+ERROR 2026-09-18 17:21:58,633 log 6096 18984 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 594, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 186, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 307, in do_extends
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 235, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 596, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 651, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\home.html, Invalid block tag on line 17: 'static', expected 'endblock'. Did you forget to register or load this tag?
+WARNING 2026-09-18 17:21:58,996 log 6096 18984 Not Found: /favicon.ico
+INFO 2026-09-18 17:23:06,464 autoreload 15932 1488 Watching for file changes with StatReloader
+ERROR 2026-09-18 17:23:09,160 log 15932 16500 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 594, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 186, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 307, in do_extends
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 235, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 596, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 651, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\home.html, Invalid block tag on line 17: 'static', expected 'endblock'. Did you forget to register or load this tag?
+ERROR 2026-09-18 17:25:07,906 log 15932 16500 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 186, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 603, in parse
+    self.extend_nodelist(nodelist, compiled_result, token)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 624, in extend_nodelist
+    raise self.error(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\home.html, {% extends "base.html" %} must be the first tag in 'home.html'.
+INFO 2026-09-18 17:28:39,828 autoreload 9560 11796 Watching for file changes with StatReloader
+ERROR 2026-09-18 17:30:02,133 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 594, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 186, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 307, in do_extends
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 235, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 596, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 651, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\home.html, Invalid block tag on line 18: 'static', expected 'endblock'. Did you forget to register or load this tag?
+ERROR 2026-09-18 17:30:18,660 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 186, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 603, in parse
+    self.extend_nodelist(nodelist, compiled_result, token)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 624, in extend_nodelist
+    raise self.error(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\home.html, {% extends "base.html" %} must be the first tag in 'home.html'.
+ERROR 2026-09-18 17:31:53,159 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:55,611 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:55,869 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:56,052 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:56,251 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:56,412 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:56,618 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:31:56,905 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:03,502 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:07,287 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:07,615 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:08,003 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:08,233 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:08,443 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:08,609 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:08,892 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:33:09,116 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'image/favicon.png\'' from '\'image/favicon.png\''
+ERROR 2026-09-18 17:34:39,597 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'images/favicon.png\'' from '\'images/favicon.png\''
+ERROR 2026-09-18 17:35:03,487 log 9560 9572 Internal Server Error: /
+Traceback (most recent call last):
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "D:\edvanto\venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\edvanto\core\views.py", line 6, in home
+    return render(request, "home.html")
+  File "D:\edvanto\venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 171, in do_static
+    return StaticNode.handle_token(parser, token)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\edvanto\venv\Lib\site-packages\django\templatetags\static.py", line 145, in handle_token
+    path = parser.compile_filter(bits[1])
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 693, in compile_filter
+    return FilterExpression(token, self)
+  File "D:\edvanto\venv\Lib\site-packages\django\template\base.py", line 793, in __init__
+    raise TemplateSyntaxError(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Template: D:\edvanto\templates\base.html, Could not parse the remainder: '\'css/bootstrap.min.css\'' from '\'css/bootstrap.min.css\''
+WARNING 2026-09-18 17:35:37,985 log 9560 5060 Not Found: /index.html
+WARNING 2026-09-18 17:35:41,832 log 9560 5060 Not Found: /index.html
+WARNING 2026-09-18 17:35:57,600 log 9560 5060 Not Found: /contact.html
+WARNING 2026-09-18 17:36:03,914 log 9560 5060 Not Found: /index.html
+WARNING 2026-09-18 17:40:23,736 log 9560 17996 Not Found: /about.html
+WARNING 2026-09-18 17:40:26,933 log 9560 17996 Not Found: /about.html
+WARNING 2026-09-18 17:40:44,717 log 9560 8400 Not Found: /about.html
+WARNING 2026-09-18 17:41:14,150 log 9560 15444 Not Found: /cart.html
+WARNING 2026-09-18 17:41:21,312 log 9560 15444 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-18 17:42:25,481 log 9560 18536 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-18 17:43:15,102 log 9560 8576 Not Found: /about.html
+WARNING 2026-09-18 17:43:24,446 log 9560 8576 Not Found: /contact.html
+INFO 2026-09-18 18:05:04,785 autoreload 9560 11796 D:\edvanto\core\views.py changed, reloading.
+INFO 2026-09-18 18:05:06,720 autoreload 8016 18440 Watching for file changes with StatReloader
+INFO 2026-09-18 18:05:14,769 autoreload 8016 18440 D:\edvanto\core\urls.py changed, reloading.
+INFO 2026-09-18 18:05:16,426 autoreload 1432 17320 Watching for file changes with StatReloader
+WARNING 2026-09-18 18:05:50,280 log 1432 17092 Not Found: /courses/index.html
+WARNING 2026-09-18 18:05:57,874 log 1432 17092 Not Found: /courses/about.html
+WARNING 2026-09-18 18:06:25,054 log 1432 8256 Not Found: /about//static/image/users/user-img-1.png
+WARNING 2026-09-18 18:06:25,091 log 1432 18804 Not Found: /about//static/image/users/user-img-2.png
+WARNING 2026-09-18 18:06:25,101 log 1432 18456 Not Found: /about//static/image/users/user-img-3.png

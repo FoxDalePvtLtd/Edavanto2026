@@ -1,0 +1,11 @@
+<svg width="900" height="900" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="h3glow1" cx="50%" cy="50%" r="50%">
+<stop offset="0%" stop-color="#FFC300" stop-opacity="0.22"/>
+<stop offset="42%" stop-color="#FFC300" stop-opacity="0.14"/>
+<stop offset="72%" stop-color="#FFC300" stop-opacity="0.04"/>
+<stop offset="100%" stop-color="#FFC300" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="900" height="900" fill="url(#h3glow1)"/>
+</svg>
