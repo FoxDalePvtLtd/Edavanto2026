@@ -1925,3 +1925,45 @@ WARNING 2026-09-18 18:05:57,874 log 1432 17092 Not Found: /courses/about.html
 WARNING 2026-09-18 18:06:25,054 log 1432 8256 Not Found: /about//static/image/users/user-img-1.png
 WARNING 2026-09-18 18:06:25,091 log 1432 18804 Not Found: /about//static/image/users/user-img-2.png
 WARNING 2026-09-18 18:06:25,101 log 1432 18456 Not Found: /about//static/image/users/user-img-3.png
+INFO 2026-09-19 10:26:29,403 autoreload 5224 9156 Watching for file changes with StatReloader
+WARNING 2026-09-19 10:27:41,181 log 5224 17788 Not Found: /about//static/image/users/user-img-1.png
+WARNING 2026-09-19 10:27:41,199 log 5224 18176 Not Found: /about//static/image/users/user-img-2.png
+WARNING 2026-09-19 10:27:41,216 log 5224 15024 Not Found: /about//static/image/users/user-img-3.png
+WARNING 2026-09-19 10:28:15,115 log 5224 4004 Not Found: /forget_password
+WARNING 2026-09-19 10:28:15,215 log 5224 4004 Not Found: /favicon.ico
+WARNING 2026-09-19 10:28:48,744 log 5224 2428 Not Found: /forgot-password/index.html
+WARNING 2026-09-19 10:28:52,095 log 5224 2428 Not Found: /forgot-password/index.html
+WARNING 2026-09-19 11:45:33,419 log 5224 17584 Not Found: /about//static/image/users/user-img-1.png
+WARNING 2026-09-19 11:45:33,441 log 5224 756 Not Found: /about//static/image/users/user-img-3.png
+WARNING 2026-09-19 11:45:33,443 log 5224 3052 Not Found: /about//static/image/users/user-img-2.png
+WARNING 2026-09-19 11:46:14,833 log 5224 14788 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:46:30,455 log 5224 10004 Not Found: /index.html
+WARNING 2026-09-19 11:46:30,544 log 5224 10004 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:46:33,658 log 5224 13776 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:46:33,878 log 5224 13776 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:56:33,635 log 5224 5284 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:56:40,306 log 5224 9972 Not Found: /about//static/image/users/user-img-1.png
+WARNING 2026-09-19 11:56:40,342 log 5224 11760 Not Found: /about//static/image/users/user-img-2.png
+WARNING 2026-09-19 11:56:40,361 log 5224 17188 Not Found: /about//static/image/users/user-img-3.png
+WARNING 2026-09-19 11:57:12,726 log 5224 12216 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:57:44,143 log 5224 4120 Not Found: /index-4.html
+WARNING 2026-09-19 11:57:44,290 log 5224 4120 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:57:48,107 log 5224 17772 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:57:48,147 log 5224 17772 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 11:57:50,533 log 5224 14500 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:00:33,890 log 5224 14500 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:00:54,722 log 5224 13196 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:01:59,058 log 5224 14560 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:05:26,662 log 5224 9372 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2026-09-19 12:05:56,054 autoreload 7604 8024 Watching for file changes with StatReloader
+WARNING 2026-09-19 12:05:57,834 log 7604 7348 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:06:26,655 log 7604 13192 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:06:27,509 log 7604 7216 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:06:27,702 log 7604 8544 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:06:27,883 log 7604 10528 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:11:22,310 log 7604 12584 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:17:48,464 log 7604 832 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:18:15,995 log 7604 16300 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:18:17,085 log 7604 9640 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-09-19 12:18:22,146 log 7604 372 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2026-09-19 12:22:47,853 autoreload 9640 11328 Watching for file changes with StatReloader
