@@ -1,0 +1,1313 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Curriculum Manager{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – COURSE CURRICULUM MANAGER
+     Modules · Lessons · Video · Assessments · Resources
+     ============================================================ -->
+
+<style>
+  /* ---------- Course header strip ---------- */
+  .edvanto-curriculum-header {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 60%, #0D4E96 100%);
+    border-radius: var(--edvanto-radius-card);
+    padding: 1.35rem 1.6rem;
+    color: var(--edvanto-white);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 28px rgba(3, 42, 90, 0.14);
+  }
+  .edvanto-curriculum-header::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, rgba(1, 223, 254, 0) 70%);
+    pointer-events: none;
+  }
+  .edvanto-curriculum-header-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .edvanto-curriculum-thumb {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--edvanto-cyan);
+    flex-shrink: 0;
+  }
+  .edvanto-curriculum-id {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-curriculum-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.2rem;
+    color: var(--edvanto-white);
+  }
+  .edvanto-curriculum-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .edvanto-curriculum-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-curriculum-meta i { color: var(--edvanto-cyan); font-size: 0.88rem; }
+  .edvanto-curriculum-stats {
+    display: flex;
+    align-items: center;
+  }
+  .edvanto-curriculum-stat {
+    text-align: center;
+    padding: 0.35rem 1.1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .edvanto-curriculum-stat:first-child { border-left: none; }
+  .edvanto-curriculum-stat .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--edvanto-white);
+  }
+  .edvanto-curriculum-stat .lbl {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-curriculum-stats { width: 100%; }
+    .edvanto-curriculum-stat:first-child { padding-left: 0; }
+  }
+
+  /* ---------- Two-column workspace ---------- */
+  .edvanto-workspace {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  @media (max-width: 991.98px) {
+    .edvanto-workspace {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---------- Common panel ---------- */
+  .edvanto-panel {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    overflow: hidden;
+  }
+  .edvanto-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: var(--edvanto-border-light);
+  }
+  .edvanto-panel-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-navy);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-panel-title i {
+    color: var(--edvanto-violet);
+    font-size: 1rem;
+  }
+  .edvanto-panel-body { padding: 0.85rem; }
+  .edvanto-panel-body.flush { padding: 0; }
+
+  /* ============================================================
+     LEFT: MODULE LIST
+     ============================================================ */
+  .edvanto-module-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-height: calc(100vh - 340px);
+    overflow-y: auto;
+  }
+
+  .edvanto-module-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 0.9rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: 1px solid transparent;
+    background: var(--edvanto-white);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+  }
+  .edvanto-module-item:hover {
+    background: var(--edvanto-gray-50);
+    border-color: var(--edvanto-gray-200);
+  }
+  .edvanto-module-item.active {
+    background: rgba(69, 28, 238, 0.05);
+    border-color: rgba(69, 28, 238, 0.25);
+    box-shadow: 0 2px 10px rgba(69, 28, 238, 0.08);
+  }
+  .edvanto-module-item.active::before {
+    content: '';
+    position: absolute;
+    left: -0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 30px;
+    border-radius: 0 4px 4px 0;
+    background: var(--edvanto-violet);
+  }
+  .edvanto-module-item.dragging {
+    opacity: 0.45;
+    box-shadow: 0 8px 22px rgba(69, 28, 238, 0.2);
+  }
+  .edvanto-module-item.drop-target {
+    border-color: var(--edvanto-violet);
+    border-style: dashed;
+    background: rgba(69, 28, 238, 0.03);
+  }
+
+  .edvanto-module-drag {
+    color: var(--edvanto-gray-400);
+    font-size: 1rem;
+    cursor: grab;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s ease;
+  }
+  .edvanto-module-drag:hover { color: var(--edvanto-violet); }
+  .edvanto-module-drag:active { cursor: grabbing; }
+
+  .edvanto-module-order {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--edvanto-gray-100);
+    color: var(--edvanto-gray-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+  .edvanto-module-item.active .edvanto-module-order {
+    background: var(--edvanto-violet);
+    color: var(--edvanto-white);
+    box-shadow: 0 3px 10px rgba(69, 28, 238, 0.25);
+  }
+
+  .edvanto-module-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .edvanto-module-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.2rem;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .edvanto-module-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+  .edvanto-module-sub .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--edvanto-gray-400);
+  }
+
+  .edvanto-module-badge {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(1, 223, 254, 0.12);
+    color: #007A8F;
+    flex-shrink: 0;
+    white-space: nowrap;
+    align-self: flex-start;
+  }
+
+  /* ---------- Add module button ---------- */
+  .edvanto-add-module-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.7rem;
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-violet);
+    background: transparent;
+    border: 1px dashed rgba(69, 28, 238, 0.35);
+    border-radius: var(--edvanto-radius-sm);
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-add-module-btn:hover {
+    background: rgba(69, 28, 238, 0.04);
+    border-color: var(--edvanto-violet);
+    color: var(--edvanto-violet);
+  }
+
+  /* ============================================================
+     RIGHT: MODULE DETAILS
+     ============================================================ */
+  .edvanto-module-detail-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: var(--edvanto-border-light);
+    background: linear-gradient(90deg, rgba(69, 28, 238, 0.03) 0%, rgba(1, 223, 254, 0.02) 100%);
+  }
+  .edvanto-module-detail-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .edvanto-module-detail-order {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-violet);
+    margin-bottom: 0.4rem;
+  }
+  .edvanto-module-detail-order .chip {
+    background: rgba(69, 28, 238, 0.09);
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .edvanto-module-detail-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.025em;
+    margin: 0 0 0.5rem;
+    line-height: 1.25;
+  }
+  .edvanto-module-detail-desc {
+    font-size: 0.85rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+    line-height: 1.55;
+    max-width: 640px;
+  }
+  .edvanto-module-detail-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  /* module meta grid */
+  .edvanto-module-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .edvanto-meta-tile {
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-sm);
+    padding: 0.7rem 0.85rem;
+  }
+  .edvanto-meta-tile .lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-meta-tile .val {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-meta-tile .val i {
+    font-size: 0.9rem;
+    color: var(--edvanto-violet);
+  }
+
+  /* ---------- Lessons header ---------- */
+  .edvanto-lessons-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-bottom: var(--edvanto-border-light);
+    flex-wrap: wrap;
+  }
+  .edvanto-lessons-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .edvanto-lessons-count {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(69, 28, 238, 0.08);
+    color: var(--edvanto-violet);
+  }
+
+  /* ---------- Lesson rows ---------- */
+  .edvanto-lessons-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.6rem 0.85rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .edvanto-lesson-row {
+    display: grid;
+    grid-template-columns: 32px 32px 1fr auto;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: var(--edvanto-white);
+    border: 1px solid var(--edvanto-gray-200);
+    border-radius: var(--edvanto-radius-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+    position: relative;
+  }
+  .edvanto-lesson-row:hover {
+    border-color: rgba(69, 28, 238, 0.28);
+    box-shadow: 0 2px 10px rgba(3, 42, 90, 0.04);
+  }
+  .edvanto-lesson-row.dragging {
+    opacity: 0.45;
+    box-shadow: 0 8px 22px rgba(69, 28, 238, 0.18);
+  }
+  .edvanto-lesson-row.drop-target {
+    border-color: var(--edvanto-violet);
+    border-style: dashed;
+    background: rgba(69, 28, 238, 0.02);
+  }
+
+  .edvanto-lesson-drag {
+    color: var(--edvanto-gray-400);
+    font-size: 1rem;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+  }
+  .edvanto-lesson-drag:hover { color: var(--edvanto-violet); }
+  .edvanto-lesson-drag:active { cursor: grabbing; }
+
+  .edvanto-lesson-order {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--edvanto-gray-100);
+    color: var(--edvanto-gray-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .edvanto-lesson-info {
+    min-width: 0;
+  }
+  .edvanto-lesson-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.35rem;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .edvanto-lesson-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  /* ---------- Status pills ---------- */
+  .edvanto-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    line-height: 1.4;
+  }
+  .edvanto-pill i { font-size: 0.7rem; }
+
+  /* Lesson state */
+  .pill-locked     { background: rgba(138, 155, 181, 0.14); color: #5A6E8A; }
+  .pill-unlocked   { background: rgba(1, 223, 254, 0.14); color: #007A8F; }
+  .pill-processing { background: rgba(255, 179, 3, 0.15); color: #9A6D00; }
+  .pill-published  { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+
+  /* Video state */
+  .pill-video-none       { background: rgba(138, 155, 181, 0.12); color: #5A6E8A; }
+  .pill-video-processing { background: rgba(255, 179, 3, 0.15); color: #9A6D00; }
+  .pill-video-ready      { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .pill-video-failed     { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+
+  /* Assessment */
+  .pill-assess-none     { background: rgba(138, 155, 181, 0.12); color: #5A6E8A; }
+  .pill-assess-ready    { background: rgba(69, 28, 238, 0.09); color: var(--edvanto-violet); }
+  .pill-assess-draft    { background: rgba(255, 179, 3, 0.15); color: #9A6D00; }
+
+  /* Duration / resources */
+  .edvanto-lesson-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--edvanto-gray-600);
+  }
+  .edvanto-lesson-stat i { font-size: 0.75rem; color: var(--edvanto-gray-500); }
+
+  /* Lesson actions */
+  .edvanto-lesson-actions {
+    display: flex;
+    gap: 0.15rem;
+    opacity: 0.65;
+    transition: opacity 0.15s ease;
+  }
+  .edvanto-lesson-row:hover .edvanto-lesson-actions { opacity: 1; }
+
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+  .edvanto-action-btn.success:hover {
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F9D58;
+  }
+
+  /* Lesson add button */
+  .edvanto-add-lesson-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: calc(100% - 1.7rem);
+    margin: 0 0.85rem 0.85rem;
+    padding: 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-violet);
+    background: transparent;
+    border: 1px dashed rgba(69, 28, 238, 0.35);
+    border-radius: var(--edvanto-radius-sm);
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-add-lesson-btn:hover {
+    background: rgba(69, 28, 238, 0.04);
+    border-color: var(--edvanto-violet);
+    color: var(--edvanto-violet);
+  }
+
+  /* ---------- Reorder hint ---------- */
+  .edvanto-reorder-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-500);
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: var(--edvanto-gray-100);
+    margin: 0 0.85rem 0.5rem;
+  }
+  .edvanto-reorder-hint i {
+    color: var(--edvanto-violet);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Empty state ---------- */
+  .edvanto-empty {
+    text-align: center;
+    padding: 2.5rem 1.25rem;
+  }
+  .edvanto-empty i {
+    font-size: 2.25rem;
+    color: var(--edvanto-gray-400);
+    margin-bottom: 0.85rem;
+    display: block;
+  }
+  .edvanto-empty h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .edvanto-empty p {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 991.98px) {
+    .edvanto-module-list {
+      max-height: 360px;
+    }
+  }
+  @media (max-width: 767.98px) {
+    .edvanto-lesson-row {
+      grid-template-columns: 28px 28px 1fr;
+      gap: 0.65rem;
+      padding: 0.75rem 0.85rem;
+    }
+    .edvanto-lesson-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+      border-top: 1px solid var(--edvanto-gray-100);
+      padding-top: 0.6rem;
+      margin-top: 0.15rem;
+      opacity: 1;
+    }
+    .edvanto-lesson-title {
+      white-space: normal;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-module-detail-header { padding: 1rem 1.1rem; }
+    .edvanto-lessons-header { padding: 0.9rem 1.1rem; }
+    .edvanto-module-detail-title { font-size: 1.15rem; }
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#">Courses</a></li>
+      <li class="breadcrumb-item"><a href="#">Full Stack Web Development</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Curriculum Manager</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ============================================================
+     COURSE HEADER
+     ============================================================ -->
+<div class="edvanto-curriculum-header">
+  <div class="edvanto-curriculum-header-inner">
+    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+      <div class="edvanto-curriculum-thumb">
+        <i class="bi bi-diagram-3"></i>
+      </div>
+      <div style="min-width: 0;">
+        <div class="edvanto-curriculum-id">CRS-1024</div>
+        <h1 class="edvanto-curriculum-title">Full Stack Web Development</h1>
+        <div class="edvanto-curriculum-meta">
+          <span><i class="bi bi-globe2"></i> Online</span>
+          <span><i class="bi bi-person-badge"></i> Dr. Rajesh Sharma</span>
+          <span><i class="bi bi-collection"></i> 4 modules · 20 lessons</span>
+        </div>
+      </div>
+    </div>
+    <div class="edvanto-curriculum-stats">
+      <div class="edvanto-curriculum-stat">
+        <div class="num">12h</div>
+        <div class="lbl">Duration</div>
+      </div>
+      <div class="edvanto-curriculum-stat">
+        <div class="num">18</div>
+        <div class="lbl">Ready Videos</div>
+      </div>
+      <div class="edvanto-curriculum-stat">
+        <div class="num">4</div>
+        <div class="lbl">Assessments</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     WORKSPACE: MODULES (LEFT) + DETAILS (RIGHT)
+     ============================================================ -->
+<div class="edvanto-workspace">
+
+  <!-- ============================================================
+       LEFT PANEL – MODULE LIST
+       ============================================================ -->
+  <aside class="edvanto-panel">
+    <div class="edvanto-panel-header">
+      <h2 class="edvanto-panel-title">
+        <i class="bi bi-collection-fill"></i> Modules
+      </h2>
+      <span class="edvanto-badge" style="font-size:0.68rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">4</span>
+    </div>
+
+    <div class="edvanto-panel-body">
+      <div class="edvanto-reorder-hint">
+        <i class="bi bi-hand-index-thumb"></i>
+        Drag <i class="bi bi-grip-vertical" style="margin: 0 0.15rem;"></i> to reorder modules
+      </div>
+
+      <ul class="edvanto-module-list" id="moduleList">
+        {# {% for module in modules %} #}
+
+        <!-- Module 1 (active) -->
+        <li class="edvanto-module-item active" draggable="true"
+            data-module-id="1" onclick="selectModule(this, 1)">
+          <span class="edvanto-module-drag" title="Drag to reorder">
+            <i class="bi bi-grip-vertical"></i>
+          </span>
+          <span class="edvanto-module-order">1</span>
+          <div class="edvanto-module-info">
+            <p class="edvanto-module-title">Introduction to Web Development</p>
+            <div class="edvanto-module-sub">
+              <span>5 lessons</span>
+              <span class="dot"></span>
+              <span>2h 15m</span>
+            </div>
+          </div>
+          <span class="edvanto-module-badge">5/5</span>
+        </li>
+
+        <!-- Module 2 -->
+        <li class="edvanto-module-item" draggable="true"
+            data-module-id="2" onclick="selectModule(this, 2)">
+          <span class="edvanto-module-drag" title="Drag to reorder">
+            <i class="bi bi-grip-vertical"></i>
+          </span>
+          <span class="edvanto-module-order">2</span>
+          <div class="edvanto-module-info">
+            <p class="edvanto-module-title">JavaScript Essentials</p>
+            <div class="edvanto-module-sub">
+              <span>6 lessons</span>
+              <span class="dot"></span>
+              <span>3h 10m</span>
+            </div>
+          </div>
+          <span class="edvanto-module-badge" style="background:rgba(255,179,3,0.15);color:#9A6D00;">4/6</span>
+        </li>
+
+        <!-- Module 3 -->
+        <li class="edvanto-module-item" draggable="true"
+            data-module-id="3" onclick="selectModule(this, 3)">
+          <span class="edvanto-module-drag" title="Drag to reorder">
+            <i class="bi bi-grip-vertical"></i>
+          </span>
+          <span class="edvanto-module-order">3</span>
+          <div class="edvanto-module-info">
+            <p class="edvanto-module-title">Frontend Frameworks: React Basics</p>
+            <div class="edvanto-module-sub">
+              <span>4 lessons</span>
+              <span class="dot"></span>
+              <span>2h 45m</span>
+            </div>
+          </div>
+          <span class="edvanto-module-badge" style="background:rgba(138,155,181,0.14);color:#5A6E8A;">0/4</span>
+        </li>
+
+        <!-- Module 4 -->
+        <li class="edvanto-module-item" draggable="true"
+            data-module-id="4" onclick="selectModule(this, 4)">
+          <span class="edvanto-module-drag" title="Drag to reorder">
+            <i class="bi bi-grip-vertical"></i>
+          </span>
+          <span class="edvanto-module-order">4</span>
+          <div class="edvanto-module-info">
+            <p class="edvanto-module-title">Backend with Node.js &amp; Express</p>
+            <div class="edvanto-module-sub">
+              <span>5 lessons</span>
+              <span class="dot"></span>
+              <span>3h 30m</span>
+            </div>
+          </div>
+          <span class="edvanto-module-badge" style="background:rgba(138,155,181,0.14);color:#5A6E8A;">0/5</span>
+        </li>
+      </ul>
+
+      <a href="#" class="edvanto-add-module-btn">
+        <i class="bi bi-plus-lg"></i> Add Module
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       RIGHT PANEL – SELECTED MODULE DETAILS
+       ============================================================ -->
+  <section class="edvanto-panel" id="moduleDetailPanel">
+
+    <!-- ---------- Module detail header ---------- -->
+    <div class="edvanto-module-detail-header">
+      <div class="edvanto-module-detail-top">
+        <div style="min-width: 0;">
+          <div class="edvanto-module-detail-order">
+            <span class="chip">Module 01</span>
+            <span>·</span>
+            <span>Unlock order 1</span>
+          </div>
+          <h2 class="edvanto-module-detail-title" id="detailModuleTitle">
+            Introduction to Web Development
+          </h2>
+          <p class="edvanto-module-detail-desc" id="detailModuleDesc">
+            Overview of the web, how browsers work, and the developer toolkit. Students
+            get comfortable with the command line, editors and version control before
+            building their first web page.
+          </p>
+        </div>
+        <div class="edvanto-module-detail-actions">
+          <a href="#" class="btn btn-edvanto-outline btn-sm px-3">
+            <i class="bi bi-pencil me-1"></i> Edit Module
+          </a>
+          <button class="edvanto-action-btn danger" title="Delete Module"
+                  onclick="confirmDeleteModule()">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Module meta -->
+      <div class="edvanto-module-meta-grid">
+        <div class="edvanto-meta-tile">
+          <div class="lbl">Order</div>
+          <div class="val"><i class="bi bi-sort-numeric-up"></i> <span id="metaOrder">1</span></div>
+        </div>
+        <div class="edvanto-meta-tile">
+          <div class="lbl">Unlock Order</div>
+          <div class="val"><i class="bi bi-unlock"></i> <span id="metaUnlockOrder">1</span></div>
+        </div>
+        <div class="edvanto-meta-tile">
+          <div class="lbl">Lessons</div>
+          <div class="val"><i class="bi bi-list-ol"></i> <span id="metaLessonCount">5</span></div>
+        </div>
+        <div class="edvanto-meta-tile">
+          <div class="lbl">Total Duration</div>
+          <div class="val"><i class="bi bi-clock"></i> <span id="metaDuration">2h 15m</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- Lessons header ---------- -->
+    <div class="edvanto-lessons-header">
+      <div class="edvanto-lessons-header-left">
+        <h3 class="edvanto-panel-title" style="text-transform: none; font-size: 0.95rem; letter-spacing: -0.01em;">
+          <i class="bi bi-play-btn"></i> Lessons
+        </h3>
+        <span class="edvanto-lessons-count">5 lessons</span>
+      </div>
+      <a href="#" class="btn btn-edvanto-primary btn-sm px-3">
+        <i class="bi bi-plus-lg me-1"></i> Add Lesson
+      </a>
+    </div>
+
+    <!-- ---------- Reorder hint ---------- -->
+    <div class="edvanto-reorder-hint">
+      <i class="bi bi-hand-index-thumb"></i>
+      Drag <i class="bi bi-grip-vertical" style="margin: 0 0.15rem;"></i> to reorder lessons within this module
+    </div>
+
+    <!-- ---------- Lesson list ---------- -->
+    <ul class="edvanto-lessons-list" id="lessonList">
+      {# {% for lesson in module.lessons %} #}
+
+      <!-- Lesson 1 – Published, Video Ready, Assessment Ready -->
+      <li class="edvanto-lesson-row" draggable="true" data-lesson-id="101">
+        <span class="edvanto-lesson-drag" title="Drag to reorder">
+          <i class="bi bi-grip-vertical"></i>
+        </span>
+        <span class="edvanto-lesson-order">1</span>
+        <div class="edvanto-lesson-info">
+          <p class="edvanto-lesson-title">How the Web Works: Clients, Servers &amp; HTTP</p>
+          <div class="edvanto-lesson-tags">
+            <span class="edvanto-pill pill-published"><i class="bi bi-check-circle-fill"></i> Published</span>
+            <span class="edvanto-pill pill-video-ready"><i class="bi bi-camera-video-fill"></i> Video Ready</span>
+            <span class="edvanto-pill pill-assess-ready"><i class="bi bi-clipboard2-check-fill"></i> Quiz</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-clock"></i> 12 min</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-paperclip"></i> 3 resources</span>
+          </div>
+        </div>
+        <div class="edvanto-lesson-actions">
+          <a href="#" class="edvanto-action-btn" title="Edit Lesson"><i class="bi bi-pencil"></i></a>
+          <button class="edvanto-action-btn danger" title="Delete Lesson" onclick="confirmDeleteLesson('How the Web Works')"><i class="bi bi-trash"></i></button>
+        </div>
+      </li>
+
+      <!-- Lesson 2 – Published, Video Ready, No Assessment -->
+      <li class="edvanto-lesson-row" draggable="true" data-lesson-id="102">
+        <span class="edvanto-lesson-drag" title="Drag to reorder">
+          <i class="bi bi-grip-vertical"></i>
+        </span>
+        <span class="edvanto-lesson-order">2</span>
+        <div class="edvanto-lesson-info">
+          <p class="edvanto-lesson-title">Setting Up Your Development Environment</p>
+          <div class="edvanto-lesson-tags">
+            <span class="edvanto-pill pill-published"><i class="bi bi-check-circle-fill"></i> Published</span>
+            <span class="edvanto-pill pill-video-ready"><i class="bi bi-camera-video-fill"></i> Video Ready</span>
+            <span class="edvanto-pill pill-assess-none"><i class="bi bi-dash-circle"></i> No quiz</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-clock"></i> 18 min</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-paperclip"></i> 5 resources</span>
+          </div>
+        </div>
+        <div class="edvanto-lesson-actions">
+          <a href="#" class="edvanto-action-btn" title="Edit Lesson"><i class="bi bi-pencil"></i></a>
+          <button class="edvanto-action-btn danger" title="Delete Lesson" onclick="confirmDeleteLesson('Setting Up Your Development Environment')"><i class="bi bi-trash"></i></button>
+        </div>
+      </li>
+
+      <!-- Lesson 3 – Published, Video Processing, Assessment Draft -->
+      <li class="edvanto-lesson-row" draggable="true" data-lesson-id="103">
+        <span class="edvanto-lesson-drag" title="Drag to reorder">
+          <i class="bi bi-grip-vertical"></i>
+        </span>
+        <span class="edvanto-lesson-order">3</span>
+        <div class="edvanto-lesson-info">
+          <p class="edvanto-lesson-title">Introduction to HTML5 Structure</p>
+          <div class="edvanto-lesson-tags">
+            <span class="edvanto-pill pill-published"><i class="bi bi-check-circle-fill"></i> Published</span>
+            <span class="edvanto-pill pill-video-processing"><i class="bi bi-arrow-repeat"></i> Video Processing</span>
+            <span class="edvanto-pill pill-assess-draft"><i class="bi bi-pencil-square"></i> Quiz Draft</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-clock"></i> 22 min</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-paperclip"></i> 4 resources</span>
+          </div>
+        </div>
+        <div class="edvanto-lesson-actions">
+          <a href="#" class="edvanto-action-btn" title="Edit Lesson"><i class="bi bi-pencil"></i></a>
+          <button class="edvanto-action-btn danger" title="Delete Lesson" onclick="confirmDeleteLesson('Introduction to HTML5 Structure')"><i class="bi bi-trash"></i></button>
+        </div>
+      </li>
+
+      <!-- Lesson 4 – Unlocked, Video Ready, Assessment Ready -->
+      <li class="edvanto-lesson-row" draggable="true" data-lesson-id="104">
+        <span class="edvanto-lesson-drag" title="Drag to reorder">
+          <i class="bi bi-grip-vertical"></i>
+        </span>
+        <span class="edvanto-lesson-order">4</span>
+        <div class="edvanto-lesson-info">
+          <p class="edvanto-lesson-title">CSS Fundamentals: Selectors &amp; Box Model</p>
+          <div class="edvanto-lesson-tags">
+            <span class="edvanto-pill pill-unlocked"><i class="bi bi-unlock-fill"></i> Unlocked</span>
+            <span class="edvanto-pill pill-video-ready"><i class="bi bi-camera-video-fill"></i> Video Ready</span>
+            <span class="edvanto-pill pill-assess-ready"><i class="bi bi-clipboard2-check-fill"></i> Quiz</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-clock"></i> 25 min</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-paperclip"></i> 6 resources</span>
+          </div>
+        </div>
+        <div class="edvanto-lesson-actions">
+          <a href="#" class="edvanto-action-btn" title="Edit Lesson"><i class="bi bi-pencil"></i></a>
+          <button class="edvanto-action-btn danger" title="Delete Lesson" onclick="confirmDeleteLesson('CSS Fundamentals')"><i class="bi bi-trash"></i></button>
+        </div>
+      </li>
+
+      <!-- Lesson 5 – Locked, Video Failed, No Assessment -->
+      <li class="edvanto-lesson-row" draggable="true" data-lesson-id="105">
+        <span class="edvanto-lesson-drag" title="Drag to reorder">
+          <i class="bi bi-grip-vertical"></i>
+        </span>
+        <span class="edvanto-lesson-order">5</span>
+        <div class="edvanto-lesson-info">
+          <p class="edvanto-lesson-title">Your First Web Page: Hands-on Project</p>
+          <div class="edvanto-lesson-tags">
+            <span class="edvanto-pill pill-locked"><i class="bi bi-lock-fill"></i> Locked</span>
+            <span class="edvanto-pill pill-video-failed"><i class="bi bi-x-circle-fill"></i> Video Failed</span>
+            <span class="edvanto-pill pill-assess-none"><i class="bi bi-dash-circle"></i> No quiz</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-clock"></i> 30 min</span>
+            <span class="edvanto-lesson-stat"><i class="bi bi-paperclip"></i> 2 resources</span>
+          </div>
+        </div>
+        <div class="edvanto-lesson-actions">
+          <a href="#" class="edvanto-action-btn" title="Edit Lesson"><i class="bi bi-pencil"></i></a>
+          <button class="edvanto-action-btn danger" title="Delete Lesson" onclick="confirmDeleteLesson('Your First Web Page')"><i class="bi bi-trash"></i></button>
+        </div>
+      </li>
+    </ul>
+
+    <!-- ---------- Add lesson (bottom) ---------- -->
+    <a href="#" class="edvanto-add-lesson-btn">
+      <i class="bi bi-plus-lg"></i> Add Lesson
+    </a>
+
+  </section>
+
+</div>
+
+<!-- ============================================================
+     CONFIRM DELETE MODAL
+     ============================================================ -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="deleteModalLabel">
+          <i class="bi bi-exclamation-triangle-fill me-2" style="color: #DC3545;"></i>
+          Confirm Delete
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray-600);">
+        <span id="deleteModalMessage">Are you sure?</span>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
+                onclick="performDelete()">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       MODULE SELECTION
+       ============================================================ */
+    window.selectModule = function (item, moduleId) {
+      if (item.classList.contains('dragging')) return;
+
+      document.querySelectorAll('.edvanto-module-item').forEach(function (el) {
+        el.classList.remove('active');
+      });
+      item.classList.add('active');
+
+      /* Update detail panel from data attributes / static demo */
+      var title = item.querySelector('.edvanto-module-title');
+      var detailTitle = document.getElementById('detailModuleTitle');
+      if (title && detailTitle) detailTitle.textContent = title.textContent;
+
+      var orderEl = item.querySelector('.edvanto-module-order');
+      var metaOrder = document.getElementById('metaOrder');
+      var metaUnlock = document.getElementById('metaUnlockOrder');
+      if (orderEl && metaOrder) metaOrder.textContent = orderEl.textContent;
+      if (orderEl && metaUnlock) metaUnlock.textContent = orderEl.textContent;
+
+      /* Replace with a real fetch() to load module details */
+      console.log('[Edvanto] Module selected:', moduleId);
+    };
+
+    /* ============================================================
+       DELETE CONFIRMATION
+       ============================================================ */
+    var pendingDeleteType = '';
+    var pendingDeleteName = '';
+
+    window.confirmDeleteModule = function () {
+      var titleEl = document.getElementById('detailModuleTitle');
+      pendingDeleteType = 'module';
+      pendingDeleteName = titleEl ? titleEl.textContent.trim() : 'this module';
+      document.getElementById('deleteModalMessage').innerHTML =
+        'Delete module <strong class="text-edvanto-navy">' + pendingDeleteName + '</strong>? ' +
+        'All lessons inside it will also be removed. This cannot be undone.';
+      new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    };
+
+    window.confirmDeleteLesson = function (lessonName) {
+      pendingDeleteType = 'lesson';
+      pendingDeleteName = lessonName;
+      document.getElementById('deleteModalMessage').innerHTML =
+        'Delete lesson <strong class="text-edvanto-navy">' + lessonName + '</strong>? ' +
+        'This cannot be undone.';
+      new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    };
+
+    window.performDelete = function () {
+      var modalEl = document.getElementById('deleteModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (pendingDeleteType === 'module') {
+        edvantoToast('Module "' + pendingDeleteName + '" deleted.', 'warning');
+      } else {
+        edvantoToast('Lesson "' + pendingDeleteName + '" deleted.', 'warning');
+      }
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       DRAG & DROP – MODULES
+       ============================================================ */
+    var dragModuleEl = null;
+    var moduleList = document.getElementById('moduleList');
+
+    function initModuleDrag() {
+      if (!moduleList) return;
+
+      moduleList.querySelectorAll('.edvanto-module-item').forEach(function (item) {
+        item.addEventListener('dragstart', function (e) {
+          dragModuleEl = item;
+          item.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', item.dataset.moduleId || '');
+        });
+
+        item.addEventListener('dragend', function () {
+          item.classList.remove('dragging');
+          moduleList.querySelectorAll('.drop-target').forEach(function (el) {
+            el.classList.remove('drop-target');
+          });
+          dragModuleEl = null;
+          renumberModules();
+          persistOrder('modules');
+        });
+
+        item.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          if (!dragModuleEl || dragModuleEl === item) return;
+          e.dataTransfer.dropEffect = 'move';
+          item.classList.add('drop-target');
+        });
+
+        item.addEventListener('dragleave', function () {
+          item.classList.remove('drop-target');
+        });
+
+        item.addEventListener('drop', function (e) {
+          e.preventDefault();
+          item.classList.remove('drop-target');
+          if (!dragModuleEl || dragModuleEl === item) return;
+
+          var items = Array.from(moduleList.querySelectorAll('.edvanto-module-item'));
+          var fromIdx = items.indexOf(dragModuleEl);
+          var toIdx = items.indexOf(item);
+
+          if (fromIdx < toIdx) {
+            moduleList.insertBefore(dragModuleEl, item.nextSibling);
+          } else {
+            moduleList.insertBefore(dragModuleEl, item);
+          }
+          renumberModules();
+          edvantoToast('Module moved.');
+        });
+      });
+    }
+
+    function renumberModules() {
+      if (!moduleList) return;
+      moduleList.querySelectorAll('.edvanto-module-item').forEach(function (item, i) {
+        var orderEl = item.querySelector('.edvanto-module-order');
+        if (orderEl) orderEl.textContent = i + 1;
+      });
+    }
+
+    /* ============================================================
+       DRAG & DROP – LESSONS
+       ============================================================ */
+    var dragLessonEl = null;
+    var lessonList = document.getElementById('lessonList');
+
+    function initLessonDrag() {
+      if (!lessonList) return;
+
+      lessonList.querySelectorAll('.edvanto-lesson-row').forEach(function (row) {
+        row.addEventListener('dragstart', function (e) {
+          dragLessonEl = row;
+          row.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', row.dataset.lessonId || '');
+        });
+
+        row.addEventListener('dragend', function () {
+          row.classList.remove('dragging');
+          lessonList.querySelectorAll('.drop-target').forEach(function (el) {
+            el.classList.remove('drop-target');
+          });
+          dragLessonEl = null;
+          renumberLessons();
+          persistOrder('lessons');
+        });
+
+        row.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          if (!dragLessonEl || dragLessonEl === row) return;
+          e.dataTransfer.dropEffect = 'move';
+          row.classList.add('drop-target');
+        });
+
+        row.addEventListener('dragleave', function () {
+          row.classList.remove('drop-target');
+        });
+
+        row.addEventListener('drop', function (e) {
+          e.preventDefault();
+          row.classList.remove('drop-target');
+          if (!dragLessonEl || dragLessonEl === row) return;
+
+          var rows = Array.from(lessonList.querySelectorAll('.edvanto-lesson-row'));
+          var fromIdx = rows.indexOf(dragLessonEl);
+          var toIdx = rows.indexOf(row);
+
+          if (fromIdx < toIdx) {
+            lessonList.insertBefore(dragLessonEl, row.nextSibling);
+          } else {
+            lessonList.insertBefore(dragLessonEl, row);
+          }
+          renumberLessons();
+          edvantoToast('Lesson moved.');
+        });
+      });
+    }
+
+    function renumberLessons() {
+      if (!lessonList) return;
+      lessonList.querySelectorAll('.edvanto-lesson-row').forEach(function (row, i) {
+        var orderEl = row.querySelector('.edvanto-lesson-order');
+        if (orderEl) orderEl.textContent = i + 1;
+      });
+    }
+
+    /* ============================================================
+       PERSIST ORDER (replace with a real fetch to Django)
+       ============================================================ */
+    function persistOrder(type) {
+      var order = [];
+      if (type === 'modules' && moduleList) {
+        moduleList.querySelectorAll('.edvanto-module-item').forEach(function (item) {
+          order.push(item.dataset.moduleId);
+        });
+      } else if (type === 'lessons' && lessonList) {
+        lessonList.querySelectorAll('.edvanto-lesson-row').forEach(function (row) {
+          order.push(row.dataset.lessonId);
+        });
+      }
+
+      /* Example:
+         fetch('#', {
+           method: 'POST',
+           headers: {
+             'X-CSRFToken': '{{ csrf_token }}',
+             'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({ type: type, order: order })
+         });
+      */
+      console.log('[Edvanto] ' + type + ' order:', order);
+    }
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    document.addEventListener('DOMContentLoaded', function () {
+      initModuleDrag();
+      initLessonDrag();
+      renumberModules();
+      renumberLessons();
+    });
+
+  })();
+</script>
+
+{% endblock %}

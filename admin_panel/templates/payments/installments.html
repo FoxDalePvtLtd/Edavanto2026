@@ -1,0 +1,1731 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Installments{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – INSTALLMENT MANAGEMENT
+     Plans · Due Dates · Overdue Tracking · Payment Recording
+     ============================================================ -->
+
+<style>
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.4rem 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-card.gold::before { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
+  .edvanto-stat-card.green::before { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
+  .edvanto-stat-card.red::before { background: linear-gradient(90deg, #DC3545 0%, #E4606D 100%); }
+
+  .edvanto-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.9rem;
+  }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+  .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
+  .edvanto-stat-icon.red   { background: rgba(220, 53, 69, 0.08); color: #DC3545; }
+
+  .edvanto-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+  .edvanto-stat-meta .danger   { color: #DC3545; font-weight: 600; }
+
+  /* ---------- Filter bar ---------- */
+  .edvanto-filter-bar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-filter-bar .form-control,
+  .edvanto-filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    height: 42px;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-gray-50);
+  }
+  .edvanto-filter-bar .form-control:focus,
+  .edvanto-filter-bar .form-select:focus {
+    border-color: var(--edvanto-violet);
+    background-color: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-filter-bar .input-icon-wrapper {
+    position: relative;
+  }
+  .edvanto-filter-bar .input-icon-wrapper i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--edvanto-gray-500);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .edvanto-filter-bar .input-icon-wrapper .form-control {
+    padding-left: 2.5rem;
+  }
+
+  /* ---------- Table cells ---------- */
+  .edvanto-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 180px;
+  }
+  .edvanto-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--edvanto-white);
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
+
+  .edvanto-user-name {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.25;
+  }
+  .edvanto-user-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-course-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 160px;
+  }
+  .edvanto-course-title {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  .edvanto-course-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-order-id {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    background: var(--edvanto-gray-100);
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .edvanto-inst-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(69, 28, 238, 0.07);
+    color: var(--edvanto-violet);
+    font-size: 0.82rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .edvanto-inst-num.overdue {
+    background: rgba(255, 179, 3, 0.14);
+    color: #9A6D00;
+  }
+
+  .edvanto-amount {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  /* ---------- Due date with indicator ---------- */
+  .edvanto-due {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 130px;
+  }
+  .edvanto-due-date {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-due-date i {
+    font-size: 0.85rem;
+    color: var(--edvanto-gray-500);
+  }
+  .edvanto-due-relative {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .edvanto-due-relative.overdue { color: #B02A37; }
+  .edvanto-due-relative.due-soon { color: #9A6D00; }
+  .edvanto-due-relative.paid { color: #0F6B3E; }
+  .edvanto-due-relative.upcoming { color: var(--edvanto-gray-600); }
+
+  /* ---------- Badges ---------- */
+  .edvanto-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .badge-pay-pending  { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+  .badge-pay-paid     { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .badge-pay-overdue  { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+
+  /* ---------- Row highlighting for overdue ---------- */
+  .edvanto-row-overdue {
+    background: linear-gradient(90deg, rgba(255, 179, 3, 0.045) 0%, rgba(255, 179, 3, 0) 40%) !important;
+    position: relative;
+  }
+  .edvanto-row-overdue td:first-child {
+    position: relative;
+  }
+  .edvanto-row-overdue td:first-child::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--edvanto-gold);
+  }
+  .edvanto-row-overdue:hover {
+    background: linear-gradient(90deg, rgba(255, 179, 3, 0.07) 0%, rgba(255, 179, 3, 0.01) 40%) !important;
+  }
+  /* more severe overdue (60+ days) */
+  .edvanto-row-overdue.severe {
+    background: linear-gradient(90deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0) 40%) !important;
+  }
+  .edvanto-row-overdue.severe td:first-child::before {
+    background: #DC3545;
+  }
+  .edvanto-row-overdue.severe:hover {
+    background: linear-gradient(90deg, rgba(220, 53, 69, 0.08) 0%, rgba(220, 53, 69, 0.01) 40%) !important;
+  }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Action buttons ---------- */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.gold:hover {
+    background: rgba(255, 179, 3, 0.10);
+    color: #9A6D00;
+  }
+  .edvanto-action-btn.success:hover {
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F9D58;
+  }
+
+  /* ---------- Mobile cards ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-inst-table-wrap { display: none; }
+    .edvanto-inst-cards { display: block; }
+  }
+  @media (min-width: 768px) {
+    .edvanto-inst-cards { display: none; }
+  }
+  .edvanto-inst-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .edvanto-inst-card.overdue {
+    border-left: 3px solid var(--edvanto-gold);
+  }
+  .edvanto-inst-card.overdue.severe {
+    border-left: 3px solid #DC3545;
+  }
+  .edvanto-inst-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-inst-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.8rem;
+  }
+  .edvanto-inst-card-row:last-child { border-bottom: none; }
+  .edvanto-inst-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
+  .edvanto-inst-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
+  .edvanto-inst-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-inst-card-actions .btn {
+    flex: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.45rem 0.4rem;
+  }
+
+  /* ============================================================
+     DETAIL MODAL
+     ============================================================ */
+  .edvanto-detail-modal .modal-dialog {
+    max-width: 780px;
+  }
+  .edvanto-detail-modal .modal-content {
+    border-radius: var(--edvanto-radius-card);
+    border: none;
+    overflow: hidden;
+  }
+  .edvanto-detail-modal .modal-header {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 100%);
+    color: var(--edvanto-white);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .edvanto-detail-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .edvanto-detail-modal .modal-title {
+    color: var(--edvanto-white);
+    font-weight: 700;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-detail-modal .modal-title i { color: var(--edvanto-cyan); }
+  .edvanto-detail-modal .btn-close {
+    filter: invert(1) brightness(2);
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-detail-modal .btn-close:hover { opacity: 1; }
+  .edvanto-detail-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--edvanto-gray-50);
+  }
+
+  /* Detail sections */
+  .edvanto-detail-section {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-detail-section:last-child { margin-bottom: 0; }
+  .edvanto-detail-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-violet);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-detail-section-title i { font-size: 0.95rem; }
+
+  .edvanto-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.85rem;
+  }
+  .edvanto-detail-item .lbl {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-detail-item .val {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+    word-break: break-word;
+  }
+  .edvanto-detail-item .val.mono {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.78rem;
+    background: var(--edvanto-gray-100);
+    padding: 0.25rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+  }
+
+  /* ---------- Plan summary banner ---------- */
+  .edvanto-plan-summary {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 100%);
+    border-radius: var(--edvanto-radius-sm);
+    padding: 1rem 1.25rem;
+    color: var(--edvanto-white);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-plan-summary-item .lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.15rem;
+  }
+  .edvanto-plan-summary-item .val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--edvanto-white);
+    letter-spacing: -0.02em;
+  }
+  .edvanto-plan-summary-item .val.cyan { color: var(--edvanto-cyan); }
+  .edvanto-plan-summary-item .val.gold { color: #FFD477; }
+
+  /* ---------- Progress bar ---------- */
+  .edvanto-plan-progress {
+    margin-top: 0.85rem;
+  }
+  .edvanto-plan-progress-track {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .edvanto-plan-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--edvanto-cyan) 0%, #4DE8FF 100%);
+    transition: width 0.4s ease;
+  }
+  .edvanto-plan-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+    margin-top: 0.4rem;
+  }
+
+  /* ---------- Timeline ---------- */
+  .edvanto-timeline {
+    position: relative;
+    padding-left: 1.75rem;
+    margin: 0;
+    list-style: none;
+  }
+  .edvanto-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0.3rem;
+    bottom: 0.3rem;
+    width: 2px;
+    background: var(--edvanto-gray-200);
+    border-radius: 2px;
+  }
+  .edvanto-timeline-item {
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  .edvanto-timeline-item:last-child { padding-bottom: 0; }
+  .edvanto-timeline-dot {
+    position: absolute;
+    left: -1.45rem;
+    top: 0.3rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--edvanto-violet);
+    border: 2px solid var(--edvanto-white);
+    box-shadow: 0 0 0 2px rgba(69, 28, 238, 0.15);
+  }
+  .edvanto-timeline-dot.green {
+    background: #0F9D58;
+    box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.18);
+  }
+  .edvanto-timeline-dot.gold {
+    background: var(--edvanto-gold);
+    box-shadow: 0 0 0 2px rgba(255, 179, 3, 0.2);
+  }
+  .edvanto-timeline-dot.red {
+    background: #DC3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.18);
+  }
+  .edvanto-timeline-dot.gray {
+    background: #8A9BB5;
+    box-shadow: 0 0 0 2px rgba(138, 155, 181, 0.2);
+  }
+  .edvanto-timeline-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+    line-height: 1.35;
+  }
+  .edvanto-timeline-text .amount {
+    color: var(--edvanto-violet);
+  }
+  .edvanto-timeline-time {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Installment detail rows ---------- */
+  .edvanto-inst-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--edvanto-radius-sm);
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    margin-bottom: 0.5rem;
+  }
+  .edvanto-inst-detail-row:last-child { margin-bottom: 0; }
+  .edvanto-inst-detail-row.paid {
+    background: rgba(15, 157, 88, 0.04);
+    border-color: rgba(15, 157, 88, 0.15);
+  }
+  .edvanto-inst-detail-row.pending {
+    background: rgba(255, 179, 3, 0.05);
+    border-color: rgba(255, 179, 3, 0.2);
+  }
+  .edvanto-inst-detail-row.overdue {
+    background: linear-gradient(90deg, rgba(220, 53, 69, 0.05) 0%, rgba(255, 179, 3, 0.04) 100%);
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+  .edvanto-inst-detail-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+  }
+  .edvanto-inst-detail-chip {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    color: var(--edvanto-gray-600);
+  }
+  .edvanto-inst-detail-row.paid .edvanto-inst-detail-chip {
+    background: #0F9D58;
+    color: var(--edvanto-white);
+    border-color: #0F9D58;
+  }
+  .edvanto-inst-detail-row.pending .edvanto-inst-detail-chip {
+    background: var(--edvanto-gold);
+    color: var(--edvanto-white);
+    border-color: var(--edvanto-gold);
+  }
+  .edvanto-inst-detail-row.overdue .edvanto-inst-detail-chip {
+    background: #DC3545;
+    color: var(--edvanto-white);
+    border-color: #DC3545;
+  }
+  .edvanto-inst-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .edvanto-inst-detail-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+  }
+  .edvanto-inst-detail-sub {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+  .edvanto-inst-detail-right {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-shrink: 0;
+  }
+  .edvanto-inst-detail-amount {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .edvanto-inst-detail-row.overdue .edvanto-inst-detail-amount {
+    color: #B02A37;
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#payments' %}">Payments</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Installments</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Installment Plans</h1>
+    <p class="edvanto-page-subtitle">Track active plans, upcoming dues, and overdue installments.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filters
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>Overdue Report</a></li>
+      </ul>
+    </div>
+    <button class="btn btn-edvanto-primary btn-sm px-3" onclick="sendBulkReminders()">
+      <i class="bi bi-bell me-1"></i> Send Reminders
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Active Plans -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-calendar2-week-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Active Plans</div>
+      <div class="edvanto-stat-value">186</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+12</span>
+        <span>this month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card gold">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-clock-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Upcoming</div>
+      <div class="edvanto-stat-value">42</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-calendar-event" style="color: var(--edvanto-gold); font-size: 0.75rem;"></i>
+        <span>Next 30 days</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paid -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Paid</div>
+      <div class="edvanto-stat-value">1,024</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-graph-up-arrow" style="color: #0F9D58; font-size: 0.75rem;"></i>
+        <span>94.8% on-time rate</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card red">
+      <div class="edvanto-stat-icon red">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Overdue</div>
+      <div class="edvanto-stat-value">28</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-exclamation-circle-fill danger"></i>
+        <span class="danger">Needs follow-up</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER BAR
+     ============================================================ -->
+<div class="collapse show" id="filterCollapse">
+  <div class="edvanto-filter-bar">
+    <form method="get" action="" id="installmentFilterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Student search -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="studentSearch">Student</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" id="studentSearch" name="student"
+                   placeholder="Search by name or email…"
+                   value="{{ request.GET.student|default:'' }}">
+          </div>
+        </div>
+
+        <!-- Course -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="courseFilter">Course</label>
+          <select class="form-select" id="courseFilter" name="course">
+            <option value="">All Courses</option>
+            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Development</option>
+            <option value="datascience" {% if request.GET.course == 'datascience' %}selected{% endif %}>Data Science & AI Masterclass</option>
+            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design Masterclass</option>
+            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics Pro</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="statusFilter">Status</label>
+          <select class="form-select" id="statusFilter" name="status">
+            <option value="">All Status</option>
+            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
+            <option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>Overdue</option>
+          </select>
+        </div>
+
+        <!-- Due date -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="dueFilter">Due Within</label>
+          <select class="form-select" id="dueFilter" name="due">
+            <option value="">Any Time</option>
+            <option value="week" {% if request.GET.due == 'week' %}selected{% endif %}>Next 7 days</option>
+            <option value="month" {% if request.GET.due == 'month' %}selected{% endif %}>Next 30 days</option>
+            <option value="overdue" {% if request.GET.due == 'overdue' %}selected{% endif %}>Overdue</option>
+          </select>
+        </div>
+
+        <!-- Apply / Reset -->
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
+            Apply
+          </button>
+          <a href="#installments' %}" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
+             style="height: 42px;" title="Reset filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     INSTALLMENTS TABLE / CARDS
+     ============================================================ -->
+<div class="edvanto-card">
+
+  <!-- Card header -->
+  <div class="edvanto-card-header">
+    <h2 class="edvanto-card-title">Installment Schedule</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
+        558 installments
+      </span>
+      <div class="dropdown">
+        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
+          <i class="bi bi-sort-down"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="?sort=due_soon">Due Date (Soonest)</a></li>
+          <li><a class="dropdown-item" href="?sort=due_late">Due Date (Latest)</a></li>
+          <li><a class="dropdown-item" href="?sort=overdue">Overdue First</a></li>
+          <li><a class="dropdown-item" href="?sort=amount">Amount (High–Low)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DESKTOP TABLE ---------- -->
+  <div class="edvanto-inst-table-wrap">
+    <div class="table-responsive-edvanto">
+      <table class="edvanto-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Course</th>
+            <th>Order</th>
+            <th>Installment</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Payment ID</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# {% for installment in installments %} #}
+
+          <!-- Row 1: Paid -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Full Stack Web Development</div>
+                <div class="edvanto-course-meta">CRS-1024</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10482</span></td>
+            <td><span class="edvanto-inst-num">1/3</span></td>
+            <td><span class="edvanto-amount">₹11,000</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-check"></i> 12 Jan 2025</div>
+                <div class="edvanto-due-relative paid">Paid</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
+            <td><span class="edvanto-order-id" style="background: rgba(15,157,88,0.08); color: #0F6B3E;">pay_QwErTy1234Ab</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(1)"><i class="bi bi-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2: Paid -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Full Stack Web Development</div>
+                <div class="edvanto-course-meta">CRS-1024</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10482</span></td>
+            <td><span class="edvanto-inst-num">2/3</span></td>
+            <td><span class="edvanto-amount">₹11,000</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-check"></i> 12 Feb 2025</div>
+                <div class="edvanto-due-relative paid">Paid</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
+            <td><span class="edvanto-order-id" style="background: rgba(15,157,88,0.08); color: #0F6B3E;">pay_ZxCvBn5678Mn</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(2)"><i class="bi bi-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3: PENDING (upcoming) -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Full Stack Web Development</div>
+                <div class="edvanto-course-meta">CRS-1024</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10482</span></td>
+            <td><span class="edvanto-inst-num">3/3</span></td>
+            <td><span class="edvanto-amount">₹10,999</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-event"></i> 12 Mar 2025</div>
+                <div class="edvanto-due-relative due-soon">Due in 4 days</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+            <td><span class="edvanto-user-meta">—</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(3)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Send Reminder" onclick="sendReminder('Ananya Kapoor', '₹10,999')"><i class="bi bi-bell"></i></button>
+                <button class="edvanto-action-btn success" title="Record Payment" onclick="recordPayment('Ananya Kapoor')"><i class="bi bi-cash-coin"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4: OVERDUE (moderate) -->
+          <tr class="edvanto-row-overdue">
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Rohan Sharma</div>
+                  <div class="edvanto-user-meta">rohan.s@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Data Science &amp; AI Masterclass</div>
+                <div class="edvanto-course-meta">CRS-1018</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10481</span></td>
+            <td><span class="edvanto-inst-num overdue">2/3</span></td>
+            <td><span class="edvanto-amount">₹11,000</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-x" style="color: #B02A37;"></i> 05 Jun 2025</div>
+                <div class="edvanto-due-relative overdue">15 days overdue</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-overdue"><i class="bi bi-exclamation-triangle-fill"></i> Overdue</span></td>
+            <td><span class="edvanto-user-meta">—</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(4)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Send Reminder" onclick="sendReminder('Rohan Sharma', '₹11,000')"><i class="bi bi-bell"></i></button>
+                <button class="edvanto-action-btn success" title="Record Payment" onclick="recordPayment('Rohan Sharma')"><i class="bi bi-cash-coin"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5: OVERDUE (severe) -->
+          <tr class="edvanto-row-overdue severe">
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PM</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Mehta</div>
+                  <div class="edvanto-user-meta">priya.m@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">UI/UX Design Masterclass</div>
+                <div class="edvanto-course-meta">CRS-1032</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10480</span></td>
+            <td><span class="edvanto-inst-num overdue">1/3</span></td>
+            <td><span class="edvanto-amount">₹6,333</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-x" style="color: #B02A37;"></i> 22 Apr 2025</div>
+                <div class="edvanto-due-relative overdue">60+ days overdue</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-overdue"><i class="bi bi-exclamation-triangle-fill"></i> Overdue</span></td>
+            <td><span class="edvanto-user-meta">—</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(5)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Send Reminder" onclick="sendReminder('Priya Mehta', '₹6,333')"><i class="bi bi-bell"></i></button>
+                <button class="edvanto-action-btn success" title="Record Payment" onclick="recordPayment('Priya Mehta')"><i class="bi bi-cash-coin"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6: PENDING (upcoming further) -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">AV</span>
+                <div>
+                  <div class="edvanto-user-name">Arjun Verma</div>
+                  <div class="edvanto-user-meta">arjun.v@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Cloud Computing with AWS</div>
+                <div class="edvanto-course-meta">CRS-0987</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10479</span></td>
+            <td><span class="edvanto-inst-num">2/4</span></td>
+            <td><span class="edvanto-amount">₹6,750</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-event"></i> 28 Jun 2025</div>
+                <div class="edvanto-due-relative upcoming">Due in 20 days</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+            <td><span class="edvanto-user-meta">—</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(6)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Send Reminder" onclick="sendReminder('Arjun Verma', '₹6,750')"><i class="bi bi-bell"></i></button>
+                <button class="edvanto-action-btn success" title="Record Payment" onclick="recordPayment('Arjun Verma')"><i class="bi bi-cash-coin"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 7: Paid -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v5">SN</span>
+                <div>
+                  <div class="edvanto-user-name">Sneha Nair</div>
+                  <div class="edvanto-user-meta">sneha.n@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Digital Marketing Pro</div>
+                <div class="edvanto-course-meta">CRS-1055</div>
+              </div>
+            </td>
+            <td><span class="edvanto-order-id">ORD-10478</span></td>
+            <td><span class="edvanto-inst-num">1/3</span></td>
+            <td><span class="edvanto-amount">₹6,333</span></td>
+            <td>
+              <div class="edvanto-due">
+                <div class="edvanto-due-date"><i class="bi bi-calendar-check"></i> 15 May 2025</div>
+                <div class="edvanto-due-relative paid">Paid</div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
+            <td><span class="edvanto-order-id" style="background: rgba(15,157,88,0.08); color: #0F6B3E;">pay_NoPqRs3456Tu</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openInstallmentDetail(7)"><i class="bi bi-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ---------- MOBILE CARDS ---------- -->
+  <div class="edvanto-inst-cards">
+
+    <div class="edvanto-inst-card">
+      <div class="edvanto-inst-card-header">
+        <span class="edvanto-avatar-sm v1">AK</span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-user-name">Ananya Kapoor</div>
+          <div class="edvanto-user-meta">Full Stack Web Dev</div>
+        </div>
+        <span class="edvanto-inst-num">3/3</span>
+      </div>
+      <div class="edvanto-inst-card-row"><span class="label">Order</span><span class="value"><span class="edvanto-order-id">ORD-10482</span></span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Amount</span><span class="value"><span class="edvanto-amount">₹10,999</span></span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Due Date</span><span class="value" style="color: #9A6D00;">12 Mar 2025 · Due in 4 days</span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-pay-pending">Pending</span></span></div>
+      <div class="edvanto-inst-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openInstallmentDetail(3)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline" onclick="sendReminder('Ananya Kapoor', '₹10,999')"><i class="bi bi-bell me-1"></i>Remind</button>
+        <button class="btn btn-edvanto-outline" onclick="recordPayment('Ananya Kapoor')"><i class="bi bi-cash-coin me-1"></i>Record</button>
+      </div>
+    </div>
+
+    <div class="edvanto-inst-card overdue">
+      <div class="edvanto-inst-card-header">
+        <span class="edvanto-avatar-sm v2">RS</span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-user-name">Rohan Sharma</div>
+          <div class="edvanto-user-meta">Data Science &amp; AI</div>
+        </div>
+        <span class="edvanto-inst-num overdue">2/3</span>
+      </div>
+      <div class="edvanto-inst-card-row"><span class="label">Order</span><span class="value"><span class="edvanto-order-id">ORD-10481</span></span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Amount</span><span class="value"><span class="edvanto-amount">₹11,000</span></span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Due Date</span><span class="value" style="color: #B02A37;">05 Jun 2025 · 15 days overdue</span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-pay-overdue">Overdue</span></span></div>
+      <div class="edvanto-inst-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openInstallmentDetail(4)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline" onclick="sendReminder('Rohan Sharma', '₹11,000')"><i class="bi bi-bell me-1"></i>Remind</button>
+        <button class="btn btn-edvanto-outline" onclick="recordPayment('Rohan Sharma')"><i class="bi bi-cash-coin me-1"></i>Record</button>
+      </div>
+    </div>
+
+    <div class="edvanto-inst-card overdue severe">
+      <div class="edvanto-inst-card-header">
+        <span class="edvanto-avatar-sm v3">PM</span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-user-name">Priya Mehta</div>
+          <div class="edvanto-user-meta">UI/UX Design</div>
+        </div>
+        <span class="edvanto-inst-num overdue">1/3</span>
+      </div>
+      <div class="edvanto-inst-card-row"><span class="label">Order</span><span class="value"><span class="edvanto-order-id">ORD-10480</span></span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Amount</span><span class="value"><span class="edvanto-amount">₹6,333</span></span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Due Date</span><span class="value" style="color: #B02A37;">22 Apr 2025 · 60+ days</span></div>
+      <div class="edvanto-inst-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-pay-overdue">Overdue</span></span></div>
+      <div class="edvanto-inst-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openInstallmentDetail(5)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline" onclick="sendReminder('Priya Mehta', '₹6,333')"><i class="bi bi-bell me-1"></i>Remind</button>
+        <button class="btn btn-edvanto-outline" onclick="recordPayment('Priya Mehta')"><i class="bi bi-cash-coin me-1"></i>Record</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–7 of 558 installments</span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      <li class="page-item"><a class="page-link" href="#">80</a></li>
+      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+    </ul>
+  </nav>
+
+</div>
+
+<!-- ============================================================
+     INSTALLMENT DETAIL MODAL
+     ============================================================ -->
+<div class="modal fade edvanto-detail-modal" id="installmentDetailModal" tabindex="-1"
+     aria-labelledby="installmentDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="installmentDetailModalLabel">
+          <i class="bi bi-calendar2-week-fill"></i>
+          Installment Plan · <span id="detailStudentHeader">Ananya Kapoor</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Plan summary banner -->
+        <div class="edvanto-plan-summary">
+          <div class="edvanto-plan-summary-item">
+            <div class="lbl">Total Plan</div>
+            <div class="val">₹32,999</div>
+          </div>
+          <div class="edvanto-plan-summary-item">
+            <div class="lbl">Paid So Far</div>
+            <div class="val cyan" id="detailPaidSoFar">₹22,000</div>
+          </div>
+          <div class="edvanto-plan-summary-item">
+            <div class="lbl">Remaining</div>
+            <div class="val gold" id="detailRemaining">₹10,999</div>
+          </div>
+          <div class="edvanto-plan-summary-item">
+            <div class="lbl">Installments</div>
+            <div class="val" id="detailInstallmentCount">2 / 3</div>
+          </div>
+          <div style="flex-basis: 100%;">
+            <div class="edvanto-plan-progress">
+              <div class="edvanto-plan-progress-track">
+                <div class="edvanto-plan-progress-fill" id="detailProgressFill" style="width: 67%;"></div>
+              </div>
+              <div class="edvanto-plan-progress-label">
+                <span>Progress</span>
+                <span id="detailProgressLabel">67% complete</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student & Course info -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-person-badge"></i> Student &amp; Course
+          </div>
+          <div class="edvanto-detail-grid">
+            <div class="edvanto-detail-item">
+              <div class="lbl">Student</div>
+              <div class="val" id="detailStudent">Ananya Kapoor</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Email</div>
+              <div class="val" id="detailEmail">ananya.k@example.com</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Course</div>
+              <div class="val" id="detailCourse">Full Stack Web Development</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Order ID</div>
+              <div class="val mono" id="detailOrder">ORD-10482</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Installment timeline -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-list-ol"></i> Installment Timeline
+          </div>
+
+          <div id="installmentTimelineRows">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Payment timeline -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-clock-history"></i> Activity Timeline
+          </div>
+          <ul class="edvanto-timeline">
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot"></span>
+              <p class="edvanto-timeline-text">Installment plan created</p>
+              <span class="edvanto-timeline-time">12 Jan 2025, 10:42 AM</span>
+            </li>
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot green"></span>
+              <p class="edvanto-timeline-text">Installment 1 paid · <span class="amount">₹11,000</span></p>
+              <span class="edvanto-timeline-time">12 Jan 2025, 10:42 AM</span>
+            </li>
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot green"></span>
+              <p class="edvanto-timeline-text">Installment 2 paid · <span class="amount">₹11,000</span></p>
+              <span class="edvanto-timeline-time">12 Feb 2025, 09:15 AM</span>
+            </li>
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot gold"></span>
+              <p class="edvanto-timeline-text">Reminder sent for Installment 3</p>
+              <span class="edvanto-timeline-time">08 Mar 2025, 10:00 AM</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="background: var(--edvanto-white); border-top: var(--edvanto-border-light);">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-edvanto-outline btn-sm" onclick="sendReminder('Ananya Kapoor', '₹10,999')">
+          <i class="bi bi-bell me-1"></i> Send Reminder
+        </button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="recordPayment('Ananya Kapoor')">
+          <i class="bi bi-cash-coin me-1"></i> Record Payment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     RECORD PAYMENT MODAL
+     ============================================================ -->
+<div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="recordPaymentModalLabel" style="font-weight: 700; color: var(--edvanto-navy);">
+          <i class="bi bi-cash-coin me-2" style="color: var(--edvanto-violet);"></i>
+          Record Payment
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="edvanto-info-panel" style="margin-top: 0;">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            Recording a payment for <strong id="recordPaymentStudent" class="text-edvanto-navy">this student</strong>.
+            This marks the installment as paid and updates the plan timeline.
+          </div>
+        </div>
+
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="recordAmount">Amount Received (₹)</label>
+          <input type="number" class="form-control" id="recordAmount" placeholder="e.g. 11000" min="0" step="1">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="recordMethod">Payment Method</label>
+          <select class="form-select" id="recordMethod">
+            <option value="razorpay">Razorpay (online)</option>
+            <option value="cash">Cash</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div class="mb-0">
+          <label class="form-label" for="recordReference">Reference / Notes</label>
+          <input type="text" class="form-control" id="recordReference" placeholder="Optional reference number or note">
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="confirmRecordPayment()">
+          <i class="bi bi-check-lg me-1"></i> Record Payment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       INSTALLMENT DETAIL (demo data — replace with fetch)
+       ============================================================ */
+    var demoInstallments = {
+      1: {
+        student: 'Ananya Kapoor',
+        email: 'ananya.k@example.com',
+        course: 'Full Stack Web Development',
+        order: 'ORD-10482',
+        totalPlan: '₹32,999',
+        paid: '₹11,000',
+        remaining: '₹21,999',
+        count: '1 / 3',
+        progress: 33,
+        installments: [
+          { num: 1, amount: '₹11,000', due: '12 Jan 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_QwErTy1234Ab' },
+          { num: 2, amount: '₹11,000', due: '12 Feb 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' },
+          { num: 3, amount: '₹10,999', due: '12 Mar 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      },
+      2: {
+        student: 'Ananya Kapoor',
+        email: 'ananya.k@example.com',
+        course: 'Full Stack Web Development',
+        order: 'ORD-10482',
+        totalPlan: '₹32,999',
+        paid: '₹22,000',
+        remaining: '₹10,999',
+        count: '2 / 3',
+        progress: 67,
+        installments: [
+          { num: 1, amount: '₹11,000', due: '12 Jan 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_QwErTy1234Ab' },
+          { num: 2, amount: '₹11,000', due: '12 Feb 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_ZxCvBn5678Mn' },
+          { num: 3, amount: '₹10,999', due: '12 Mar 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      },
+      3: {
+        student: 'Ananya Kapoor',
+        email: 'ananya.k@example.com',
+        course: 'Full Stack Web Development',
+        order: 'ORD-10482',
+        totalPlan: '₹32,999',
+        paid: '₹22,000',
+        remaining: '₹10,999',
+        count: '2 / 3',
+        progress: 67,
+        installments: [
+          { num: 1, amount: '₹11,000', due: '12 Jan 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_QwErTy1234Ab' },
+          { num: 2, amount: '₹11,000', due: '12 Feb 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_ZxCvBn5678Mn' },
+          { num: 3, amount: '₹10,999', due: '12 Mar 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      },
+      4: {
+        student: 'Rohan Sharma',
+        email: 'rohan.s@example.com',
+        course: 'Data Science & AI Masterclass',
+        order: 'ORD-10481',
+        totalPlan: '₹33,000',
+        paid: '₹11,000',
+        remaining: '₹22,000',
+        count: '1 / 3',
+        progress: 33,
+        installments: [
+          { num: 1, amount: '₹11,000', due: '05 May 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_AbCdEf1234Gh' },
+          { num: 2, amount: '₹11,000', due: '05 Jun 2025', status: 'overdue', statusLabel: 'Overdue', paymentId: '—' },
+          { num: 3, amount: '₹11,000', due: '05 Jul 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      },
+      5: {
+        student: 'Priya Mehta',
+        email: 'priya.m@example.com',
+        course: 'UI/UX Design Masterclass',
+        order: 'ORD-10480',
+        totalPlan: '₹18,999',
+        paid: '₹0',
+        remaining: '₹18,999',
+        count: '0 / 3',
+        progress: 0,
+        installments: [
+          { num: 1, amount: '₹6,333', due: '22 Apr 2025', status: 'overdue', statusLabel: 'Overdue', paymentId: '—' },
+          { num: 2, amount: '₹6,333', due: '22 May 2025', status: 'overdue', statusLabel: 'Overdue', paymentId: '—' },
+          { num: 3, amount: '₹6,333', due: '22 Jun 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      },
+      6: {
+        student: 'Arjun Verma',
+        email: 'arjun.v@example.com',
+        course: 'Cloud Computing with AWS',
+        order: 'ORD-10479',
+        totalPlan: '₹27,000',
+        paid: '₹6,750',
+        remaining: '₹20,250',
+        count: '1 / 4',
+        progress: 25,
+        installments: [
+          { num: 1, amount: '₹6,750', due: '28 May 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_IjKlMn9012Op' },
+          { num: 2, amount: '₹6,750', due: '28 Jun 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' },
+          { num: 3, amount: '₹6,750', due: '28 Jul 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' },
+          { num: 4, amount: '₹6,750', due: '28 Aug 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      },
+      7: {
+        student: 'Sneha Nair',
+        email: 'sneha.n@example.com',
+        course: 'Digital Marketing Pro',
+        order: 'ORD-10478',
+        totalPlan: '₹18,999',
+        paid: '₹6,333',
+        remaining: '₹12,666',
+        count: '1 / 3',
+        progress: 33,
+        installments: [
+          { num: 1, amount: '₹6,333', due: '15 May 2025', status: 'paid',    statusLabel: 'Paid',    paymentId: 'pay_NoPqRs3456Tu' },
+          { num: 2, amount: '₹6,333', due: '15 Jun 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' },
+          { num: 3, amount: '₹6,333', due: '15 Jul 2025', status: 'pending', statusLabel: 'Pending', paymentId: '—' }
+        ]
+      }
+    };
+
+    window.openInstallmentDetail = function (id) {
+      var data = demoInstallments[id];
+      if (!data) {
+        edvantoToast('Installment details unavailable.', 'error');
+        return;
+      }
+
+      /* Header */
+      document.getElementById('detailStudentHeader').textContent = data.student;
+
+      /* Summary banner */
+      document.getElementById('detailPaidSoFar').textContent = data.paid;
+      document.getElementById('detailRemaining').textContent = data.remaining;
+      document.getElementById('detailInstallmentCount').textContent = data.count;
+      document.getElementById('detailProgressFill').style.width = data.progress + '%';
+      document.getElementById('detailProgressLabel').textContent = data.progress + '% complete';
+
+      /* Student & course */
+      document.getElementById('detailStudent').textContent = data.student;
+      document.getElementById('detailEmail').textContent = data.email;
+      document.getElementById('detailCourse').textContent = data.course;
+      document.getElementById('detailOrder').textContent = data.order;
+
+      /* Installment timeline rows */
+      var container = document.getElementById('installmentTimelineRows');
+      container.innerHTML = '';
+
+      data.installments.forEach(function (inst) {
+        var rowClass = 'pending';
+        var badgeClass = 'badge-pay-pending';
+        var badgeIcon = 'bi-hourglass-split';
+        var badgeLabel = inst.statusLabel;
+
+        if (inst.status === 'paid') {
+          rowClass = 'paid';
+          badgeClass = 'badge-pay-paid';
+          badgeIcon = 'bi-check-circle-fill';
+        } else if (inst.status === 'overdue') {
+          rowClass = 'overdue';
+          badgeClass = 'badge-pay-overdue';
+          badgeIcon = 'bi-exclamation-triangle-fill';
+        }
+
+        var row = document.createElement('div');
+        row.className = 'edvanto-inst-detail-row ' + rowClass;
+        row.innerHTML =
+          '<div class="edvanto-inst-detail-left">' +
+            '<span class="edvanto-inst-detail-chip">' + inst.num + '</span>' +
+            '<div class="edvanto-inst-detail-info">' +
+              '<span class="edvanto-inst-detail-title">Installment ' + inst.num + '</span>' +
+              '<span class="edvanto-inst-detail-sub">Due ' + inst.due +
+                (inst.paymentId !== '—' ? ' · ' + inst.paymentId : '') +
+              '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="edvanto-inst-detail-right">' +
+            '<span class="edvanto-inst-detail-amount">' + inst.amount + '</span>' +
+            '<span class="edvanto-badge ' + badgeClass + '">' +
+              '<i class="bi ' + badgeIcon + '"></i> ' + badgeLabel +
+            '</span>' +
+          '</div>';
+        container.appendChild(row);
+      });
+
+      new bootstrap.Modal(document.getElementById('installmentDetailModal')).show();
+    };
+
+    /* ============================================================
+       SEND REMINDER
+       ============================================================ */
+    window.sendReminder = function (studentName, amount) {
+      edvantoToast('Reminder sent to ' + studentName + (amount ? ' for ' + amount : '') + '.', 'info');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    window.sendBulkReminders = function () {
+      edvantoToast('Reminders queued for all overdue installments.', 'info');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       RECORD PAYMENT
+       ============================================================ */
+    var pendingPaymentStudent = '';
+
+    window.recordPayment = function (studentName) {
+      pendingPaymentStudent = studentName;
+      document.getElementById('recordPaymentStudent').textContent = studentName;
+      document.getElementById('recordAmount').value = '';
+      document.getElementById('recordReference').value = '';
+
+      /* Close detail modal if open */
+      var detailModalEl = document.getElementById('installmentDetailModal');
+      if (detailModalEl) {
+        var detailModal = bootstrap.Modal.getInstance(detailModalEl);
+        if (detailModal) detailModal.hide();
+      }
+
+      new bootstrap.Modal(document.getElementById('recordPaymentModal')).show();
+    };
+
+    window.confirmRecordPayment = function () {
+      var amount = document.getElementById('recordAmount').value.trim();
+      if (!amount || parseFloat(amount) <= 0) {
+        edvantoToast('Please enter a valid amount.', 'error');
+        return;
+      }
+
+      var modalEl = document.getElementById('recordPaymentModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      edvantoToast('Payment of ₹' + parseFloat(amount).toLocaleString('en-IN') +
+                   ' recorded for ' + pendingPaymentStudent + '.', 'success');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       AUTO-SUBMIT FILTERS (optional)
+       ============================================================ */
+    document.querySelectorAll('#installmentFilterForm select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        /* Uncomment to auto-apply */
+        /* document.getElementById('installmentFilterForm').submit(); */
+      });
+    });
+
+  })();
+</script>
+
+{% endblock %}

@@ -44,6 +44,9 @@ ALLOWED_HOSTS = env.list(
     default=[
         "127.0.0.1",
         "localhost",
+        "192.168.56.1",
+        "192.168.1.25:6000",
+        "192.168.1.25",
     ],
 )
 
@@ -67,8 +70,9 @@ INSTALLED_APPS = [
 
     # Local
     "core",
+    "admin_panel",
 ]
-
+AUTH_USER_MODEL = "core.User"
 
 # ============================================================
 # MIDDLEWARE

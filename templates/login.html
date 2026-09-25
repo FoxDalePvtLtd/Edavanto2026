@@ -5,29 +5,29 @@
 {% block title %}Edunex - Education LMS & Online course HTML Template | Edvanto{% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+  {% comment %} <link rel="stylesheet" href="{% static 'css/shop.css' %}"> {% endcomment %}
 {% endblock %}
 
 {% block content %}
-<div class="space-for-header"></div>
+      <div class="space-for-header"></div>
+
         <!-- start: Page Header Section -->
         <section class="tj-page-header">
           <div class="container">
             <div class="row">
               <div class="col-12">
                 <div class="tj-page-header-content">
-                  <h1 class="tj-page-title">Login</h1>
                   <div class="tj-page-link">
                     <span><i class="tji-home"></i></span>
                     <span>
-                      <a href="index.html">Home</a>
+                      <a href="/">Home</a>
                     </span>
                     <span><i class="tji-arrow-right-4"></i></span>
                     <span>
                       <span>Login</span>
                     </span>
                   </div>
-                  <div class="shape"><img src="{% static 'image/shapes/stars.png' %}" alt=""></div>
+                  <div class="shape"><img src="{% static 'images/shapes/stars.png' %}" alt=""></div>
                 </div>
               </div>
             </div>
@@ -48,7 +48,7 @@
 
                   <div class="login-social">
                     <a class="tj-social-login-btn" href="#">
-                      <span class="icon"><img src="{% static 'image/icons/google.svg' %}" alt="Google"></span>
+                      <span class="icon"><img src="{% static 'images/icons/google.svg' %}" alt="Google"></span>
                       <span class="text">Continue with Google</span>
                     </a>
                   </div>

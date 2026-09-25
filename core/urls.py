@@ -11,4 +11,9 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("sign-in/", views.sign_in, name="sign_in"),
     path("forgot-password/", views.forgot_password, name="forgot_password"),
+    path("course_details/", views.course_detail, name="course_detail"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("register/",views.student_register, name="student_register",),
+
+    
 ]

@@ -1,0 +1,1375 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Session Management{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – BATCH SESSION MANAGEMENT
+     Calendar View · Scheduling · Attendance · Completion
+     ============================================================ -->
+
+<style>
+  /* ---------- Batch header banner ---------- */
+  .edvanto-session-banner {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 55%, #0D4E96 100%);
+    border-radius: var(--edvanto-radius-card);
+    padding: 1.35rem 1.6rem;
+    color: var(--edvanto-white);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 28px rgba(3, 42, 90, 0.14);
+  }
+  .edvanto-session-banner::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, rgba(1, 223, 254, 0) 70%);
+    pointer-events: none;
+  }
+  .edvanto-session-banner-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+  .edvanto-session-banner-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--edvanto-cyan);
+    flex-shrink: 0;
+  }
+  .edvanto-session-banner-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-session-banner-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.35rem;
+    color: var(--edvanto-white);
+  }
+  .edvanto-session-banner-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .edvanto-session-banner-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-session-banner-meta i {
+    color: var(--edvanto-cyan);
+    font-size: 0.88rem;
+  }
+  .edvanto-session-banner-stats {
+    display: flex;
+    align-items: center;
+  }
+  .edvanto-session-banner-stat {
+    text-align: center;
+    padding: 0.35rem 1.1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .edvanto-session-banner-stat:first-child { border-left: none; }
+  .edvanto-session-banner-stat .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--edvanto-white);
+  }
+  .edvanto-session-banner-stat .lbl {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .edvanto-sessions-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .edvanto-sessions-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- View toggle ---------- */
+  .edvanto-view-toggle {
+    display: inline-flex;
+    background: var(--edvanto-gray-100);
+    border-radius: var(--edvanto-radius-sm);
+    padding: 3px;
+    gap: 2px;
+  }
+  .edvanto-view-toggle button {
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    border-radius: calc(var(--edvanto-radius-sm) - 3px);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.15s ease;
+  }
+  .edvanto-view-toggle button i { font-size: 0.9rem; }
+  .edvanto-view-toggle button:hover { color: var(--edvanto-violet); }
+  .edvanto-view-toggle button.active {
+    background: var(--edvanto-white);
+    color: var(--edvanto-violet);
+    box-shadow: 0 2px 6px rgba(3, 42, 90, 0.08);
+  }
+
+  /* ---------- Week nav ---------- */
+  .edvanto-week-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-sm);
+    padding: 0.25rem;
+  }
+  .edvanto-week-nav button {
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .edvanto-week-nav button:hover {
+    background: var(--edvanto-gray-100);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-week-nav .week-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    padding: 0 0.6rem;
+    white-space: nowrap;
+  }
+
+  /* ============================================================
+     CALENDAR-STYLE LIST
+     ============================================================ */
+  .edvanto-calendar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: var(--edvanto-border-light);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .edvanto-calendar-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.02em;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-calendar-title i {
+    color: var(--edvanto-violet);
+  }
+  .edvanto-calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--edvanto-gray-600);
+  }
+  .edvanto-calendar-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-calendar-legend .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .edvanto-calendar-legend .dot.upcoming  { background: var(--edvanto-cyan); }
+  .edvanto-calendar-legend .dot.active    { background: var(--edvanto-violet); }
+  .edvanto-calendar-legend .dot.completed { background: #0F9D58; }
+  .edvanto-calendar-legend .dot.cancelled { background: #DC3545; }
+
+  /* Day group */
+  .edvanto-day-group {
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-day-group:last-child {
+    border-bottom: none;
+  }
+  .edvanto-day-group.today {
+    background: linear-gradient(90deg, rgba(69, 28, 238, 0.03) 0%, transparent 40%);
+  }
+
+  .edvanto-day-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.5rem 0.75rem;
+    background: var(--edvanto-gray-50);
+    border-bottom: var(--edvanto-border-light);
+  }
+  .edvanto-day-date {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .edvanto-day-date .dow {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.15rem;
+  }
+  .edvanto-day-date .num {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+  }
+  .edvanto-day-group.today .edvanto-day-date {
+    background: linear-gradient(135deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
+    border-color: var(--edvanto-violet);
+  }
+  .edvanto-day-group.today .edvanto-day-date .dow,
+  .edvanto-day-group.today .edvanto-day-date .num {
+    color: var(--edvanto-white);
+  }
+  .edvanto-day-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .edvanto-day-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+    letter-spacing: -0.01em;
+  }
+  .edvanto-day-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-day-meta .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--edvanto-gray-400);
+  }
+  .edvanto-day-today-chip {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--edvanto-violet);
+    color: var(--edvanto-white);
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  /* Session card */
+  .edvanto-session-row {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 1rem;
+    padding: 0.95rem 1.5rem;
+    align-items: center;
+    transition: background 0.15s ease;
+    position: relative;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-session-row:last-child {
+    border-bottom: none;
+  }
+  .edvanto-session-row:hover {
+    background: rgba(69, 28, 238, 0.015);
+  }
+  .edvanto-session-row.cancelled {
+    opacity: 0.6;
+  }
+  .edvanto-session-row.cancelled .edvanto-session-title {
+    text-decoration: line-through;
+  }
+
+  /* status indicator stripe */
+  .edvanto-session-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+  }
+  .edvanto-session-row.upcoming::before  { background: var(--edvanto-cyan); }
+  .edvanto-session-row.active::before    { background: var(--edvanto-violet); }
+  .edvanto-session-row.completed::before { background: #0F9D58; }
+  .edvanto-session-row.cancelled::before { background: #DC3545; }
+
+  /* Time block */
+  .edvanto-session-time {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .edvanto-session-time .start {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+  }
+  .edvanto-session-time .end {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* Info block */
+  .edvanto-session-info {
+    min-width: 0;
+  }
+  .edvanto-session-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.35rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .edvanto-session-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .edvanto-session-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-100);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .edvanto-session-tag i {
+    font-size: 0.75rem;
+    color: var(--edvanto-gray-500);
+  }
+
+  /* Status badge */
+  .edvanto-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .badge-status-upcoming  { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
+  .badge-status-active    { background: rgba(69, 28, 238, 0.09); color: var(--edvanto-violet); }
+  .badge-status-completed { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .badge-status-cancelled { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+
+  /* Actions */
+  .edvanto-session-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.success:hover {
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F9D58;
+  }
+  .edvanto-action-btn.danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+
+  .edvanto-action-group {
+    display: inline-flex;
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-xs);
+    padding: 2px;
+    gap: 1px;
+  }
+
+  /* ---------- Empty state ---------- */
+  .edvanto-empty {
+    text-align: center;
+    padding: 2.5rem 1.25rem;
+  }
+  .edvanto-empty i {
+    font-size: 2.25rem;
+    color: var(--edvanto-gray-400);
+    margin-bottom: 0.85rem;
+    display: block;
+  }
+  .edvanto-empty h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .edvanto-empty p {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+  }
+
+  /* ---------- Session form panel ---------- */
+  .edvanto-form-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+  .edvanto-form-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--edvanto-violet);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-form-section-title i { font-size: 0.95rem; }
+
+  .form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .form-label .req { color: #DC3545; }
+  .form-control, .form-select {
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    font-size: 0.88rem;
+    padding: 0.55rem 0.85rem;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-white);
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  textarea.form-control {
+    min-height: 88px;
+    resize: vertical;
+  }
+  .form-text {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-500);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 991.98px) {
+    .edvanto-session-row {
+      grid-template-columns: 80px 1fr;
+      gap: 0.85rem;
+      padding: 0.9rem 1.25rem;
+    }
+    .edvanto-session-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+      border-top: 1px solid var(--edvanto-gray-100);
+      padding-top: 0.75rem;
+      margin-top: 0.15rem;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-session-banner-stats { width: 100%; }
+    .edvanto-session-banner-stat:first-child { padding-left: 0; }
+    .edvanto-day-header { padding: 0.75rem 1rem; flex-wrap: wrap; }
+    .edvanto-session-row { padding: 0.85rem 1rem; }
+    .edvanto-calendar-header { padding: 0.85rem 1rem; }
+    .edvanto-calendar-legend { display: none; }
+    .edvanto-form-card { padding: 1.15rem 1.25rem 1.35rem; }
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#batches' %}">Batches</a></li>
+      <li class="breadcrumb-item"><a href="#">BATCH-0241</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Sessions</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ============================================================
+     BATCH HEADER BANNER
+     ============================================================ -->
+<div class="edvanto-session-banner">
+  <div class="edvanto-session-banner-inner">
+    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+      <div class="edvanto-session-banner-icon">
+        <i class="bi bi-calendar-week-fill"></i>
+      </div>
+      <div style="min-width: 0;">
+        <div class="edvanto-session-banner-label">Batch Sessions · BATCH-0241</div>
+        <h1 class="edvanto-session-banner-title">UI/UX Design – Weekend Batch</h1>
+        <div class="edvanto-session-banner-meta">
+          <span><i class="bi bi-journal-bookmark-fill"></i> UI/UX Design Masterclass</span>
+          <span><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span><i class="bi bi-geo-alt-fill"></i> Mumbai – Andheri</span>
+        </div>
+      </div>
+    </div>
+    <div class="edvanto-session-banner-stats">
+      <div class="edvanto-session-banner-stat">
+        <div class="num">12</div>
+        <div class="lbl">Total Sessions</div>
+      </div>
+      <div class="edvanto-session-banner-stat">
+        <div class="num">3</div>
+        <div class="lbl">Completed</div>
+      </div>
+      <div class="edvanto-session-banner-stat">
+        <div class="num">9</div>
+        <div class="lbl">Upcoming</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOOLBAR
+     ============================================================ -->
+<div class="edvanto-sessions-toolbar">
+  <div class="edvanto-sessions-toolbar-left">
+    <i class="bi bi-funnel" style="color: var(--edvanto-violet);"></i>
+    <span>12 sessions scheduled</span>
+  </div>
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <!-- View toggle -->
+    <div class="edvanto-view-toggle" role="group" aria-label="View mode">
+      <button type="button" class="active" onclick="setView('list', this)">
+        <i class="bi bi-list-ul"></i> List
+      </button>
+      <button type="button" onclick="setView('week', this)">
+        <i class="bi bi-calendar3"></i> Week
+      </button>
+    </div>
+
+    <!-- Week nav -->
+    <div class="edvanto-week-nav">
+      <button type="button" title="Previous week" onclick="shiftWeek(-1)">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <span class="week-label" id="weekLabel">15 Apr – 21 Apr 2025</span>
+      <button type="button" title="Next week" onclick="shiftWeek(1)">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <button class="btn btn-edvanto-outline btn-sm px-3" onclick="todayWeek()">
+      <i class="bi bi-calendar-event me-1"></i> Today
+    </button>
+    <a href="#session_add' 241 %}" class="btn btn-edvanto-primary btn-sm px-3">
+      <i class="bi bi-plus-lg me-1"></i> Create Session
+    </a>
+  </div>
+</div>
+
+<!-- ============================================================
+     CALENDAR-STYLE LIST
+     ============================================================ -->
+<div class="edvanto-calendar">
+
+  <!-- Calendar header -->
+  <div class="edvanto-calendar-header">
+    <h2 class="edvanto-calendar-title">
+      <i class="bi bi-calendar2-week"></i> Session Schedule
+    </h2>
+    <div class="edvanto-calendar-legend">
+      <span><span class="dot upcoming"></span> Upcoming</span>
+      <span><span class="dot active"></span> In Progress</span>
+      <span><span class="dot completed"></span> Completed</span>
+      <span><span class="dot cancelled"></span> Cancelled</span>
+    </div>
+  </div>
+
+  <!-- ---------- DAY GROUP: TODAY (15 Apr) ---------- -->
+  <div class="edvanto-day-group today">
+    <div class="edvanto-day-header">
+      <div class="edvanto-day-date">
+        <span class="dow">Mon</span>
+        <span class="num">15</span>
+      </div>
+      <div class="edvanto-day-info">
+        <p class="edvanto-day-title">Monday, 15 April 2025</p>
+        <div class="edvanto-day-meta">
+          <span><i class="bi bi-calendar-event"></i> 1 session</span>
+          <span class="dot"></span>
+          <span>2h total</span>
+        </div>
+      </div>
+      <span class="edvanto-day-today-chip">Today</span>
+    </div>
+
+    <!-- Session: In Progress -->
+    <div class="edvanto-session-row active">
+      <div class="edvanto-session-time">
+        <span class="start">6:30 PM</span>
+        <span class="end">to 8:30 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Introduction to UI/UX Design</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-door-open"></i> Room 204</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-camera-video"></i> Hybrid · Meet link</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-active">
+          <i class="bi bi-play-circle-fill"></i> In Progress
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Introduction to UI/UX Design')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="edvanto-action-btn success" title="Mark Completed" onclick="markCompleted('Introduction to UI/UX Design')">
+            <i class="bi bi-check-circle"></i>
+          </button>
+          <button class="edvanto-action-btn danger" title="Cancel Session" onclick="cancelSession('Introduction to UI/UX Design')">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DAY GROUP: 17 Apr ---------- -->
+  <div class="edvanto-day-group">
+    <div class="edvanto-day-header">
+      <div class="edvanto-day-date">
+        <span class="dow">Wed</span>
+        <span class="num">17</span>
+      </div>
+      <div class="edvanto-day-info">
+        <p class="edvanto-day-title">Wednesday, 17 April 2025</p>
+        <div class="edvanto-day-meta">
+          <span><i class="bi bi-calendar-event"></i> 2 sessions</span>
+          <span class="dot"></span>
+          <span>4h total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session: Completed -->
+    <div class="edvanto-session-row completed">
+      <div class="edvanto-session-time">
+        <span class="start">6:30 PM</span>
+        <span class="end">to 8:30 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Design Thinking Workshop</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-door-open"></i> Room 204</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-people"></i> 22 / 24 attended</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-completed">
+          <i class="bi bi-check-circle-fill"></i> Completed
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="View Session" onclick="viewSession('Design Thinking Workshop')">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Design Thinking Workshop')">
+            <i class="bi bi-pencil"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session: Upcoming -->
+    <div class="edvanto-session-row upcoming">
+      <div class="edvanto-session-time">
+        <span class="start">8:45 PM</span>
+        <span class="end">to 9:45 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Q&amp;A and Doubt Clearing</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-camera-video"></i> Online only</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-link-45deg"></i> Zoom link attached</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-upcoming">
+          <i class="bi bi-clock-history"></i> Upcoming
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Q&A and Doubt Clearing')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="edvanto-action-btn danger" title="Cancel Session" onclick="cancelSession('Q&A and Doubt Clearing')">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DAY GROUP: 19 Apr ---------- -->
+  <div class="edvanto-day-group">
+    <div class="edvanto-day-header">
+      <div class="edvanto-day-date">
+        <span class="dow">Fri</span>
+        <span class="num">19</span>
+      </div>
+      <div class="edvanto-day-info">
+        <p class="edvanto-day-title">Friday, 19 April 2025</p>
+        <div class="edvanto-day-meta">
+          <span><i class="bi bi-calendar-event"></i> 1 session</span>
+          <span class="dot"></span>
+          <span>2h total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session: Completed -->
+    <div class="edvanto-session-row completed">
+      <div class="edvanto-session-time">
+        <span class="start">6:30 PM</span>
+        <span class="end">to 8:30 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Wireframing with Figma</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-door-open"></i> Room 204</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-people"></i> 20 / 24 attended</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-completed">
+          <i class="bi bi-check-circle-fill"></i> Completed
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="View Session" onclick="viewSession('Wireframing with Figma')">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Wireframing with Figma')">
+            <i class="bi bi-pencil"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DAY GROUP: 22 Apr ---------- -->
+  <div class="edvanto-day-group">
+    <div class="edvanto-day-header">
+      <div class="edvanto-day-date">
+        <span class="dow">Mon</span>
+        <span class="num">22</span>
+      </div>
+      <div class="edvanto-day-info">
+        <p class="edvanto-day-title">Monday, 22 April 2025</p>
+        <div class="edvanto-day-meta">
+          <span><i class="bi bi-calendar-event"></i> 1 session</span>
+          <span class="dot"></span>
+          <span>2h total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session: Upcoming -->
+    <div class="edvanto-session-row upcoming">
+      <div class="edvanto-session-time">
+        <span class="start">6:30 PM</span>
+        <span class="end">to 8:30 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Prototyping Basics</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-door-open"></i> Room 204</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-camera-video"></i> Hybrid · Meet link</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-upcoming">
+          <i class="bi bi-clock-history"></i> Upcoming
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Prototyping Basics')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="edvanto-action-btn danger" title="Cancel Session" onclick="cancelSession('Prototyping Basics')">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DAY GROUP: 24 Apr ---------- -->
+  <div class="edvanto-day-group">
+    <div class="edvanto-day-header">
+      <div class="edvanto-day-date">
+        <span class="dow">Wed</span>
+        <span class="num">24</span>
+      </div>
+      <div class="edvanto-day-info">
+        <p class="edvanto-day-title">Wednesday, 24 April 2025</p>
+        <div class="edvanto-day-meta">
+          <span><i class="bi bi-calendar-event"></i> 1 session</span>
+          <span class="dot"></span>
+          <span>2h total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session: Cancelled -->
+    <div class="edvanto-session-row cancelled">
+      <div class="edvanto-session-time">
+        <span class="start">6:30 PM</span>
+        <span class="end">to 8:30 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Usability Testing Principles</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-door-open"></i> Room 204</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-info-circle"></i> Rescheduled to 26 Apr</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-cancelled">
+          <i class="bi bi-x-circle-fill"></i> Cancelled
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Usability Testing Principles')">
+            <i class="bi bi-pencil"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DAY GROUP: 26 Apr ---------- -->
+  <div class="edvanto-day-group">
+    <div class="edvanto-day-header">
+      <div class="edvanto-day-date">
+        <span class="dow">Fri</span>
+        <span class="num">26</span>
+      </div>
+      <div class="edvanto-day-info">
+        <p class="edvanto-day-title">Friday, 26 April 2025</p>
+        <div class="edvanto-day-meta">
+          <span><i class="bi bi-calendar-event"></i> 1 session</span>
+          <span class="dot"></span>
+          <span>2h total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session: Upcoming -->
+    <div class="edvanto-session-row upcoming">
+      <div class="edvanto-session-time">
+        <span class="start">6:30 PM</span>
+        <span class="end">to 8:30 PM</span>
+      </div>
+      <div class="edvanto-session-info">
+        <h3 class="edvanto-session-title">Usability Testing Principles</h3>
+        <div class="edvanto-session-tags">
+          <span class="edvanto-session-tag"><i class="bi bi-door-open"></i> Room 204</span>
+          <span class="edvanto-session-tag"><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span class="edvanto-session-tag"><i class="bi bi-arrow-counterclockwise"></i> Rescheduled from 24 Apr</span>
+        </div>
+      </div>
+      <div class="edvanto-session-actions">
+        <span class="edvanto-badge badge-status-upcoming">
+          <i class="bi bi-clock-history"></i> Upcoming
+        </span>
+        <div class="edvanto-action-group">
+          <button class="edvanto-action-btn" title="Edit Session" onclick="editSession('Usability Testing Principles')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="edvanto-action-btn danger" title="Cancel Session" onclick="cancelSession('Usability Testing Principles')">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     QUICK SESSION FORM (inline panel)
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <div class="col-12 col-lg-7">
+    <div class="edvanto-form-card">
+      <div class="edvanto-form-section-title">
+        <i class="bi bi-plus-circle-fill"></i> Create New Session
+      </div>
+
+      <form method="post" action="" id="quickSessionForm">
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <!-- Batch (read-only for context) -->
+          <div class="col-12 col-sm-6">
+            <label class="form-label">Batch</label>
+            <input type="text" class="form-control" value="UI/UX Design – Weekend Batch (BATCH-0241)" readonly
+                   style="background: var(--edvanto-gray-50); color: var(--edvanto-gray-600);">
+          </div>
+
+          <!-- Title -->
+          <div class="col-12 col-sm-6">
+            <label for="sessionTitle" class="form-label">Session Title <span class="req">*</span></label>
+            <input type="text" class="form-control" id="sessionTitle" name="title"
+                   placeholder="e.g. Prototyping Basics" required>
+          </div>
+
+          <!-- Date -->
+          <div class="col-12 col-sm-4">
+            <label for="sessionDate" class="form-label">Date <span class="req">*</span></label>
+            <input type="date" class="form-control" id="sessionDate" name="date" required>
+          </div>
+
+          <!-- Start time -->
+          <div class="col-6 col-sm-4">
+            <label for="sessionStart" class="form-label">Start Time <span class="req">*</span></label>
+            <input type="time" class="form-control" id="sessionStart" name="start_time" required>
+          </div>
+
+          <!-- End time -->
+          <div class="col-6 col-sm-4">
+            <label for="sessionEnd" class="form-label">End Time <span class="req">*</span></label>
+            <input type="time" class="form-control" id="sessionEnd" name="end_time" required>
+          </div>
+
+          <!-- Room -->
+          <div class="col-12 col-sm-4">
+            <label for="sessionRoom" class="form-label">Room / Location</label>
+            <input type="text" class="form-control" id="sessionRoom" name="room"
+                   placeholder="e.g. Room 204">
+          </div>
+
+          <!-- Instructor -->
+          <div class="col-12 col-sm-4">
+            <label for="sessionInstructor" class="form-label">Instructor</label>
+            <select class="form-select" id="sessionInstructor" name="instructor">
+              <option value="priya" selected>Priya Nair</option>
+              <option value="arun">Arun Kapoor</option>
+              <option value="rajesh">Dr. Rajesh Sharma</option>
+            </select>
+          </div>
+
+          <!-- Meeting reference -->
+          <div class="col-12 col-sm-4">
+            <label for="sessionMeeting" class="form-label">Meeting / Reference</label>
+            <input type="text" class="form-control" id="sessionMeeting" name="meeting_reference"
+                   placeholder="Meet link, Zoom ID, etc.">
+          </div>
+
+          <!-- Notes -->
+          <div class="col-12">
+            <label for="sessionNotes" class="form-label">Notes</label>
+            <textarea class="form-control" id="sessionNotes" name="notes" rows="2"
+                      placeholder="Agenda, materials required, or any instructions for students…"></textarea>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4 pt-3" style="border-top: var(--edvanto-border-light);">
+          <button type="button" class="btn btn-edvanto-outline btn-sm px-3" onclick="resetSessionForm()">
+            <i class="bi bi-x-lg me-1"></i> Reset
+          </button>
+          <button type="button" class="btn btn-edvanto-outline btn-sm px-3"
+                  onclick="saveSession(false)">
+            <i class="bi bi-file-earmark me-1"></i> Save as Draft
+          </button>
+          <button type="button" class="btn btn-edvanto-primary btn-sm px-4 ms-auto"
+                  onclick="saveSession(true)">
+            <i class="bi bi-check-lg me-1"></i> Create Session
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tips panel -->
+  <div class="col-12 col-lg-5">
+    <div class="edvanto-form-card">
+      <div class="edvanto-form-section-title">
+        <i class="bi bi-lightbulb-fill"></i> Scheduling Tips
+      </div>
+      <ul class="ps-3 mb-0" style="font-size: 0.82rem; color: var(--edvanto-gray-600); line-height: 1.7;">
+        <li>Keep session duration consistent across the batch.</li>
+        <li>Add a meeting link for hybrid or online-only sessions.</li>
+        <li>Reschedule rather than cancel when possible.</li>
+        <li>Use notes to share pre-reads with students.</li>
+        <li>Mark sessions completed to update attendance.</li>
+      </ul>
+
+      <div class="mt-4 pt-3" style="border-top: var(--edvanto-border-light);">
+        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--edvanto-gray-500); margin-bottom: 0.6rem;">
+          Upcoming Week At A Glance
+        </div>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+            <span style="width: 28px; text-align: center; font-weight: 700; color: var(--edvanto-gray-500);">19</span>
+            <span style="color: var(--edvanto-navy); font-weight: 600;">Wireframing with Figma</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+            <span style="width: 28px; text-align: center; font-weight: 700; color: var(--edvanto-gray-500);">22</span>
+            <span style="color: var(--edvanto-navy); font-weight: 600;">Prototyping Basics</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+            <span style="width: 28px; text-align: center; font-weight: 700; color: var(--edvanto-gray-500);">24</span>
+            <span style="color: var(--edvanto-gray-400); font-weight: 600; text-decoration: line-through;">Usability Testing (cancelled)</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+            <span style="width: 28px; text-align: center; font-weight: 700; color: var(--edvanto-gray-500);">26</span>
+            <span style="color: var(--edvanto-navy); font-weight: 600;">Usability Testing Principles</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CONFIRM MODAL
+     ============================================================ -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="confirmModalLabel" style="font-weight: 700; color: var(--edvanto-navy); font-size: 1rem;">
+          <i class="bi bi-exclamation-triangle-fill me-2" id="confirmIcon" style="color: var(--edvanto-gold);"></i>
+          <span id="confirmTitle">Confirm Action</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2" style="font-size: 0.88rem; color: var(--edvanto-gray-600);">
+        <span id="confirmMessage">Are you sure?</span>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm text-white" id="confirmActionBtn"
+                style="background: var(--edvanto-violet);" onclick="performConfirm()">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       VIEW TOGGLE (List / Week placeholder)
+       ============================================================ */
+    window.setView = function (view, btn) {
+      document.querySelectorAll('.edvanto-view-toggle button').forEach(function (b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+
+      if (view === 'week') {
+        edvantoToast('Week grid view coming soon — list view shown.', 'info');
+        /* Fallback to list for now */
+        setTimeout(function () {
+          document.querySelector('.edvanto-view-toggle button').click();
+        }, 900);
+      }
+    };
+
+    /* ============================================================
+       WEEK NAVIGATION
+       ============================================================ */
+    var currentWeekOffset = 0;
+
+    function formatWeekLabel(offset) {
+      var base = new Date(2025, 3, 15); /* 15 Apr 2025 */
+      var start = new Date(base);
+      start.setDate(base.getDate() + offset * 7);
+      var end = new Date(start);
+      end.setDate(start.getDate() + 6);
+
+      var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      var startStr = start.getDate() + ' ' + monthNames[start.getMonth()];
+      var endStr = end.getDate() + ' ' + monthNames[end.getMonth()] + ' ' + end.getFullYear();
+      return startStr + ' – ' + endStr;
+    }
+
+    window.shiftWeek = function (delta) {
+      currentWeekOffset += delta;
+      document.getElementById('weekLabel').textContent = formatWeekLabel(currentWeekOffset);
+      edvantoToast('Viewing week: ' + formatWeekLabel(currentWeekOffset), 'info');
+    };
+
+    window.todayWeek = function () {
+      currentWeekOffset = 0;
+      document.getElementById('weekLabel').textContent = formatWeekLabel(0);
+      edvantoToast('Jumped to current week.', 'info');
+    };
+
+    /* ============================================================
+       SESSION ACTIONS
+       ============================================================ */
+    var pendingAction = null;
+    var pendingSessionName = '';
+
+    window.editSession = function (sessionName) {
+      edvantoToast('Editing "' + sessionName + '"…', 'info');
+      /* Replace with: window.location.href = '/admin/sessions/' + id + '/edit/'; */
+    };
+
+    window.viewSession = function (sessionName) {
+      edvantoToast('Opening "' + sessionName + '" details…', 'info');
+      /* Replace with: window.location.href = '/admin/sessions/' + id + '/'; */
+    };
+
+    window.markCompleted = function (sessionName) {
+      pendingAction = 'complete';
+      pendingSessionName = sessionName;
+      showConfirm(
+        'Mark Session Completed',
+        'Mark <strong class="text-edvanto-navy">' + sessionName + '</strong> as completed? ' +
+        'This will finalize attendance for this session.',
+        'Mark Completed',
+        '#0F9D58',
+        'check-circle-fill',
+        '#0F9D58'
+      );
+    };
+
+    window.cancelSession = function (sessionName) {
+      pendingAction = 'cancel';
+      pendingSessionName = sessionName;
+      showConfirm(
+        'Cancel Session',
+        'Cancel <strong class="text-edvanto-navy">' + sessionName + '</strong>? ' +
+        'Enrolled students will be notified. This action can be reversed by editing the session.',
+        'Cancel Session',
+        '#DC3545',
+        'x-circle-fill',
+        '#DC3545'
+      );
+    };
+
+    function showConfirm(title, message, actionLabel, actionColor, iconName, iconColor) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').innerHTML = message;
+      document.getElementById('confirmActionBtn').textContent = actionLabel;
+      document.getElementById('confirmActionBtn').style.background = actionColor;
+
+      var icon = document.getElementById('confirmIcon');
+      icon.className = 'bi bi-' + iconName + ' me-2';
+      icon.style.color = iconColor;
+
+      new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+
+    window.performConfirm = function () {
+      var modalEl = document.getElementById('confirmModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (pendingAction === 'complete') {
+        edvantoToast('"' + pendingSessionName + '" marked as completed.', 'success');
+      } else if (pendingAction === 'cancel') {
+        edvantoToast('"' + pendingSessionName + '" cancelled. Students notified.', 'warning');
+      }
+
+      pendingAction = null;
+      pendingSessionName = '';
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       QUICK SESSION FORM
+       ============================================================ */
+    window.resetSessionForm = function () {
+      var form = document.getElementById('quickSessionForm');
+      if (form) form.reset();
+      /* Restore default instructor */
+      var inst = document.getElementById('sessionInstructor');
+      if (inst) inst.value = 'priya';
+    };
+
+    window.saveSession = function (publish) {
+      var title = document.getElementById('sessionTitle').value.trim();
+      var date = document.getElementById('sessionDate').value;
+      var start = document.getElementById('sessionStart').value;
+      var end = document.getElementById('sessionEnd').value;
+
+      /* Validation */
+      var valid = true;
+      [['sessionTitle', title], ['sessionDate', date], ['sessionStart', start], ['sessionEnd', end]]
+        .forEach(function (pair) {
+          var el = document.getElementById(pair[0]);
+          if (!pair[1]) {
+            el.classList.add('is-invalid');
+            valid = false;
+          } else {
+            el.classList.remove('is-invalid');
+          }
+        });
+
+      if (valid && start && end && start >= end) {
+        document.getElementById('sessionEnd').classList.add('is-invalid');
+        edvantoToast('End time must be after start time.', 'error');
+        return;
+      }
+
+      if (!valid) {
+        edvantoToast('Please fill all required fields.', 'error');
+        return;
+      }
+
+      if (publish) {
+        edvantoToast('Session "' + title + '" created and scheduled.', 'success');
+      } else {
+        edvantoToast('Session saved as draft.', 'info');
+      }
+
+      resetSessionForm();
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ---------- Clear invalid state on input ---------- */
+    document.querySelectorAll('#quickSessionForm input, #quickSessionForm select, #quickSessionForm textarea')
+      .forEach(function (el) {
+        el.addEventListener('input', function () {
+          if (this.value && this.value.trim()) this.classList.remove('is-invalid');
+        });
+      });
+
+    /* ---------- Initialize week label ---------- */
+    document.addEventListener('DOMContentLoaded', function () {
+      var label = document.getElementById('weekLabel');
+      if (label) label.textContent = formatWeekLabel(0);
+    });
+
+  })();
+</script>
+
+{% endblock %}

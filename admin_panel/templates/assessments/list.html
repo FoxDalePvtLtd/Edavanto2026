@@ -1,0 +1,1407 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Assessments{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – ASSESSMENT MANAGEMENT
+     Quizzes · Assignments · Question Banks · Publishing
+     ============================================================ -->
+
+<style>
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.4rem 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-card.cyan::before  { background: linear-gradient(90deg, #00B8D4 0%, var(--edvanto-cyan) 100%); }
+  .edvanto-stat-card.green::before { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
+  .edvanto-stat-card.gold::before  { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
+
+  .edvanto-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.9rem;
+  }
+  .edvanto-stat-icon.cyan  { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
+  .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+
+  .edvanto-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+
+  /* ---------- Filter bar ---------- */
+  .edvanto-filter-bar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-filter-bar .form-control,
+  .edvanto-filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    height: 42px;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-gray-50);
+  }
+  .edvanto-filter-bar .form-control:focus,
+  .edvanto-filter-bar .form-select:focus {
+    border-color: var(--edvanto-violet);
+    background-color: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-filter-bar .input-icon-wrapper {
+    position: relative;
+  }
+  .edvanto-filter-bar .input-icon-wrapper i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--edvanto-gray-500);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .edvanto-filter-bar .input-icon-wrapper .form-control {
+    padding-left: 2.5rem;
+  }
+
+  /* ---------- Assessment table cell ---------- */
+  .edvanto-assessment-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 220px;
+  }
+  .edvanto-assessment-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    background: rgba(69, 28, 238, 0.07);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-assessment-icon.quiz {
+    background: rgba(69, 28, 238, 0.09);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-assessment-icon.assignment {
+    background: rgba(1, 223, 254, 0.12);
+    color: #007A8F;
+  }
+  .edvanto-assessment-info {
+    min-width: 0;
+  }
+  .edvanto-assessment-title {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.3;
+    margin: 0 0 0.15rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .edvanto-assessment-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Course / Module cells ---------- */
+  .edvanto-course-title {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    min-width: 150px;
+  }
+  .edvanto-course-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+  .edvanto-module-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    line-height: 1.3;
+    min-width: 130px;
+  }
+
+  /* ---------- Badges ---------- */
+  .edvanto-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .badge-type-quiz       { background: rgba(69, 28, 238, 0.08); color: var(--edvanto-violet); }
+  .badge-type-assignment { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
+
+  .badge-status-draft     { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+  .badge-status-published { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .badge-status-archived  { background: rgba(138, 155, 181, 0.14); color: #5A6E8A; }
+
+  /* ---------- Numbers ---------- */
+  .edvanto-num {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.9rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .edvanto-num.pass {
+    color: #0F6B3E;
+  }
+  .edvanto-num.subtle {
+    color: var(--edvanto-gray-600);
+    font-weight: 600;
+  }
+
+  /* ---------- Question count chip ---------- */
+  .edvanto-q-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    background: var(--edvanto-gray-100);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .edvanto-q-count i {
+    color: var(--edvanto-violet);
+    font-size: 0.75rem;
+  }
+  .edvanto-q-count.empty {
+    color: var(--edvanto-gray-500);
+    background: rgba(255, 179, 3, 0.08);
+  }
+  .edvanto-q-count.empty i { color: var(--edvanto-gold); }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table tbody td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Action buttons ---------- */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.gold:hover {
+    background: rgba(255, 179, 3, 0.10);
+    color: #9A6D00;
+  }
+  .edvanto-action-btn.success:hover {
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F9D58;
+  }
+  .edvanto-action-btn.cyan:hover {
+    background: rgba(1, 223, 254, 0.12);
+    color: #007A8F;
+  }
+
+  /* ---------- Mobile cards ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-assessments-table-wrap { display: none; }
+    .edvanto-assessments-cards { display: block; }
+  }
+  @media (min-width: 768px) {
+    .edvanto-assessments-cards { display: none; }
+  }
+  .edvanto-assessment-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-assessment-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-assessment-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.8rem;
+  }
+  .edvanto-assessment-card-row:last-child { border-bottom: none; }
+  .edvanto-assessment-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
+  .edvanto-assessment-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
+  .edvanto-assessment-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--edvanto-gray-100);
+    flex-wrap: wrap;
+  }
+  .edvanto-assessment-card-actions .btn {
+    flex: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.45rem 0.4rem;
+  }
+
+  /* ============================================================
+     EDITOR MODAL
+     ============================================================ */
+  .edvanto-editor-modal .modal-dialog {
+    max-width: 820px;
+  }
+  .edvanto-editor-modal .modal-content {
+    border-radius: var(--edvanto-radius-card);
+    border: none;
+    overflow: hidden;
+  }
+  .edvanto-editor-modal .modal-header {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 100%);
+    color: var(--edvanto-white);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .edvanto-editor-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .edvanto-editor-modal .modal-title {
+    color: var(--edvanto-white);
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-editor-modal .modal-title i { color: var(--edvanto-cyan); }
+  .edvanto-editor-modal .btn-close {
+    filter: invert(1) brightness(2);
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-editor-modal .btn-close:hover { opacity: 1; }
+
+  .edvanto-editor-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--edvanto-gray-50);
+  }
+  .edvanto-editor-modal .modal-footer {
+    background: var(--edvanto-white);
+    border-top: var(--edvanto-border-light);
+    padding: 0.9rem 1.5rem;
+  }
+
+  /* Editor form sections */
+  .edvanto-form-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    padding: 1.1rem 1.25rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-form-card:last-child { margin-bottom: 0; }
+  .edvanto-form-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-violet);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-form-section-title i { font-size: 0.95rem; }
+
+  .form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .form-label .req { color: #DC3545; }
+  .form-control, .form-select {
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    font-size: 0.88rem;
+    padding: 0.55rem 0.85rem;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-white);
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+  }
+  .form-text {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-500);
+  }
+
+  /* Editor toggle row */
+  .edvanto-switch-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    background: var(--edvanto-gray-50);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .edvanto-switch-row:hover {
+    border-color: rgba(69, 28, 238, 0.2);
+    background: rgba(69, 28, 238, 0.02);
+  }
+  .edvanto-switch-row .form-check-input {
+    width: 2.4rem;
+    height: 1.3rem;
+    margin-top: 0.1rem;
+    cursor: pointer;
+    border-radius: 999px;
+    border: 1px solid var(--edvanto-gray-300);
+    background-color: var(--edvanto-gray-200);
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .edvanto-switch-row .form-check-input:checked {
+    background-color: var(--edvanto-violet);
+    border-color: var(--edvanto-violet);
+  }
+  .edvanto-switch-row .form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.15);
+  }
+  .edvanto-switch-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin: 0;
+    line-height: 1.3;
+  }
+  .edvanto-switch-help {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    margin: 0.15rem 0 0;
+  }
+
+  /* Info panel */
+  .edvanto-info-panel {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: rgba(69, 28, 238, 0.04);
+    border-left: 3px solid var(--edvanto-violet);
+    font-size: 0.78rem;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .edvanto-info-panel i {
+    color: var(--edvanto-violet);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 575.98px) {
+    .edvanto-editor-modal .modal-body { padding: 1rem; }
+    .edvanto-form-card { padding: 0.9rem 1rem 1rem; }
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Assessments</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Assessments</h1>
+    <p class="edvanto-page-subtitle">Manage quizzes and assignments across all courses and modules.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filters
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>PDF</a></li>
+      </ul>
+    </div>
+    <button class="btn btn-edvanto-primary btn-sm px-3" onclick="openAssessmentEditor()">
+      <i class="bi bi-plus-lg me-1"></i> Create Assessment
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Total -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-clipboard2-check-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Total Assessments</div>
+      <div class="edvanto-stat-value">86</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+8</span>
+        <span>this month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quizzes -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card cyan">
+      <div class="edvanto-stat-icon cyan">
+        <i class="bi bi-patch-question-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Quizzes</div>
+      <div class="edvanto-stat-value">58</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-check-circle-fill" style="color: #0099B5; font-size: 0.75rem;"></i>
+        <span>42 auto-graded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assignments -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-file-earmark-text-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Assignments</div>
+      <div class="edvanto-stat-value">28</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-people-fill" style="color: #0F9D58; font-size: 0.75rem;"></i>
+        <span>14 need review</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Published -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card gold">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-send-check-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Published</div>
+      <div class="edvanto-stat-value">72</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-pencil-square" style="color: var(--edvanto-gold); font-size: 0.75rem;"></i>
+        <span>14 drafts pending</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER BAR
+     ============================================================ -->
+<div class="collapse show" id="filterCollapse">
+  <div class="edvanto-filter-bar">
+    <form method="get" action="" id="assessmentFilterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Search -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="assessSearch">Search</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" id="assessSearch" name="q"
+                   placeholder="Search by title…"
+                   value="{{ request.GET.q|default:'' }}">
+          </div>
+        </div>
+
+        <!-- Course -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="courseFilter">Course</label>
+          <select class="form-select" id="courseFilter" name="course">
+            <option value="">All Courses</option>
+            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Development</option>
+            <option value="datascience" {% if request.GET.course == 'datascience' %}selected{% endif %}>Data Science & AI Masterclass</option>
+            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design Masterclass</option>
+            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics Pro</option>
+          </select>
+        </div>
+
+        <!-- Type -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="typeFilter">Type</label>
+          <select class="form-select" id="typeFilter" name="type">
+            <option value="">All Types</option>
+            <option value="quiz" {% if request.GET.type == 'quiz' %}selected{% endif %}>Quiz</option>
+            <option value="assignment" {% if request.GET.type == 'assignment' %}selected{% endif %}>Assignment</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="statusFilter">Status</label>
+          <select class="form-select" id="statusFilter" name="status">
+            <option value="">All Status</option>
+            <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Draft</option>
+            <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Published</option>
+            <option value="archived" {% if request.GET.status == 'archived' %}selected{% endif %}>Archived</option>
+          </select>
+        </div>
+
+        <!-- Apply / Reset -->
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
+            Apply
+          </button>
+          <a href="{% url 'admin_panel:assessments' %}" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
+             style="height: 42px;" title="Reset filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     ASSESSMENTS TABLE / CARDS
+     ============================================================ -->
+<div class="edvanto-card">
+
+  <!-- Card header -->
+  <div class="edvanto-card-header">
+    <h2 class="edvanto-card-title">All Assessments</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
+        86 assessments
+      </span>
+      <div class="dropdown">
+        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
+          <i class="bi bi-sort-down"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+          <li><a class="dropdown-item" href="?sort=due">Due Date (Soonest)</a></li>
+          <li><a class="dropdown-item" href="?sort=questions">Question Count</a></li>
+          <li><a class="dropdown-item" href="?sort=title">Title (A–Z)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DESKTOP TABLE ---------- -->
+  <div class="edvanto-assessments-table-wrap">
+    <div class="table-responsive-edvanto">
+      <table class="edvanto-table">
+        <thead>
+          <tr>
+            <th>Assessment</th>
+            <th>Course</th>
+            <th>Module</th>
+            <th>Type</th>
+            <th>Total Marks</th>
+            <th>Pass Mark</th>
+            <th>Questions</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# {% for assessment in assessments %} #}
+
+          <!-- Row 1: Published Quiz -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1024</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Full Stack Web Development</div>
+              <div class="edvanto-course-meta">CRS-1024</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 1: Introduction to Web Dev</div></td>
+            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
+            <td><span class="edvanto-num">50</span></td>
+            <td><span class="edvanto-num pass">60%</span></td>
+            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 20 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('HTML5 Fundamentals Quiz')"><i class="bi bi-list-check"></i></button>
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('HTML5 Fundamentals Quiz')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('HTML5 Fundamentals Quiz')"><i class="bi bi-pencil"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2: Published Quiz -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">JavaScript Basics Quiz</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1025</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Full Stack Web Development</div>
+              <div class="edvanto-course-meta">CRS-1024</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 2: JavaScript Essentials</div></td>
+            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
+            <td><span class="edvanto-num">40</span></td>
+            <td><span class="edvanto-num pass">65%</span></td>
+            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 16 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('JavaScript Basics Quiz')"><i class="bi bi-list-check"></i></button>
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('JavaScript Basics Quiz')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('JavaScript Basics Quiz')"><i class="bi bi-pencil"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3: Draft Assignment, no questions yet -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon assignment"><i class="bi bi-file-earmark-text-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">Build a Portfolio Page</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1026</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Full Stack Web Development</div>
+              <div class="edvanto-course-meta">CRS-1024</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 1: Introduction to Web Dev</div></td>
+            <td><span class="edvanto-badge badge-type-assignment"><i class="bi bi-file-earmark-text"></i> Assignment</span></td>
+            <td><span class="edvanto-num">100</span></td>
+            <td><span class="edvanto-num pass">50%</span></td>
+            <td><span class="edvanto-q-count empty"><i class="bi bi-exclamation-circle"></i> 0 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-draft"><i class="bi bi-pencil-square"></i> Draft</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('Build a Portfolio Page')"><i class="bi bi-list-check"></i></button>
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Build a Portfolio Page')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Build a Portfolio Page')"><i class="bi bi-pencil"></i></button>
+                <button class="edvanto-action-btn success" title="Publish" onclick="publishAssessment('Build a Portfolio Page')"><i class="bi bi-send-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4: Published Quiz -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">React Components Quiz</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1027</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Full Stack Web Development</div>
+              <div class="edvanto-course-meta">CRS-1024</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 3: Frontend Frameworks</div></td>
+            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
+            <td><span class="edvanto-num">30</span></td>
+            <td><span class="edvanto-num pass">70%</span></td>
+            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 12 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('React Components Quiz')"><i class="bi bi-list-check"></i></button>
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('React Components Quiz')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('React Components Quiz')"><i class="bi bi-pencil"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5: Draft Quiz -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">Node.js & Express Quiz</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1028</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Full Stack Web Development</div>
+              <div class="edvanto-course-meta">CRS-1024</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 4: Backend with Node.js</div></td>
+            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
+            <td><span class="edvanto-num">50</span></td>
+            <td><span class="edvanto-num pass">60%</span></td>
+            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 8 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-draft"><i class="bi bi-pencil-square"></i> Draft</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('Node.js & Express Quiz')"><i class="bi bi-list-check"></i></button>
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Node.js & Express Quiz')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Node.js & Express Quiz')"><i class="bi bi-pencil"></i></button>
+                <button class="edvanto-action-btn success" title="Publish" onclick="publishAssessment('Node.js & Express Quiz')"><i class="bi bi-send-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6: Published Assignment -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon assignment"><i class="bi bi-file-earmark-text-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">Data Visualization Project</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1029</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Data Science &amp; AI Masterclass</div>
+              <div class="edvanto-course-meta">CRS-1018</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 2: Data Visualization</div></td>
+            <td><span class="edvanto-badge badge-type-assignment"><i class="bi bi-file-earmark-text"></i> Assignment</span></td>
+            <td><span class="edvanto-num">100</span></td>
+            <td><span class="edvanto-num pass">50%</span></td>
+            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 5 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('Data Visualization Project')"><i class="bi bi-list-check"></i></button>
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Data Visualization Project')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Data Visualization Project')"><i class="bi bi-pencil"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 7: Archived -->
+          <tr>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
+                <div class="edvanto-assessment-info">
+                  <div class="edvanto-assessment-title">Legacy CSS Quiz (2023)</div>
+                  <div class="edvanto-assessment-meta">Assessment ID: ASM-0987</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">UI/UX Design Masterclass</div>
+              <div class="edvanto-course-meta">CRS-1032</div>
+            </td>
+            <td><div class="edvanto-module-name">Module 1: Design Foundations</div></td>
+            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
+            <td><span class="edvanto-num">20</span></td>
+            <td><span class="edvanto-num pass">50%</span></td>
+            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 10 Qs</span></td>
+            <td><span class="edvanto-badge badge-status-archived"><i class="bi bi-archive-fill"></i> Archived</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Legacy CSS Quiz (2023)')"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Legacy CSS Quiz (2023)')"><i class="bi bi-pencil"></i></button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ---------- MOBILE CARDS ---------- -->
+  <div class="edvanto-assessments-cards">
+
+    <div class="edvanto-assessment-card">
+      <div class="edvanto-assessment-card-header">
+        <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
+          <div class="edvanto-assessment-meta">Full Stack Web Dev</div>
+        </div>
+        <span class="edvanto-badge badge-status-published">Published</span>
+      </div>
+      <div class="edvanto-assessment-card-row"><span class="label">Type</span><span class="value"><span class="edvanto-badge badge-type-quiz">Quiz</span></span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Module</span><span class="value">Module 1</span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Total Marks</span><span class="value">50</span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Pass Mark</span><span class="value">60%</span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Questions</span><span class="value">20 Qs</span></div>
+      <div class="edvanto-assessment-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="manageQuestions('HTML5 Fundamentals Quiz')"><i class="bi bi-list-check me-1"></i>Questions</button>
+        <button class="btn btn-edvanto-outline" onclick="previewAssessment('HTML5 Fundamentals Quiz')"><i class="bi bi-eye me-1"></i>Preview</button>
+        <button class="btn btn-edvanto-outline" onclick="openAssessmentEditor('HTML5 Fundamentals Quiz')"><i class="bi bi-pencil me-1"></i>Edit</button>
+      </div>
+    </div>
+
+    <div class="edvanto-assessment-card">
+      <div class="edvanto-assessment-card-header">
+        <span class="edvanto-assessment-icon assignment"><i class="bi bi-file-earmark-text-fill"></i></span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-assessment-title">Build a Portfolio Page</div>
+          <div class="edvanto-assessment-meta">Full Stack Web Dev</div>
+        </div>
+        <span class="edvanto-badge badge-status-draft">Draft</span>
+      </div>
+      <div class="edvanto-assessment-card-row"><span class="label">Type</span><span class="value"><span class="edvanto-badge badge-type-assignment">Assignment</span></span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Module</span><span class="value">Module 1</span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Total Marks</span><span class="value">100</span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Pass Mark</span><span class="value">50%</span></div>
+      <div class="edvanto-assessment-card-row"><span class="label">Questions</span><span class="value" style="color: #9A6D00;">0 Qs</span></div>
+      <div class="edvanto-assessment-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="manageQuestions('Build a Portfolio Page')"><i class="bi bi-list-check me-1"></i>Questions</button>
+        <button class="btn btn-edvanto-outline" onclick="openAssessmentEditor('Build a Portfolio Page')"><i class="bi bi-pencil me-1"></i>Edit</button>
+        <button class="btn btn-edvanto-outline text-success" onclick="publishAssessment('Build a Portfolio Page')"><i class="bi bi-send-check me-1"></i>Publish</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–7 of 86 assessments</span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      <li class="page-item"><a class="page-link" href="#">12</a></li>
+      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+    </ul>
+  </nav>
+
+</div>
+
+<!-- ============================================================
+     ASSESSMENT EDITOR MODAL
+     ============================================================ -->
+<div class="modal fade edvanto-editor-modal" id="assessmentEditorModal" tabindex="-1"
+     aria-labelledby="assessmentEditorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="assessmentEditorLabel">
+          <i class="bi bi-clipboard2-check-fill"></i>
+          <span id="editorTitle">Create Assessment</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="edvanto-info-panel">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            Fill in the assessment details below. Save as draft, then publish when ready.
+            Questions can be managed separately.
+          </div>
+        </div>
+
+        <!-- BASIC INFO -->
+        <div class="edvanto-form-card">
+          <div class="edvanto-form-section-title">
+            <i class="bi bi-info-circle"></i> Basic Information
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="editorAssessTitle" class="form-label">Title <span class="req">*</span></label>
+              <input type="text" class="form-control" id="editorAssessTitle"
+                     placeholder="e.g. HTML5 Fundamentals Quiz">
+            </div>
+
+            <div class="col-12">
+              <label for="editorAssessDesc" class="form-label">Description</label>
+              <textarea class="form-control" id="editorAssessDesc" rows="3"
+                        placeholder="Brief description shown to students before they begin…"></textarea>
+              <div class="form-text mt-1">Optional. Max 500 characters.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLACEMENT -->
+        <div class="edvanto-form-card">
+          <div class="edvanto-form-section-title">
+            <i class="bi bi-diagram-3"></i> Placement
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-sm-6">
+              <label for="editorModule" class="form-label">Module <span class="req">*</span></label>
+              <select class="form-select" id="editorModule">
+                <option value="">Select Module</option>
+                <option value="m1">Module 1: Introduction to Web Dev</option>
+                <option value="m2">Module 2: JavaScript Essentials</option>
+                <option value="m3">Module 3: Frontend Frameworks</option>
+                <option value="m4">Module 4: Backend with Node.js</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6">
+              <label for="editorUnlockOrder" class="form-label">Unlock Order</label>
+              <input type="number" class="form-control" id="editorUnlockOrder"
+                     min="0" step="1" placeholder="e.g. 1">
+              <div class="form-text mt-1">Order in which it unlocks in the module.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRADING -->
+        <div class="edvanto-form-card">
+          <div class="edvanto-form-section-title">
+            <i class="bi bi-trophy"></i> Grading &amp; Timing
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6 col-sm-3">
+              <label for="editorTotalMarks" class="form-label">Total Marks <span class="req">*</span></label>
+              <input type="number" class="form-control" id="editorTotalMarks"
+                     min="0" step="1" placeholder="50">
+            </div>
+
+            <div class="col-6 col-sm-3">
+              <label for="editorPassPct" class="form-label">Pass % <span class="req">*</span></label>
+              <input type="number" class="form-control" id="editorPassPct"
+                     min="0" max="100" step="1" placeholder="60">
+            </div>
+
+            <div class="col-6 col-sm-3">
+              <label for="editorTimeLimit" class="form-label">Time Limit (min)</label>
+              <input type="number" class="form-control" id="editorTimeLimit"
+                     min="0" step="1" placeholder="30">
+            </div>
+
+            <div class="col-6 col-sm-3">
+              <label for="editorAttempts" class="form-label">Attempts Allowed</label>
+              <select class="form-select" id="editorAttempts">
+                <option value="1">1 attempt</option>
+                <option value="2">2 attempts</option>
+                <option value="3" selected>3 attempts</option>
+                <option value="5">5 attempts</option>
+                <option value="0">Unlimited</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6">
+              <label for="editorDueDate" class="form-label">Due Date</label>
+              <input type="date" class="form-control" id="editorDueDate">
+            </div>
+          </div>
+        </div>
+
+        <!-- PUBLISH -->
+        <div class="edvanto-form-card">
+          <div class="edvanto-form-section-title">
+            <i class="bi bi-send-check"></i> Visibility
+          </div>
+
+          <div class="edvanto-switch-row">
+            <div class="form-check form-switch m-0">
+              <input class="form-check-input" type="checkbox" role="switch" id="editorPublished">
+            </div>
+            <div>
+              <p class="edvanto-switch-label">Published</p>
+              <p class="edvanto-switch-help">
+                When enabled, students can see and attempt this assessment.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-edvanto-outline btn-sm" onclick="saveEditor(false)">
+          <i class="bi bi-file-earmark me-1"></i> Save Draft
+        </button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="saveEditor(true)">
+          <i class="bi bi-check-lg me-1"></i> Save Assessment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       ASSESSMENT EDITOR
+       ============================================================ */
+    var demoAssessments = {
+      'HTML5 Fundamentals Quiz': {
+        title: 'HTML5 Fundamentals Quiz',
+        desc: 'Test your understanding of HTML5 semantic tags, structure and best practices.',
+        module: 'm1',
+        unlockOrder: 1,
+        totalMarks: 50,
+        passPct: 60,
+        timeLimit: 30,
+        attempts: 3,
+        dueDate: '2025-05-15',
+        published: true
+      },
+      'JavaScript Basics Quiz': {
+        title: 'JavaScript Basics Quiz',
+        desc: 'Variables, data types, functions and DOM manipulation basics.',
+        module: 'm2',
+        unlockOrder: 1,
+        totalMarks: 40,
+        passPct: 65,
+        timeLimit: 25,
+        attempts: 3,
+        dueDate: '2025-05-28',
+        published: true
+      },
+      'Build a Portfolio Page': {
+        title: 'Build a Portfolio Page',
+        desc: 'Build a responsive personal portfolio page using HTML & CSS learned in Module 1.',
+        module: 'm1',
+        unlockOrder: 2,
+        totalMarks: 100,
+        passPct: 50,
+        timeLimit: 0,
+        attempts: 1,
+        dueDate: '2025-05-20',
+        published: false
+      },
+      'React Components Quiz': {
+        title: 'React Components Quiz',
+        desc: 'Covers components, props, state and basic hooks.',
+        module: 'm3',
+        unlockOrder: 1,
+        totalMarks: 30,
+        passPct: 70,
+        timeLimit: 20,
+        attempts: 3,
+        dueDate: '2025-06-10',
+        published: true
+      },
+      'Node.js & Express Quiz': {
+        title: 'Node.js & Express Quiz',
+        desc: 'Covers Node.js basics, NPM, Express routes and middleware.',
+        module: 'm4',
+        unlockOrder: 1,
+        totalMarks: 50,
+        passPct: 60,
+        timeLimit: 30,
+        attempts: 2,
+        dueDate: '2025-06-25',
+        published: false
+      },
+      'Data Visualization Project': {
+        title: 'Data Visualization Project',
+        desc: 'Create an interactive data visualization using Python and Plotly.',
+        module: 'm2',
+        unlockOrder: 2,
+        totalMarks: 100,
+        passPct: 50,
+        timeLimit: 0,
+        attempts: 1,
+        dueDate: '2025-07-05',
+        published: true
+      },
+      'Legacy CSS Quiz (2023)': {
+        title: 'Legacy CSS Quiz (2023)',
+        desc: 'Archived quiz from the 2023 curriculum.',
+        module: 'm1',
+        unlockOrder: 0,
+        totalMarks: 20,
+        passPct: 50,
+        timeLimit: 15,
+        attempts: 2,
+        dueDate: '',
+        published: false
+      }
+    };
+
+    window.openAssessmentEditor = function (assessmentTitle) {
+      var titleEl = document.getElementById('editorTitle');
+      var data = assessmentTitle ? demoAssessments[assessmentTitle] : null;
+
+      if (data) {
+        titleEl.textContent = 'Edit Assessment';
+        document.getElementById('editorAssessTitle').value = data.title;
+        document.getElementById('editorAssessDesc').value = data.desc;
+        document.getElementById('editorModule').value = data.module;
+        document.getElementById('editorUnlockOrder').value = data.unlockOrder;
+        document.getElementById('editorTotalMarks').value = data.totalMarks;
+        document.getElementById('editorPassPct').value = data.passPct;
+        document.getElementById('editorTimeLimit').value = data.timeLimit || '';
+        document.getElementById('editorAttempts').value = data.attempts;
+        document.getElementById('editorDueDate').value = data.dueDate || '';
+        document.getElementById('editorPublished').checked = !!data.published;
+      } else {
+        titleEl.textContent = 'Create Assessment';
+        document.getElementById('editorAssessTitle').value = '';
+        document.getElementById('editorAssessDesc').value = '';
+        document.getElementById('editorModule').value = '';
+        document.getElementById('editorUnlockOrder').value = '';
+        document.getElementById('editorTotalMarks').value = '';
+        document.getElementById('editorPassPct').value = '';
+        document.getElementById('editorTimeLimit').value = '';
+        document.getElementById('editorAttempts').value = '3';
+        document.getElementById('editorDueDate').value = '';
+        document.getElementById('editorPublished').checked = false;
+      }
+
+      new bootstrap.Modal(document.getElementById('assessmentEditorModal')).show();
+    };
+
+    window.saveEditor = function (publishNow) {
+      var title = document.getElementById('editorAssessTitle').value.trim();
+      var module = document.getElementById('editorModule').value;
+      var totalMarks = document.getElementById('editorTotalMarks').value.trim();
+      var passPct = document.getElementById('editorPassPct').value.trim();
+
+      var valid = true;
+      [['editorAssessTitle', title], ['editorModule', module],
+       ['editorTotalMarks', totalMarks], ['editorPassPct', passPct]]
+        .forEach(function (pair) {
+          var el = document.getElementById(pair[0]);
+          if (!pair[1]) {
+            el.classList.add('is-invalid');
+            valid = false;
+          } else {
+            el.classList.remove('is-invalid');
+          }
+        });
+
+      if (!valid) {
+        edvantoToast('Please fill all required fields.', 'error');
+        return;
+      }
+
+      var modalEl = document.getElementById('assessmentEditorModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (publishNow) {
+        edvantoToast('Assessment "' + title + '" saved and published.', 'success');
+      } else {
+        edvantoToast('Assessment "' + title + '" saved as draft.', 'info');
+      }
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       QUICK ACTIONS
+       ============================================================ */
+    window.manageQuestions = function (assessmentTitle) {
+      edvantoToast('Opening question bank for "' + assessmentTitle + '"…', 'info');
+      /* Replace with: window.location.href = '/admin/assessments/' + id + '/questions/'; */
+    };
+
+    window.previewAssessment = function (assessmentTitle) {
+      edvantoToast('Opening preview for "' + assessmentTitle + '"…', 'info');
+      /* Replace with: window.location.href = '/admin/assessments/' + id + '/preview/'; */
+    };
+
+    window.publishAssessment = function (assessmentTitle) {
+      edvantoToast('"' + assessmentTitle + '" published successfully.', 'success');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       AUTO-SUBMIT FILTERS (optional)
+       ============================================================ */
+    document.querySelectorAll('#assessmentFilterForm select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        /* Uncomment to auto-apply */
+        /* document.getElementById('assessmentFilterForm').submit(); */
+      });
+    });
+
+    /* ---------- Clear invalid state on input ---------- */
+    document.querySelectorAll('#assessmentEditorModal input, #assessmentEditorModal select, #assessmentEditorModal textarea')
+      .forEach(function (el) {
+        el.addEventListener('input', function () {
+          if (this.value && this.value.trim()) this.classList.remove('is-invalid');
+        });
+        el.addEventListener('change', function () {
+          if (this.value && this.value.trim()) this.classList.remove('is-invalid');
+        });
+      });
+
+  })();
+</script>
+
+{% endblock %}

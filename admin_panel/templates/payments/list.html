@@ -1,0 +1,1618 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – PAYMENT MANAGEMENT
+     Transactions · Plans · Refunds · Webhook Status
+     ============================================================ -->
+
+<style>
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.4rem 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-card.green::before  { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
+  .edvanto-stat-card.gold::before   { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
+  .edvanto-stat-card.red::before    { background: linear-gradient(90deg, #DC3545 0%, #E4606D 100%); }
+  .edvanto-stat-card.navy::before   { background: linear-gradient(90deg, var(--edvanto-navy) 0%, #0A4A8F 100%); }
+
+  .edvanto-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.9rem;
+  }
+  .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+  .edvanto-stat-icon.red   { background: rgba(220, 53, 69, 0.08); color: #DC3545; }
+  .edvanto-stat-icon.navy  { background: rgba(3, 42, 90, 0.06); color: var(--edvanto-navy); }
+
+  .edvanto-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+  .edvanto-stat-meta .danger   { color: #DC3545; font-weight: 600; }
+
+  /* ---------- Filter bar ---------- */
+  .edvanto-filter-bar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-filter-bar .form-control,
+  .edvanto-filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    height: 42px;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-gray-50);
+  }
+  .edvanto-filter-bar .form-control:focus,
+  .edvanto-filter-bar .form-select:focus {
+    border-color: var(--edvanto-violet);
+    background-color: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-filter-bar .input-icon-wrapper {
+    position: relative;
+  }
+  .edvanto-filter-bar .input-icon-wrapper i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--edvanto-gray-500);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .edvanto-filter-bar .input-icon-wrapper .form-control {
+    padding-left: 2.5rem;
+  }
+
+  /* ---------- Table cells ---------- */
+  .edvanto-txn-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 130px;
+  }
+  .edvanto-txn-id {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--edvanto-violet);
+    letter-spacing: -0.01em;
+  }
+  .edvanto-txn-meta {
+    font-size: 0.68rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 180px;
+  }
+  .edvanto-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--edvanto-white);
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
+
+  .edvanto-user-name {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.25;
+  }
+  .edvanto-user-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-course-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 160px;
+  }
+  .edvanto-course-title {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  .edvanto-course-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Amount ---------- */
+  .edvanto-amount {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .edvanto-amount.refund {
+    color: #5A6E8A;
+    text-decoration: line-through;
+  }
+
+  /* ---------- Badges ---------- */
+  .edvanto-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  /* Plan */
+  .badge-plan-full   { background: rgba(69, 28, 238, 0.08); color: var(--edvanto-violet); }
+  .badge-plan-inst   { background: rgba(1, 223, 254, 0.12); color: #007A8F; }
+
+  /* Status */
+  .badge-pay-pending  { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+  .badge-pay-paid     { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .badge-pay-failed   { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+  .badge-pay-refunded { background: rgba(138, 155, 181, 0.14); color: #5A6E8A; }
+
+  /* ---------- Razorpay ID ---------- */
+  .edvanto-rzp-id {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    background: var(--edvanto-gray-100);
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Action buttons ---------- */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.gold:hover {
+    background: rgba(255, 179, 3, 0.10);
+    color: #9A6D00;
+  }
+  .edvanto-action-btn.danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+
+  /* ---------- Mobile cards ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-payments-table-wrap { display: none; }
+    .edvanto-payments-cards { display: block; }
+  }
+  @media (min-width: 768px) {
+    .edvanto-payments-cards { display: none; }
+  }
+  .edvanto-payment-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-payment-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-payment-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.8rem;
+  }
+  .edvanto-payment-card-row:last-child { border-bottom: none; }
+  .edvanto-payment-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
+  .edvanto-payment-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
+  .edvanto-payment-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-payment-card-actions .btn {
+    flex: 1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.45rem;
+  }
+
+  /* ============================================================
+     PAYMENT DETAIL MODAL
+     ============================================================ */
+  .edvanto-detail-modal .modal-dialog {
+    max-width: 780px;
+  }
+  .edvanto-detail-modal .modal-content {
+    border-radius: var(--edvanto-radius-card);
+    border: none;
+    overflow: hidden;
+  }
+  .edvanto-detail-modal .modal-header {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 100%);
+    color: var(--edvanto-white);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .edvanto-detail-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .edvanto-detail-modal .modal-title {
+    color: var(--edvanto-white);
+    font-weight: 700;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-detail-modal .modal-title i {
+    color: var(--edvanto-cyan);
+  }
+  .edvanto-detail-modal .btn-close {
+    filter: invert(1) brightness(2);
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-detail-modal .btn-close:hover { opacity: 1; }
+
+  .edvanto-detail-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--edvanto-gray-50);
+  }
+
+  /* Detail sections */
+  .edvanto-detail-section {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-detail-section:last-child { margin-bottom: 0; }
+  .edvanto-detail-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-violet);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-detail-section-title i {
+    font-size: 0.95rem;
+  }
+
+  .edvanto-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.85rem;
+  }
+  .edvanto-detail-item .lbl {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-detail-item .val {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+    word-break: break-word;
+  }
+  .edvanto-detail-item .val.mono {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.78rem;
+    background: var(--edvanto-gray-100);
+    padding: 0.25rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+  }
+
+  /* Sensitive data notice */
+  .edvanto-sensitive-notice {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: rgba(15, 157, 88, 0.06);
+    border-left: 3px solid #0F9D58;
+    font-size: 0.78rem;
+    color: #0F6B3E;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .edvanto-sensitive-notice i {
+    color: #0F9D58;
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* Payment timeline */
+  .edvanto-timeline {
+    position: relative;
+    padding-left: 1.75rem;
+    margin: 0;
+    list-style: none;
+  }
+  .edvanto-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0.3rem;
+    bottom: 0.3rem;
+    width: 2px;
+    background: var(--edvanto-gray-200);
+    border-radius: 2px;
+  }
+  .edvanto-timeline-item {
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  .edvanto-timeline-item:last-child { padding-bottom: 0; }
+  .edvanto-timeline-dot {
+    position: absolute;
+    left: -1.45rem;
+    top: 0.3rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--edvanto-violet);
+    border: 2px solid var(--edvanto-white);
+    box-shadow: 0 0 0 2px rgba(69, 28, 238, 0.15);
+  }
+  .edvanto-timeline-dot.green {
+    background: #0F9D58;
+    box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.18);
+  }
+  .edvanto-timeline-dot.gold {
+    background: var(--edvanto-gold);
+    box-shadow: 0 0 0 2px rgba(255, 179, 3, 0.2);
+  }
+  .edvanto-timeline-dot.red {
+    background: #DC3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.18);
+  }
+  .edvanto-timeline-dot.gray {
+    background: #8A9BB5;
+    box-shadow: 0 0 0 2px rgba(138, 155, 181, 0.2);
+  }
+  .edvanto-timeline-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+    line-height: 1.35;
+  }
+  .edvanto-timeline-time {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* Installments */
+  .edvanto-installment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    margin-bottom: 0.4rem;
+    font-size: 0.82rem;
+  }
+  .edvanto-installment-row:last-child { margin-bottom: 0; }
+  .edvanto-installment-row.paid {
+    background: rgba(15, 157, 88, 0.05);
+    border-color: rgba(15, 157, 88, 0.15);
+  }
+  .edvanto-installment-row.due {
+    background: rgba(255, 179, 3, 0.06);
+    border-color: rgba(255, 179, 3, 0.2);
+  }
+  .edvanto-installment-num {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+  }
+  .edvanto-installment-num .chip {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--edvanto-gray-600);
+  }
+  .edvanto-installment-row.paid .chip {
+    background: #0F9D58;
+    color: var(--edvanto-white);
+    border-color: #0F9D58;
+  }
+  .edvanto-installment-row.due .chip {
+    background: var(--edvanto-gold);
+    color: var(--edvanto-white);
+    border-color: var(--edvanto-gold);
+  }
+  .edvanto-installment-amount {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+  }
+
+  /* Webhook status badge */
+  .edvanto-webhook-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--edvanto-radius-sm);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .edvanto-webhook-badge.verified {
+    background: rgba(15, 157, 88, 0.08);
+    border: 1px solid rgba(15, 157, 88, 0.2);
+    color: #0F6B3E;
+  }
+  .edvanto-webhook-badge.pending {
+    background: rgba(255, 179, 3, 0.08);
+    border: 1px solid rgba(255, 179, 3, 0.22);
+    color: #9A6D00;
+  }
+  .edvanto-webhook-badge.failed {
+    background: rgba(220, 53, 69, 0.08);
+    border: 1px solid rgba(220, 53, 69, 0.22);
+    color: #B02A37;
+  }
+  .edvanto-webhook-badge i { font-size: 0.95rem; }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Payments</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Payments</h1>
+    <p class="edvanto-page-subtitle">Track transactions, installments and refunds across the platform.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filters
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>PDF Statement</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Total Revenue -->
+  <div class="col-6 col-lg">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-currency-rupee"></i>
+      </div>
+      <div class="edvanto-stat-label">Total Revenue</div>
+      <div class="edvanto-stat-value">₹48.2L</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+8.7%</span>
+        <span>vs last month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Successful Payments -->
+  <div class="col-6 col-lg">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Successful</div>
+      <div class="edvanto-stat-value">1,124</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+42</span>
+        <span>this month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Payments -->
+  <div class="col-6 col-lg">
+    <div class="edvanto-stat-card gold">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <div class="edvanto-stat-label">Pending</div>
+      <div class="edvanto-stat-value">37</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-exclamation-triangle-fill warning"></i>
+        <span class="warning">Awaiting confirmation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Failed Payments -->
+  <div class="col-6 col-lg">
+    <div class="edvanto-stat-card red">
+      <div class="edvanto-stat-icon red">
+        <i class="bi bi-x-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Failed</div>
+      <div class="edvanto-stat-value">18</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-down-short danger"></i>
+        <span class="danger">-3</span>
+        <span>vs last month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refunded -->
+  <div class="col-6 col-lg">
+    <div class="edvanto-stat-card navy">
+      <div class="edvanto-stat-icon navy">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </div>
+      <div class="edvanto-stat-label">Refunded</div>
+      <div class="edvanto-stat-value">₹2.4L</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-info-circle" style="color: var(--edvanto-gray-500); font-size: 0.75rem;"></i>
+        <span>12 transactions</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER BAR
+     ============================================================ -->
+<div class="collapse show" id="filterCollapse">
+  <div class="edvanto-filter-bar">
+    <form method="get" action="" id="paymentFilterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Date -->
+        <div class="col-12 col-lg-2">
+          <label class="form-label mb-1" for="dateFilter">Date</label>
+          <select class="form-select" id="dateFilter" name="date">
+            <option value="">Any Time</option>
+            <option value="today" {% if request.GET.date == 'today' %}selected{% endif %}>Today</option>
+            <option value="week" {% if request.GET.date == 'week' %}selected{% endif %}>This Week</option>
+            <option value="month" {% if request.GET.date == 'month' %}selected{% endif %}>This Month</option>
+            <option value="quarter" {% if request.GET.date == 'quarter' %}selected{% endif %}>This Quarter</option>
+            <option value="year" {% if request.GET.date == 'year' %}selected{% endif %}>This Year</option>
+          </select>
+        </div>
+
+        <!-- Course -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="courseFilter">Course</label>
+          <select class="form-select" id="courseFilter" name="course">
+            <option value="">All Courses</option>
+            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Development</option>
+            <option value="datascience" {% if request.GET.course == 'datascience' %}selected{% endif %}>Data Science & AI Masterclass</option>
+            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design Masterclass</option>
+            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics Pro</option>
+            <option value="cloud" {% if request.GET.course == 'cloud' %}selected{% endif %}>Cloud Computing with AWS</option>
+          </select>
+        </div>
+
+        <!-- Student -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="studentSearch">Student</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" id="studentSearch" name="student"
+                   placeholder="Search by name, email or transaction ID…"
+                   value="{{ request.GET.student|default:'' }}">
+          </div>
+        </div>
+
+        <!-- Payment status -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="statusFilter">Status</label>
+          <select class="form-select" id="statusFilter" name="status">
+            <option value="">All Status</option>
+            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
+            <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+            <option value="refunded" {% if request.GET.status == 'refunded' %}selected{% endif %}>Refunded</option>
+          </select>
+        </div>
+
+        <!-- Payment plan -->
+        <div class="col-6 col-lg-1">
+          <label class="form-label mb-1" for="planFilter">Plan</label>
+          <select class="form-select" id="planFilter" name="plan">
+            <option value="">All</option>
+            <option value="full" {% if request.GET.plan == 'full' %}selected{% endif %}>Full</option>
+            <option value="installment" {% if request.GET.plan == 'installment' %}selected{% endif %}>Installment</option>
+          </select>
+        </div>
+
+        <!-- Apply / Reset -->
+        <div class="col-12 col-lg-1 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
+            Apply
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     TRANSACTIONS TABLE / CARDS
+     ============================================================ -->
+<div class="edvanto-card">
+
+  <!-- Card header -->
+  <div class="edvanto-card-header">
+    <h2 class="edvanto-card-title">Transactions</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
+        1,284 transactions
+      </span>
+      <div class="dropdown">
+        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
+          <i class="bi bi-sort-down"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+          <li><a class="dropdown-item" href="?sort=oldest">Oldest First</a></li>
+          <li><a class="dropdown-item" href="?sort=amount_high">Amount (High–Low)</a></li>
+          <li><a class="dropdown-item" href="?sort=amount_low">Amount (Low–High)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DESKTOP TABLE ---------- -->
+  <div class="edvanto-payments-table-wrap">
+    <div class="table-responsive-edvanto">
+      <table class="edvanto-table">
+        <thead>
+          <tr>
+            <th>Transaction</th>
+            <th>Student</th>
+            <th>Course</th>
+            <th>Order</th>
+            <th>Plan</th>
+            <th>Amount</th>
+            <th>Razorpay ID</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# {% for payment in payments %} #}
+
+          <!-- Row 1: Paid, Full -->
+          <tr>
+            <td>
+              <div class="edvanto-txn-cell">
+                <span class="edvanto-txn-id">TXN-2025-10482</span>
+                <span class="edvanto-txn-meta">Order: ORD-2025-10482</span>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Full Stack Web Development</div>
+                <div class="edvanto-course-meta">CRS-1024</div>
+              </div>
+            </td>
+            <td>
+              <span style="font-size:0.78rem;font-weight:600;color:var(--edvanto-navy);">ORD-10482</span>
+            </td>
+            <td><span class="edvanto-badge badge-plan-full"><i class="bi bi-credit-card-2-front"></i> Full</span></td>
+            <td><span class="edvanto-amount">₹24,999</span></td>
+            <td><span class="edvanto-rzp-id">pay_QwErTy1234Ab</span></td>
+            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
+            <td><span style="font-size:0.8rem;">12 Jan 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openPaymentDetail(10482)"><i class="bi bi-eye"></i></button>
+                <a href="#" class="edvanto-action-btn gold" title="Download Receipt"><i class="bi bi-receipt"></i></a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2: Paid, Installment -->
+          <tr>
+            <td>
+              <div class="edvanto-txn-cell">
+                <span class="edvanto-txn-id">TXN-2025-10481</span>
+                <span class="edvanto-txn-meta">Order: ORD-2025-10481</span>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Rohan Sharma</div>
+                  <div class="edvanto-user-meta">rohan.s@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Data Science &amp; AI Masterclass</div>
+                <div class="edvanto-course-meta">CRS-1018</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.78rem;font-weight:600;color:var(--edvanto-navy);">ORD-10481</span></td>
+            <td><span class="edvanto-badge badge-plan-inst"><i class="bi bi-calendar2-week"></i> Installment</span></td>
+            <td><span class="edvanto-amount">₹11,000</span></td>
+            <td><span class="edvanto-rzp-id">pay_LkMnOp5678Qr</span></td>
+            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
+            <td><span style="font-size:0.8rem;">21 Jun 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openPaymentDetail(10481)"><i class="bi bi-eye"></i></button>
+                <a href="#" class="edvanto-action-btn gold" title="Download Receipt"><i class="bi bi-receipt"></i></a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3: Pending, Installment -->
+          <tr>
+            <td>
+              <div class="edvanto-txn-cell">
+                <span class="edvanto-txn-id">TXN-2025-10480</span>
+                <span class="edvanto-txn-meta">Order: ORD-2025-10480</span>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PM</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Mehta</div>
+                  <div class="edvanto-user-meta">priya.m@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">UI/UX Design Masterclass</div>
+                <div class="edvanto-course-meta">CRS-1032</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.78rem;font-weight:600;color:var(--edvanto-navy);">ORD-10480</span></td>
+            <td><span class="edvanto-badge badge-plan-inst"><i class="bi bi-calendar2-week"></i> Installment</span></td>
+            <td><span class="edvanto-amount">₹6,333</span></td>
+            <td><span class="edvanto-rzp-id">—</span></td>
+            <td><span class="edvanto-badge badge-pay-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+            <td><span style="font-size:0.8rem;">20 Jun 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openPaymentDetail(10480)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Send Reminder" onclick="sendReminder('Priya Mehta')"><i class="bi bi-bell"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4: Failed, Full -->
+          <tr>
+            <td>
+              <div class="edvanto-txn-cell">
+                <span class="edvanto-txn-id">TXN-2025-10479</span>
+                <span class="edvanto-txn-meta">Order: ORD-2025-10479</span>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">AV</span>
+                <div>
+                  <div class="edvanto-user-name">Arjun Verma</div>
+                  <div class="edvanto-user-meta">arjun.v@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Cloud Computing with AWS</div>
+                <div class="edvanto-course-meta">CRS-0987</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.78rem;font-weight:600;color:var(--edvanto-navy);">ORD-10479</span></td>
+            <td><span class="edvanto-badge badge-plan-full"><i class="bi bi-credit-card-2-front"></i> Full</span></td>
+            <td><span class="edvanto-amount">₹26,999</span></td>
+            <td><span class="edvanto-rzp-id">pay_FgHiJk9012Lm</span></td>
+            <td><span class="edvanto-badge badge-pay-failed"><i class="bi bi-x-circle-fill"></i> Failed</span></td>
+            <td><span style="font-size:0.8rem;">19 Jun 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openPaymentDetail(10479)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Retry Payment" onclick="retryPayment('Arjun Verma')"><i class="bi bi-arrow-repeat"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5: Refunded, Full -->
+          <tr>
+            <td>
+              <div class="edvanto-txn-cell">
+                <span class="edvanto-txn-id">TXN-2025-10478</span>
+                <span class="edvanto-txn-meta">Order: ORD-2025-10478</span>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v5">SN</span>
+                <div>
+                  <div class="edvanto-user-name">Sneha Nair</div>
+                  <div class="edvanto-user-meta">sneha.n@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Digital Marketing Pro</div>
+                <div class="edvanto-course-meta">CRS-1055</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.78rem;font-weight:600;color:var(--edvanto-navy);">ORD-10478</span></td>
+            <td><span class="edvanto-badge badge-plan-full"><i class="bi bi-credit-card-2-front"></i> Full</span></td>
+            <td><span class="edvanto-amount refund">₹18,999</span></td>
+            <td><span class="edvanto-rzp-id">pay_NoPqRs3456Tu</span></td>
+            <td><span class="edvanto-badge badge-pay-refunded"><i class="bi bi-arrow-counterclockwise"></i> Refunded</span></td>
+            <td><span style="font-size:0.8rem;">18 Jun 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openPaymentDetail(10478)"><i class="bi bi-eye"></i></button>
+                <a href="#" class="edvanto-action-btn gold" title="Download Receipt"><i class="bi bi-receipt"></i></a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6: Paid, Full -->
+          <tr>
+            <td>
+              <div class="edvanto-txn-cell">
+                <span class="edvanto-txn-id">TXN-2025-10477</span>
+                <span class="edvanto-txn-meta">Order: ORD-2025-10477</span>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v6">KG</span>
+                <div>
+                  <div class="edvanto-user-name">Kavita Gupta</div>
+                  <div class="edvanto-user-meta">kavita.g@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-cell">
+                <div class="edvanto-course-title">Business Analytics Pro</div>
+                <div class="edvanto-course-meta">CRS-1041</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.78rem;font-weight:600;color:var(--edvanto-navy);">ORD-10477</span></td>
+            <td><span class="edvanto-badge badge-plan-full"><i class="bi bi-credit-card-2-front"></i> Full</span></td>
+            <td><span class="edvanto-amount">₹28,999</span></td>
+            <td><span class="edvanto-rzp-id">pay_VwXyZa7890Bc</span></td>
+            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
+            <td><span style="font-size:0.8rem;">10 Jun 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Details" onclick="openPaymentDetail(10477)"><i class="bi bi-eye"></i></button>
+                <a href="#" class="edvanto-action-btn gold" title="Download Receipt"><i class="bi bi-receipt"></i></a>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ---------- MOBILE CARDS ---------- -->
+  <div class="edvanto-payments-cards">
+
+    <div class="edvanto-payment-card">
+      <div class="edvanto-payment-card-header">
+        <div>
+          <div class="edvanto-txn-id">TXN-2025-10482</div>
+          <div class="edvanto-txn-meta">Order: ORD-2025-10482</div>
+        </div>
+        <span class="edvanto-badge badge-pay-paid">Paid</span>
+      </div>
+      <div class="edvanto-payment-card-row"><span class="label">Student</span><span class="value">Ananya Kapoor</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Course</span><span class="value">Full Stack Web Dev</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Plan</span><span class="value"><span class="edvanto-badge badge-plan-full">Full</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Amount</span><span class="value"><span class="edvanto-amount">₹24,999</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Razorpay ID</span><span class="value"><span class="edvanto-rzp-id">pay_QwErTy1234Ab</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Date</span><span class="value">12 Jan 2025</span></div>
+      <div class="edvanto-payment-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openPaymentDetail(10482)"><i class="bi bi-eye me-1"></i>View</button>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-receipt me-1"></i>Receipt</a>
+      </div>
+    </div>
+
+    <div class="edvanto-payment-card">
+      <div class="edvanto-payment-card-header">
+        <div>
+          <div class="edvanto-txn-id">TXN-2025-10481</div>
+          <div class="edvanto-txn-meta">Order: ORD-2025-10481</div>
+        </div>
+        <span class="edvanto-badge badge-pay-paid">Paid</span>
+      </div>
+      <div class="edvanto-payment-card-row"><span class="label">Student</span><span class="value">Rohan Sharma</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Course</span><span class="value">Data Science &amp; AI</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Plan</span><span class="value"><span class="edvanto-badge badge-plan-inst">Installment</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Amount</span><span class="value"><span class="edvanto-amount">₹11,000</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Razorpay ID</span><span class="value"><span class="edvanto-rzp-id">pay_LkMnOp5678Qr</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Date</span><span class="value">21 Jun 2025</span></div>
+      <div class="edvanto-payment-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openPaymentDetail(10481)"><i class="bi bi-eye me-1"></i>View</button>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-receipt me-1"></i>Receipt</a>
+      </div>
+    </div>
+
+    <div class="edvanto-payment-card">
+      <div class="edvanto-payment-card-header">
+        <div>
+          <div class="edvanto-txn-id">TXN-2025-10480</div>
+          <div class="edvanto-txn-meta">Order: ORD-2025-10480</div>
+        </div>
+        <span class="edvanto-badge badge-pay-pending">Pending</span>
+      </div>
+      <div class="edvanto-payment-card-row"><span class="label">Student</span><span class="value">Priya Mehta</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Course</span><span class="value">UI/UX Design</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Plan</span><span class="value"><span class="edvanto-badge badge-plan-inst">Installment</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Amount</span><span class="value"><span class="edvanto-amount">₹6,333</span></span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Razorpay ID</span><span class="value">—</span></div>
+      <div class="edvanto-payment-card-row"><span class="label">Date</span><span class="value">20 Jun 2025</span></div>
+      <div class="edvanto-payment-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openPaymentDetail(10480)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline" onclick="sendReminder('Priya Mehta')"><i class="bi bi-bell me-1"></i>Remind</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–6 of 1,284 transactions</span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      <li class="page-item"><a class="page-link" href="#">214</a></li>
+      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+    </ul>
+  </nav>
+
+</div>
+
+<!-- ============================================================
+     PAYMENT DETAIL MODAL
+     ============================================================ -->
+<div class="modal fade edvanto-detail-modal" id="paymentDetailModal" tabindex="-1"
+     aria-labelledby="paymentDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentDetailModalLabel">
+          <i class="bi bi-receipt-cutoff"></i>
+          Payment Detail · <span id="detailTxnId" style="font-family: monospace; font-size: 0.95rem;">TXN-2025-10482</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Sensitive data notice -->
+        <div class="edvanto-sensitive-notice">
+          <i class="bi bi-shield-lock-fill"></i>
+          <div>
+            <strong>Secure transaction.</strong>
+            Card numbers, CVV and other sensitive payment data are never stored or displayed
+            in the Edvanto admin panel. All processing is handled by Razorpay.
+          </div>
+        </div>
+
+        <!-- Order information -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-box-seam"></i> Order Information
+          </div>
+          <div class="edvanto-detail-grid">
+            <div class="edvanto-detail-item">
+              <div class="lbl">Transaction ID</div>
+              <div class="val mono" id="detailTxnIdField">TXN-2025-10482</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Order ID</div>
+              <div class="val mono" id="detailOrderId">ORD-2025-10482</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Payment Plan</div>
+              <div class="val" id="detailPlan">Full Payment</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Amount</div>
+              <div class="val" style="font-size: 1.05rem;" id="detailAmount">₹24,999</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Status</div>
+              <div class="val" id="detailStatus">
+                <span class="edvanto-badge badge-pay-paid">Paid</span>
+              </div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Date</div>
+              <div class="val" id="detailDate">12 Jan 2025, 10:42 AM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student & Course -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-person-badge"></i> Student &amp; Course
+          </div>
+          <div class="edvanto-detail-grid">
+            <div class="edvanto-detail-item">
+              <div class="lbl">Student</div>
+              <div class="val" id="detailStudent">Ananya Kapoor</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Email</div>
+              <div class="val" id="detailEmail">ananya.k@example.com</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Course</div>
+              <div class="val" id="detailCourse">Full Stack Web Development</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Course ID</div>
+              <div class="val" id="detailCourseId">CRS-1024</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Razorpay information -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-credit-card-2-front"></i> Razorpay Information
+          </div>
+          <div class="edvanto-detail-grid">
+            <div class="edvanto-detail-item">
+              <div class="lbl">Razorpay Payment ID</div>
+              <div class="val mono" id="detailRzpId">pay_QwErTy1234Ab</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Razorpay Order ID</div>
+              <div class="val mono" id="detailRzpOrder">order_A1b2C3d4E5f6G7</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Method</div>
+              <div class="val">UPI / Card (masked)</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Captured</div>
+              <div class="val" id="detailCaptured">Yes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Webhook verification -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-shield-check"></i> Webhook Verification
+          </div>
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="edvanto-webhook-badge verified" id="detailWebhook">
+              <i class="bi bi-patch-check-fill"></i>
+              Signature verified · Webhook received
+            </span>
+            <span style="font-size: 0.78rem; color: var(--edvanto-gray-600); font-weight: 500;">
+              Last event: <strong id="detailWebhookTime">12 Jan 2025, 10:42 AM</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Payment timeline -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-clock-history"></i> Payment Timeline
+          </div>
+          <ul class="edvanto-timeline">
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot"></span>
+              <p class="edvanto-timeline-text">Order created</p>
+              <span class="edvanto-timeline-time">12 Jan 2025, 10:40 AM</span>
+            </li>
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot gold"></span>
+              <p class="edvanto-timeline-text">Payment initiated by student</p>
+              <span class="edvanto-timeline-time">12 Jan 2025, 10:41 AM</span>
+            </li>
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot green"></span>
+              <p class="edvanto-timeline-text">Payment captured successfully</p>
+              <span class="edvanto-timeline-time">12 Jan 2025, 10:42 AM</span>
+            </li>
+            <li class="edvanto-timeline-item">
+              <span class="edvanto-timeline-dot green"></span>
+              <p class="edvanto-timeline-text">Webhook verified &amp; enrollment activated</p>
+              <span class="edvanto-timeline-time">12 Jan 2025, 10:42 AM</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Installments (only for installment plans) -->
+        <div class="edvanto-detail-section" id="installmentsSection" style="display: none;">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-calendar2-week"></i> Installments
+          </div>
+
+          <div class="edvanto-installment-row paid">
+            <div class="edvanto-installment-num">
+              <span class="chip">1</span>
+              <span>Installment 1 · 12 Jan 2025</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="edvanto-installment-amount">₹11,000</span>
+              <span class="edvanto-badge badge-pay-paid" style="font-size: 0.62rem; padding: 0.2rem 0.5rem;">Paid</span>
+            </div>
+          </div>
+
+          <div class="edvanto-installment-row paid">
+            <div class="edvanto-installment-num">
+              <span class="chip">2</span>
+              <span>Installment 2 · 12 Feb 2025</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="edvanto-installment-amount">₹11,000</span>
+              <span class="edvanto-badge badge-pay-paid" style="font-size: 0.62rem; padding: 0.2rem 0.5rem;">Paid</span>
+            </div>
+          </div>
+
+          <div class="edvanto-installment-row due">
+            <div class="edvanto-installment-num">
+              <span class="chip">3</span>
+              <span>Installment 3 · 12 Mar 2025</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="edvanto-installment-amount">₹10,999</span>
+              <span class="edvanto-badge badge-pay-pending" style="font-size: 0.62rem; padding: 0.2rem 0.5rem;">Due</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="background: var(--edvanto-white); border-top: var(--edvanto-border-light);">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Close</button>
+        <a href="#" class="btn btn-edvanto-outline btn-sm">
+          <i class="bi bi-download me-1"></i> Download Receipt
+        </a>
+        <button type="button" class="btn btn-edvanto-primary btn-sm">
+          <i class="bi bi-arrow-counterclockwise me-1"></i> Issue Refund
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       PAYMENT DETAIL MODAL (demo data — replace with fetch)
+       ============================================================ */
+    var demoPayments = {
+      10482: {
+        txnId: 'TXN-2025-10482',
+        orderId: 'ORD-2025-10482',
+        plan: 'Full Payment',
+        planType: 'full',
+        amount: '₹24,999',
+        status: 'Paid',
+        statusClass: 'badge-pay-paid',
+        date: '12 Jan 2025, 10:42 AM',
+        student: 'Ananya Kapoor',
+        email: 'ananya.k@example.com',
+        course: 'Full Stack Web Development',
+        courseId: 'CRS-1024',
+        rzpId: 'pay_QwErTy1234Ab',
+        rzpOrder: 'order_A1b2C3d4E5f6G7',
+        webhook: 'verified'
+      },
+      10481: {
+        txnId: 'TXN-2025-10481',
+        orderId: 'ORD-2025-10481',
+        plan: 'Installment (2 of 3)',
+        planType: 'installment',
+        amount: '₹11,000',
+        status: 'Paid',
+        statusClass: 'badge-pay-paid',
+        date: '21 Jun 2025, 03:18 PM',
+        student: 'Rohan Sharma',
+        email: 'rohan.s@example.com',
+        course: 'Data Science & AI Masterclass',
+        courseId: 'CRS-1018',
+        rzpId: 'pay_LkMnOp5678Qr',
+        rzpOrder: 'order_B2c3D4e5F6g7H8',
+        webhook: 'verified'
+      },
+      10480: {
+        txnId: 'TXN-2025-10480',
+        orderId: 'ORD-2025-10480',
+        plan: 'Installment (1 of 3)',
+        planType: 'installment',
+        amount: '₹6,333',
+        status: 'Pending',
+        statusClass: 'badge-pay-pending',
+        date: '20 Jun 2025, 11:05 AM',
+        student: 'Priya Mehta',
+        email: 'priya.m@example.com',
+        course: 'UI/UX Design Masterclass',
+        courseId: 'CRS-1032',
+        rzpId: '—',
+        rzpOrder: 'order_C3d4E5f6G7h8I9',
+        webhook: 'pending'
+      },
+      10479: {
+        txnId: 'TXN-2025-10479',
+        orderId: 'ORD-2025-10479',
+        plan: 'Full Payment',
+        planType: 'full',
+        amount: '₹26,999',
+        status: 'Failed',
+        statusClass: 'badge-pay-failed',
+        date: '19 Jun 2025, 07:22 PM',
+        student: 'Arjun Verma',
+        email: 'arjun.v@example.com',
+        course: 'Cloud Computing with AWS',
+        courseId: 'CRS-0987',
+        rzpId: 'pay_FgHiJk9012Lm',
+        rzpOrder: 'order_D4e5F6g7H8i9J0',
+        webhook: 'failed'
+      },
+      10478: {
+        txnId: 'TXN-2025-10478',
+        orderId: 'ORD-2025-10478',
+        plan: 'Full Payment',
+        planType: 'full',
+        amount: '₹18,999',
+        status: 'Refunded',
+        statusClass: 'badge-pay-refunded',
+        date: '18 Jun 2025, 02:14 PM',
+        student: 'Sneha Nair',
+        email: 'sneha.n@example.com',
+        course: 'Digital Marketing Pro',
+        courseId: 'CRS-1055',
+        rzpId: 'pay_NoPqRs3456Tu',
+        rzpOrder: 'order_E5f6G7h8I9j0K1',
+        webhook: 'verified'
+      },
+      10477: {
+        txnId: 'TXN-2025-10477',
+        orderId: 'ORD-2025-10477',
+        plan: 'Full Payment',
+        planType: 'full',
+        amount: '₹28,999',
+        status: 'Paid',
+        statusClass: 'badge-pay-paid',
+        date: '10 Jun 2025, 09:30 AM',
+        student: 'Kavita Gupta',
+        email: 'kavita.g@example.com',
+        course: 'Business Analytics Pro',
+        courseId: 'CRS-1041',
+        rzpId: 'pay_VwXyZa7890Bc',
+        rzpOrder: 'order_F6g7H8i9J0k1L2',
+        webhook: 'verified'
+      }
+    };
+
+    window.openPaymentDetail = function (paymentId) {
+      var data = demoPayments[paymentId];
+      if (!data) {
+        edvantoToast('Payment details unavailable.', 'error');
+        return;
+      }
+
+      /* Header */
+      document.getElementById('detailTxnId').textContent = data.txnId;
+
+      /* Order info */
+      document.getElementById('detailTxnIdField').textContent = data.txnId;
+      document.getElementById('detailOrderId').textContent = data.orderId;
+      document.getElementById('detailPlan').textContent = data.plan;
+      document.getElementById('detailAmount').textContent = data.amount;
+      document.getElementById('detailStatus').innerHTML =
+        '<span class="edvanto-badge ' + data.statusClass + '">' + data.status + '</span>';
+      document.getElementById('detailDate').textContent = data.date;
+
+      /* Student & course */
+      document.getElementById('detailStudent').textContent = data.student;
+      document.getElementById('detailEmail').textContent = data.email;
+      document.getElementById('detailCourse').textContent = data.course;
+      document.getElementById('detailCourseId').textContent = data.courseId;
+
+      /* Razorpay */
+      document.getElementById('detailRzpId').textContent = data.rzpId;
+      document.getElementById('detailRzpOrder').textContent = data.rzpOrder;
+      document.getElementById('detailCaptured').textContent =
+        (data.status === 'Paid') ? 'Yes' : 'No';
+
+      /* Webhook */
+      var webhookEl = document.getElementById('detailWebhook');
+      var webhookTime = document.getElementById('detailWebhookTime');
+      if (data.webhook === 'verified') {
+        webhookEl.className = 'edvanto-webhook-badge verified';
+        webhookEl.innerHTML = '<i class="bi bi-patch-check-fill"></i> Signature verified · Webhook received';
+        webhookTime.textContent = data.date;
+      } else if (data.webhook === 'pending') {
+        webhookEl.className = 'edvanto-webhook-badge pending';
+        webhookEl.innerHTML = '<i class="bi bi-hourglass-split"></i> Awaiting webhook confirmation';
+        webhookTime.textContent = '—';
+      } else {
+        webhookEl.className = 'edvanto-webhook-badge failed';
+        webhookEl.innerHTML = '<i class="bi bi-x-circle-fill"></i> Signature verification failed';
+        webhookTime.textContent = '—';
+      }
+
+      /* Installments section */
+      var instSection = document.getElementById('installmentsSection');
+      if (data.planType === 'installment') {
+        instSection.style.display = '';
+      } else {
+        instSection.style.display = 'none';
+      }
+
+      /* Show modal */
+      new bootstrap.Modal(document.getElementById('paymentDetailModal')).show();
+
+      /* Replace with a real fetch:
+         fetch('/admin/payments/' + paymentId + '/detail/')
+           .then(r => r.json())
+           .then(populateModal);
+      */
+    };
+
+    /* ============================================================
+       QUICK ACTIONS
+       ============================================================ */
+    window.sendReminder = function (studentName) {
+      edvantoToast('Payment reminder sent to ' + studentName + '.', 'info');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    window.retryPayment = function (studentName) {
+      edvantoToast('Retry link sent to ' + studentName + '.', 'info');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       AUTO-SUBMIT FILTERS (optional)
+       ============================================================ */
+    document.querySelectorAll('#paymentFilterForm select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        /* Uncomment to auto-apply */
+        /* document.getElementById('paymentFilterForm').submit(); */
+      });
+    });
+
+  })();
+</script>
+
+{% endblock %}

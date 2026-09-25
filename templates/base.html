@@ -227,7 +227,7 @@
   <!-- =========================================
        start: Header Area
        ========================================= -->
-  <header class="header-area header-4 header-absolute">
+  <header class="header-area header-1 header-fixed">
 
     <!-- Header Top -->
     <div class="header-top d-lg-block d-none">
@@ -324,7 +324,7 @@
 
       </div>
 
-    </div>
+    </div> 
 
 
     <!-- Header Bottom -->
@@ -386,6 +386,20 @@
                       </a>
                     </li>
 
+                    
+
+                    <li class="d-lg-none">
+                      <a href="{% url 'core:login' %}">
+                        Login
+                      </a>
+                    </li>
+
+                    <li class="d-lg-none">
+                      <a href="{% url 'core:sign_in' %}">
+                        Sign in
+                      </a>
+                    </li>
+
                   </ul>
 
                 </nav>
@@ -398,10 +412,17 @@
                    ===================================== -->
               <div class="header-right-item d-inline-flex align-items-center">
 
-
+                
                 <!-- Login -->
-                <div class="header-button d-xl-flex d-none">
+                <div class="header-button d-lg-flex d-none">
 
+                  {% comment %} <div class="header-right-item d-inline-flex"> {% endcomment %}
+                    <div class="header-search-box d-lg-block d-none">
+                      <form method="get" action="index.html">
+                        <button type="submit"><i class="tji-search"></i></button>
+                        <input type="search" autocomplete="off" name="s" placeholder="Search for here...">
+                      </form>
+                    </div>
                   <a
                     class="tj-btn-primary tj-btn-primary-border tj-btn-primary-border-sm flip-text-wrap"
                     href="{% url 'core:login' %}">
@@ -410,6 +431,10 @@
                       Log in
                     </span>
 
+                  </a>
+                  
+                <a class="tj-btn-primary tj-btn-primary-sm flip-text-wrap" href="{% url 'core:sign_in' %}">
+                    <span class="btn-text">Sign in</span>
                   </a>
 
                 </div>
@@ -446,7 +471,7 @@
   <!-- =========================================
        start: Sticky Header Area
        ========================================= -->
-  <header class="header-area header-4 header-duplicate header-sticky">
+  <header class="header-area header-1 header-duplicate header-sticky">
 
     <div class="header-bottom">
 
@@ -503,6 +528,18 @@
                       </a>
                     </li>
 
+                    <li class="d-lg-none">
+                      <a href="{% url 'core:login' %}">
+                        Login
+                      </a>
+                    </li>
+
+                    <li class="d-lg-none">
+                      <a href="{% url 'core:sign_in' %}">
+                        Sign in
+                      </a>
+                    </li>
+
                   </ul>
 
                 </nav>
@@ -514,17 +551,24 @@
               <div class="header-right-item d-inline-flex align-items-center">
 
 
-                <!-- Login -->
-                <div class="header-button d-xl-flex d-none">
-
+                <!-- Login / Sign in -->
+                <div class="header-button d-lg-flex d-none">
+                  <div class="header-search-box d-lg-block d-none">
+                      <form method="get" action="index.html">
+                        <button type="submit"><i class="tji-search"></i></button>
+                        <input type="search" autocomplete="off" name="s" placeholder="Search for here...">
+                      </form>
+                    </div>
                   <a
                     class="tj-btn-primary tj-btn-primary-border tj-btn-primary-border-sm flip-text-wrap"
                     href="{% url 'core:login' %}">
+                    <span class="btn-text">Log in</span>
+                  </a>
 
-                    <span class="btn-text">
-                      Log in
-                    </span>
-
+                  <a
+                    class="tj-btn-primary tj-btn-primary-sm flip-text-wrap"
+                    href="{% url 'core:sign_in' %}">
+                    <span class="btn-text">Sign in</span>
                   </a>
 
                 </div>

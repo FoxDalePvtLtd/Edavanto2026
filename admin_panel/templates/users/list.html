@@ -1,0 +1,961 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – USER MANAGEMENT
+     Students · Instructors · Staff · Administrators
+     ============================================================ -->
+
+<style>
+  /* ---------- Page-specific tokens (reuse base) ---------- */
+
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.4rem 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.9rem;
+  }
+  .edvanto-stat-icon.cyan  { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+  .edvanto-stat-icon.navy  { background: rgba(3, 42, 90, 0.06); color: var(--edvanto-navy); }
+
+  .edvanto-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+
+  /* ---------- Filter bar ---------- */
+  .edvanto-filter-bar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-filter-bar .form-control,
+  .edvanto-filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    height: 42px;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-gray-50);
+  }
+  .edvanto-filter-bar .form-control:focus,
+  .edvanto-filter-bar .form-select:focus {
+    border-color: var(--edvanto-violet);
+    background-color: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-filter-bar .input-icon-wrapper {
+    position: relative;
+  }
+  .edvanto-filter-bar .input-icon-wrapper i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--edvanto-gray-500);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .edvanto-filter-bar .input-icon-wrapper .form-control {
+    padding-left: 2.5rem;
+  }
+
+  /* ---------- Role / status badges ---------- */
+  .edvanto-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .badge-role-student    { background: rgba(69, 28, 238, 0.08); color: var(--edvanto-violet); }
+  .badge-role-instructor { background: rgba(1, 223, 254, 0.12); color: #007A8F; }
+  .badge-role-staff      { background: rgba(3, 42, 90, 0.07); color: var(--edvanto-navy); }
+  .badge-role-admin      { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+
+  .badge-status-active    { background: rgba(15, 157, 88, 0.09); color: #0F6B3E; }
+  .badge-status-inactive  { background: rgba(138, 155, 181, 0.14); color: #5A6E8A; }
+  .badge-status-suspended { background: rgba(220, 53, 69, 0.09); color: #B02A37; }
+
+  /* ---------- Table avatar ---------- */
+  .edvanto-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 180px;
+  }
+  .edvanto-avatar-sm {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--edvanto-white);
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
+
+  .edvanto-user-name {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.25;
+  }
+  .edvanto-user-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .edvanto-table tbody tr:hover {
+    background: rgba(69, 28, 238, 0.015);
+  }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Action buttons ---------- */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+
+  /* ---------- Mobile user cards ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-users-table-wrap {
+      display: none;
+    }
+    .edvanto-users-cards {
+      display: block;
+    }
+  }
+  @media (min-width: 768px) {
+    .edvanto-users-cards {
+      display: none;
+    }
+  }
+
+  .edvanto-user-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-user-card-header .edvanto-user-name {
+    font-size: 0.95rem;
+  }
+  .edvanto-user-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.8rem;
+  }
+  .edvanto-user-card-row:last-child {
+    border-bottom: none;
+  }
+  .edvanto-user-card-row .label {
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+  .edvanto-user-card-row .value {
+    color: var(--edvanto-navy);
+    font-weight: 600;
+    text-align: right;
+  }
+  .edvanto-user-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--edvanto-gray-100);
+    flex-wrap: wrap;
+  }
+  .edvanto-user-card-actions .btn {
+    flex: 1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.4rem 0.5rem;
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Users</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Users</h1>
+    <p class="edvanto-page-subtitle">Manage students, instructors, staff and administrators.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filters
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>PDF</a></li>
+      </ul>
+    </div>
+    <a href="#" class="btn btn-edvanto-primary btn-sm px-3">
+      <i class="bi bi-plus-lg me-1"></i> Add User
+    </a>
+  </div>
+</div>
+
+<!-- ============================================================
+     STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Total Users -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Total Users</div>
+      <div class="edvanto-stat-value">4,862</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+12.4%</span>
+        <span>vs last month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Students -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon cyan">
+        <i class="bi bi-mortarboard-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Students</div>
+      <div class="edvanto-stat-value">4,318</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+11.2%</span>
+        <span>of total users</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructors -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-person-badge-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Instructors</div>
+      <div class="edvanto-stat-value">184</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-check-circle-fill" style="color: #0F9D58; font-size: 0.75rem;"></i>
+        <span>6 pending approval</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon navy">
+        <i class="bi bi-shield-person-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Staff &amp; Admins</div>
+      <div class="edvanto-stat-value">42</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-dash-circle" style="color: var(--edvanto-gray-500); font-size: 0.75rem;"></i>
+        <span>No change</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER BAR
+     ============================================================ -->
+<div class="collapse show" id="filterCollapse">
+  <div class="edvanto-filter-bar">
+    <form method="get" action="" id="userFilterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Search -->
+        <div class="col-12 col-lg-4">
+          <label class="form-label mb-1" for="userSearch">Search</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" id="userSearch" name="q"
+                   placeholder="Search by name or email…"
+                   value="{{ request.GET.q|default:'' }}">
+          </div>
+        </div>
+
+        <!-- Role filter -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="roleFilter">Role</label>
+          <select class="form-select" id="roleFilter" name="role">
+            <option value="">All Roles</option>
+            <option value="student" {% if request.GET.role == 'student' %}selected{% endif %}>Student</option>
+            <option value="instructor" {% if request.GET.role == 'instructor' %}selected{% endif %}>Instructor</option>
+            <option value="staff" {% if request.GET.role == 'staff' %}selected{% endif %}>Staff</option>
+            <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Admin</option>
+          </select>
+        </div>
+
+        <!-- Status filter -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="statusFilter">Status</label>
+          <select class="form-select" id="statusFilter" name="status">
+            <option value="">All Status</option>
+            <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+            <option value="suspended" {% if request.GET.status == 'suspended' %}selected{% endif %}>Suspended</option>
+          </select>
+        </div>
+
+        <!-- Date filter -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="dateFilter">Joined</label>
+          <select class="form-select" id="dateFilter" name="joined">
+            <option value="">Any Time</option>
+            <option value="today" {% if request.GET.joined == 'today' %}selected{% endif %}>Today</option>
+            <option value="week" {% if request.GET.joined == 'week' %}selected{% endif %}>This Week</option>
+            <option value="month" {% if request.GET.joined == 'month' %}selected{% endif %}>This Month</option>
+            <option value="quarter" {% if request.GET.joined == 'quarter' %}selected{% endif %}>This Quarter</option>
+            <option value="year" {% if request.GET.joined == 'year' %}selected{% endif %}>This Year</option>
+          </select>
+        </div>
+
+        <!-- Apply / Reset -->
+        <div class="col-6 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
+            Apply
+          </button>
+          <a href="#" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
+             style="height: 42px;" title="Reset filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     USERS TABLE / CARDS
+     ============================================================ -->
+<div class="edvanto-card">
+
+  <!-- Card header -->
+  <div class="edvanto-card-header">
+    <h2 class="edvanto-card-title">All Users</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="edvanto-badge badge-soft-navy">{{ users|length|default:"12" }} results</span>
+      <div class="dropdown">
+        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
+          <i class="bi bi-sort-down"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+          <li><a class="dropdown-item" href="?sort=oldest">Oldest First</a></li>
+          <li><a class="dropdown-item" href="?sort=name">Name (A–Z)</a></li>
+          <li><a class="dropdown-item" href="?sort=last_login">Last Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DESKTOP TABLE ---------- -->
+  <div class="edvanto-users-table-wrap">
+    <div class="table-responsive-edvanto">
+      <table class="edvanto-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Last Login</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# Replace this static demo data with a Django loop: {% for user in users %} #}
+
+          <!-- Row 1: Student, Active -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ID: EDV-10241</div>
+                </div>
+              </div>
+            </td>
+            <td>ananya.k@example.com</td>
+            <td>+91 98765 43210</td>
+            <td><span class="edvanto-badge badge-role-student"><i class="bi bi-mortarboard"></i> Student</span></td>
+            <td><span class="edvanto-badge badge-status-active"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Active</span></td>
+            <td>12 Jan 2025</td>
+            <td>2 min ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to ananya.k@example.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn danger" title="Deactivate" onclick="confirmDeactivate('Ananya Kapoor')"><i class="bi bi-slash-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2: Instructor, Active -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Dr. Rajesh Sharma</div>
+                  <div class="edvanto-user-meta">ID: EDV-10018</div>
+                </div>
+              </div>
+            </td>
+            <td>rajesh.s@edvanto.com</td>
+            <td>+91 98123 45678</td>
+            <td><span class="edvanto-badge badge-role-instructor"><i class="bi bi-person-badge"></i> Instructor</span></td>
+            <td><span class="edvanto-badge badge-status-active"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Active</span></td>
+            <td>05 Nov 2024</td>
+            <td>1 hour ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to rajesh.s@edvanto.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn danger" title="Deactivate" onclick="confirmDeactivate('Dr. Rajesh Sharma')"><i class="bi bi-slash-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3: Student, Suspended -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PM</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Mehta</div>
+                  <div class="edvanto-user-meta">ID: EDV-10387</div>
+                </div>
+              </div>
+            </td>
+            <td>priya.m@example.com</td>
+            <td>+91 99887 66554</td>
+            <td><span class="edvanto-badge badge-role-student"><i class="bi bi-mortarboard"></i> Student</span></td>
+            <td><span class="edvanto-badge badge-status-suspended"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Suspended</span></td>
+            <td>22 Mar 2025</td>
+            <td>14 days ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to priya.m@example.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn" title="Reactivate" onclick="edvantoToast('Priya Mehta reactivated successfully.')"><i class="bi bi-check-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4: Staff, Active -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">SN</span>
+                <div>
+                  <div class="edvanto-user-name">Sneha Nair</div>
+                  <div class="edvanto-user-meta">ID: EDV-10004</div>
+                </div>
+              </div>
+            </td>
+            <td>sneha.n@edvanto.com</td>
+            <td>+91 97654 32109</td>
+            <td><span class="edvanto-badge badge-role-staff"><i class="bi bi-shield-person"></i> Staff</span></td>
+            <td><span class="edvanto-badge badge-status-active"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Active</span></td>
+            <td>18 Aug 2024</td>
+            <td>5 min ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to sneha.n@edvanto.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn danger" title="Deactivate" onclick="confirmDeactivate('Sneha Nair')"><i class="bi bi-slash-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5: Admin, Active -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v5">AV</span>
+                <div>
+                  <div class="edvanto-user-name">Arjun Verma</div>
+                  <div class="edvanto-user-meta">ID: EDV-10001</div>
+                </div>
+              </div>
+            </td>
+            <td>arjun.v@edvanto.com</td>
+            <td>+91 90000 12345</td>
+            <td><span class="edvanto-badge badge-role-admin"><i class="bi bi-shield-lock"></i> Admin</span></td>
+            <td><span class="edvanto-badge badge-status-active"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Active</span></td>
+            <td>01 Jan 2024</td>
+            <td>Online now</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to arjun.v@edvanto.com', 'info')"><i class="bi bi-key"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6: Instructor, Inactive -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v6">MI</span>
+                <div>
+                  <div class="edvanto-user-name">Dr. Meera Iyer</div>
+                  <div class="edvanto-user-meta">ID: EDV-10092</div>
+                </div>
+              </div>
+            </td>
+            <td>meera.i@edvanto.com</td>
+            <td>+91 91234 56780</td>
+            <td><span class="edvanto-badge badge-role-instructor"><i class="bi bi-person-badge"></i> Instructor</span></td>
+            <td><span class="edvanto-badge badge-status-inactive"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Inactive</span></td>
+            <td>14 Feb 2025</td>
+            <td>1 month ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to meera.i@edvanto.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn" title="Reactivate" onclick="edvantoToast('Dr. Meera Iyer reactivated successfully.')"><i class="bi bi-check-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 7: Student, Active -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">RK</span>
+                <div>
+                  <div class="edvanto-user-name">Rohan Kumar</div>
+                  <div class="edvanto-user-meta">ID: EDV-10412</div>
+                </div>
+              </div>
+            </td>
+            <td>rohan.k@example.com</td>
+            <td>+91 98765 11223</td>
+            <td><span class="edvanto-badge badge-role-student"><i class="bi bi-mortarboard"></i> Student</span></td>
+            <td><span class="edvanto-badge badge-status-active"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Active</span></td>
+            <td>03 Apr 2025</td>
+            <td>3 hours ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to rohan.k@example.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn danger" title="Deactivate" onclick="confirmDeactivate('Rohan Kumar')"><i class="bi bi-slash-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 8: Staff, Active -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">KG</span>
+                <div>
+                  <div class="edvanto-user-name">Kavita Gupta</div>
+                  <div class="edvanto-user-meta">ID: EDV-10033</div>
+                </div>
+              </div>
+            </td>
+            <td>kavita.g@edvanto.com</td>
+            <td>+91 99887 11223</td>
+            <td><span class="edvanto-badge badge-role-staff"><i class="bi bi-shield-person"></i> Staff</span></td>
+            <td><span class="edvanto-badge badge-status-active"><i class="bi bi-circle-fill" style="font-size:0.4rem;"></i> Active</span></td>
+            <td>10 Jun 2024</td>
+            <td>30 min ago</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="#" class="edvanto-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="edvanto-action-btn" title="Reset Password" onclick="edvantoToast('Password reset link sent to kavita.g@edvanto.com', 'info')"><i class="bi bi-key"></i></button>
+                <button class="edvanto-action-btn danger" title="Deactivate" onclick="confirmDeactivate('Kavita Gupta')"><i class="bi bi-slash-circle"></i></button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ---------- MOBILE CARDS ---------- -->
+  <div class="edvanto-users-cards">
+
+    <!-- User card 1 -->
+    <div class="edvanto-user-card">
+      <div class="edvanto-user-card-header">
+        <span class="edvanto-avatar-sm v1">AK</span>
+        <div>
+          <div class="edvanto-user-name">Ananya Kapoor</div>
+          <div class="edvanto-user-meta">ananya.k@example.com</div>
+        </div>
+      </div>
+      <div class="edvanto-user-card-row"><span class="label">Phone</span><span class="value">+91 98765 43210</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Role</span><span class="value"><span class="edvanto-badge badge-role-student">Student</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-status-active">Active</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Joined</span><span class="value">12 Jan 2025</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Last Login</span><span class="value">2 min ago</span></div>
+      <div class="edvanto-user-card-actions">
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-edvanto-outline" onclick="edvantoToast('Password reset link sent.', 'info')"><i class="bi bi-key me-1"></i>Reset</button>
+        <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeactivate('Ananya Kapoor')"><i class="bi bi-slash-circle me-1"></i>Deactivate</button>
+      </div>
+    </div>
+
+    <!-- User card 2 -->
+    <div class="edvanto-user-card">
+      <div class="edvanto-user-card-header">
+        <span class="edvanto-avatar-sm v2">RS</span>
+        <div>
+          <div class="edvanto-user-name">Dr. Rajesh Sharma</div>
+          <div class="edvanto-user-meta">rajesh.s@edvanto.com</div>
+        </div>
+      </div>
+      <div class="edvanto-user-card-row"><span class="label">Phone</span><span class="value">+91 98123 45678</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Role</span><span class="value"><span class="edvanto-badge badge-role-instructor">Instructor</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-status-active">Active</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Joined</span><span class="value">05 Nov 2024</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Last Login</span><span class="value">1 hour ago</span></div>
+      <div class="edvanto-user-card-actions">
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-edvanto-outline" onclick="edvantoToast('Password reset link sent.', 'info')"><i class="bi bi-key me-1"></i>Reset</button>
+        <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeactivate('Dr. Rajesh Sharma')"><i class="bi bi-slash-circle me-1"></i>Deactivate</button>
+      </div>
+    </div>
+
+    <!-- User card 3 -->
+    <div class="edvanto-user-card">
+      <div class="edvanto-user-card-header">
+        <span class="edvanto-avatar-sm v3">PM</span>
+        <div>
+          <div class="edvanto-user-name">Priya Mehta</div>
+          <div class="edvanto-user-meta">priya.m@example.com</div>
+        </div>
+      </div>
+      <div class="edvanto-user-card-row"><span class="label">Phone</span><span class="value">+91 99887 66554</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Role</span><span class="value"><span class="edvanto-badge badge-role-student">Student</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-status-suspended">Suspended</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Joined</span><span class="value">22 Mar 2025</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Last Login</span><span class="value">14 days ago</span></div>
+      <div class="edvanto-user-card-actions">
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-edvanto-outline" onclick="edvantoToast('Password reset link sent.', 'info')"><i class="bi bi-key me-1"></i>Reset</button>
+        <button class="btn btn-edvanto-outline" onclick="edvantoToast('Priya Mehta reactivated successfully.')"><i class="bi bi-check-circle me-1"></i>Reactivate</button>
+      </div>
+    </div>
+
+    <!-- User card 4 -->
+    <div class="edvanto-user-card">
+      <div class="edvanto-user-card-header">
+        <span class="edvanto-avatar-sm v4">SN</span>
+        <div>
+          <div class="edvanto-user-name">Sneha Nair</div>
+          <div class="edvanto-user-meta">sneha.n@edvanto.com</div>
+        </div>
+      </div>
+      <div class="edvanto-user-card-row"><span class="label">Phone</span><span class="value">+91 97654 32109</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Role</span><span class="value"><span class="edvanto-badge badge-role-staff">Staff</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-status-active">Active</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Joined</span><span class="value">18 Aug 2024</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Last Login</span><span class="value">5 min ago</span></div>
+      <div class="edvanto-user-card-actions">
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-edvanto-outline" onclick="edvantoToast('Password reset link sent.', 'info')"><i class="bi bi-key me-1"></i>Reset</button>
+        <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeactivate('Sneha Nair')"><i class="bi bi-slash-circle me-1"></i>Deactivate</button>
+      </div>
+    </div>
+
+    <!-- User card 5 -->
+    <div class="edvanto-user-card">
+      <div class="edvanto-user-card-header">
+        <span class="edvanto-avatar-sm v5">AV</span>
+        <div>
+          <div class="edvanto-user-name">Arjun Verma</div>
+          <div class="edvanto-user-meta">arjun.v@edvanto.com</div>
+        </div>
+      </div>
+      <div class="edvanto-user-card-row"><span class="label">Phone</span><span class="value">+91 90000 12345</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Role</span><span class="value"><span class="edvanto-badge badge-role-admin">Admin</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-badge badge-status-active">Active</span></span></div>
+      <div class="edvanto-user-card-row"><span class="label">Joined</span><span class="value">01 Jan 2024</span></div>
+      <div class="edvanto-user-card-row"><span class="label">Last Login</span><span class="value">Online now</span></div>
+      <div class="edvanto-user-card-actions">
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
+        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-edvanto-outline" onclick="edvantoToast('Password reset link sent.', 'info')"><i class="bi bi-key me-1"></i>Reset</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–8 of 4,862 users</span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      <li class="page-item"><a class="page-link" href="#">487</a></li>
+      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+    </ul>
+  </nav>
+
+</div>
+
+<!-- ============================================================
+     CONFIRM DEACTIVATE MODAL
+     ============================================================ -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="deactivateModalLabel">
+          <i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--edvanto-gold);"></i>
+          Confirm Deactivate
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray-600);">
+        Are you sure you want to deactivate <strong id="deactivateUserName" class="text-edvanto-navy"></strong>?
+        They will lose access to the platform until reactivated.
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
+                onclick="performDeactivate()">
+          Deactivate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ---------- Deactivate confirmation flow ---------- */
+    var pendingUserId = null;
+
+    window.confirmDeactivate = function (userName) {
+      document.getElementById('deactivateUserName').textContent = userName;
+      var modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+      modal.show();
+    };
+
+    window.performDeactivate = function () {
+      var modalEl = document.getElementById('deactivateModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      /* Replace with a real fetch() to your Django endpoint */
+      edvantoToast('User deactivated successfully.', 'warning');
+    };
+
+    /* ---------- Auto-submit filter form on select change ---------- */
+    document.querySelectorAll('#userFilterForm select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        /* Optional: auto-submit on change. Uncomment if desired. */
+        /* document.getElementById('userFilterForm').submit(); */
+      });
+    });
+
+    /* ---------- Debounced search ---------- */
+    var searchInput = document.getElementById('userSearch');
+    if (searchInput) {
+      var searchTimer;
+      searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          /* Optional: auto-submit after 500ms of no typing. */
+          /* document.getElementById('userFilterForm').submit(); */
+        }, 500);
+      });
+    }
+
+  })();
+</script>
+
+{% endblock %}

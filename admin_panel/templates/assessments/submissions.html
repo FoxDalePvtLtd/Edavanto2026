@@ -1,0 +1,1943 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Submissions{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – ASSESSMENT SUBMISSION MANAGEMENT
+     Review · Grade · Return · File Preview
+     ============================================================ -->
+
+<style>
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.4rem 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-card.gold::before  { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
+  .edvanto-stat-card.cyan::before  { background: linear-gradient(90deg, #00B8D4 0%, var(--edvanto-cyan) 100%); }
+  .edvanto-stat-card.green::before { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
+
+  .edvanto-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.9rem;
+  }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+  .edvanto-stat-icon.cyan  { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
+  .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
+
+  .edvanto-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+
+  /* ---------- Filter bar ---------- */
+  .edvanto-filter-bar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-filter-bar .form-control,
+  .edvanto-filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    height: 42px;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-gray-50);
+  }
+  .edvanto-filter-bar .form-control:focus,
+  .edvanto-filter-bar .form-select:focus {
+    border-color: var(--edvanto-violet);
+    background-color: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-filter-bar .input-icon-wrapper {
+    position: relative;
+  }
+  .edvanto-filter-bar .input-icon-wrapper i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--edvanto-gray-500);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .edvanto-filter-bar .input-icon-wrapper .form-control {
+    padding-left: 2.5rem;
+  }
+
+  /* ---------- Table cells ---------- */
+  .edvanto-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 180px;
+  }
+  .edvanto-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--edvanto-white);
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
+
+  .edvanto-user-name {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.25;
+  }
+  .edvanto-user-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-assessment-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 180px;
+  }
+  .edvanto-assessment-title {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  .edvanto-assessment-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Score ---------- */
+  .edvanto-score {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 90px;
+  }
+  .edvanto-score-value {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+  }
+  .edvanto-score-value.pass { color: #0F6B3E; }
+  .edvanto-score-value.fail { color: #B02A37; }
+  .edvanto-score-value.pending { color: var(--edvanto-gold); font-size: 0.8rem; font-weight: 600; }
+  .edvanto-score-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-500);
+    font-weight: 500;
+  }
+
+  /* ---------- Badges ---------- */
+  .edvanto-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .badge-sub-pending     { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+  .badge-sub-graded      { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .badge-sub-returned    { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+  .badge-sub-in-progress { background: rgba(69, 28, 238, 0.09); color: var(--edvanto-violet); }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Action buttons ---------- */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.gold:hover {
+    background: rgba(255, 179, 3, 0.10);
+    color: #9A6D00;
+  }
+  .edvanto-action-btn.success:hover {
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F9D58;
+  }
+  .edvanto-action-btn.danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+
+  /* ---------- Mobile cards ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-submissions-table-wrap { display: none; }
+    .edvanto-submissions-cards { display: block; }
+  }
+  @media (min-width: 768px) {
+    .edvanto-submissions-cards { display: none; }
+  }
+  .edvanto-submission-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-submission-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-submission-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.8rem;
+  }
+  .edvanto-submission-card-row:last-child { border-bottom: none; }
+  .edvanto-submission-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
+  .edvanto-submission-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
+  .edvanto-submission-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--edvanto-gray-100);
+    flex-wrap: wrap;
+  }
+  .edvanto-submission-card-actions .btn {
+    flex: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.45rem 0.4rem;
+  }
+
+  /* ============================================================
+     GRADING MODAL
+     ============================================================ */
+  .edvanto-grade-modal .modal-dialog {
+    max-width: 900px;
+  }
+  .edvanto-grade-modal .modal-content {
+    border-radius: var(--edvanto-radius-card);
+    border: none;
+    overflow: hidden;
+  }
+  .edvanto-grade-modal .modal-header {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 100%);
+    color: var(--edvanto-white);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .edvanto-grade-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .edvanto-grade-modal .modal-title {
+    color: var(--edvanto-white);
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+  }
+  .edvanto-grade-modal .modal-title i { color: var(--edvanto-cyan); }
+  .edvanto-grade-modal .modal-title .sub {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 0.5rem;
+  }
+  .edvanto-grade-modal .btn-close {
+    filter: invert(1) brightness(2);
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-grade-modal .btn-close:hover { opacity: 1; }
+
+  .edvanto-grade-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--edvanto-gray-50);
+  }
+  .edvanto-grade-modal .modal-footer {
+    background: var(--edvanto-white);
+    border-top: var(--edvanto-border-light);
+    padding: 0.9rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Student summary banner */
+  .edvanto-grade-summary {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .edvanto-grade-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+  }
+  .edvanto-grade-summary-info .name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+  }
+  .edvanto-grade-summary-info .meta {
+    font-size: 0.75rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+  .edvanto-grade-summary-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+  .edvanto-grade-tile {
+    text-align: center;
+  }
+  .edvanto-grade-tile .lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.15rem;
+  }
+  .edvanto-grade-tile .val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+  }
+  .edvanto-grade-tile .val.pass { color: #0F6B3E; }
+  .edvanto-grade-tile .val.fail { color: #B02A37; }
+
+  /* Question grading card */
+  .edvanto-grade-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    padding: 1.25rem 1.4rem 1.35rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-grade-card:last-child { margin-bottom: 0; }
+
+  .edvanto-grade-q-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: var(--edvanto-border-light);
+  }
+  .edvanto-grade-q-num {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-violet);
+  }
+  .edvanto-grade-q-num .chip {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: rgba(69, 28, 238, 0.09);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .edvanto-grade-q-marks {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0F6B3E;
+    background: rgba(15, 157, 88, 0.08);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+  }
+  .edvanto-grade-q-marks.pending {
+    color: #9A6D00;
+    background: rgba(255, 179, 3, 0.12);
+  }
+
+  .edvanto-grade-question {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.85rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  /* Answer block */
+  .edvanto-answer-block {
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .edvanto-answer-block .lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-answer-block .val {
+    color: var(--edvanto-navy);
+    font-weight: 500;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .edvanto-answer-block.student {
+    background: rgba(1, 223, 254, 0.05);
+    border-left: 3px solid var(--edvanto-cyan);
+  }
+  .edvanto-answer-block.student .lbl { color: #007A8F; }
+  .edvanto-answer-block.expected {
+    background: rgba(69, 28, 238, 0.035);
+    border-left: 3px solid var(--edvanto-violet);
+  }
+  .edvanto-answer-block.expected .lbl { color: var(--edvanto-violet); }
+  .edvanto-answer-block.mcq-correct {
+    background: rgba(15, 157, 88, 0.06);
+    border-left: 3px solid #0F9D58;
+  }
+  .edvanto-answer-block.mcq-correct .lbl { color: #0F6B3E; }
+  .edvanto-answer-block.mcq-wrong {
+    background: rgba(220, 53, 69, 0.05);
+    border-left: 3px solid #DC3545;
+  }
+  .edvanto-answer-block.mcq-wrong .lbl { color: #B02A37; }
+
+  /* Correct/wrong indicator */
+  .edvanto-answer-verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    margin-left: 0.4rem;
+  }
+  .edvanto-answer-verdict.correct {
+    background: rgba(15, 157, 88, 0.12);
+    color: #0F6B3E;
+  }
+  .edvanto-answer-verdict.wrong {
+    background: rgba(220, 53, 69, 0.12);
+    color: #B02A37;
+  }
+
+  /* File submission */
+  .edvanto-file-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: rgba(255, 179, 3, 0.06);
+    border: 1px dashed rgba(255, 179, 3, 0.35);
+    margin-top: 0.35rem;
+  }
+  .edvanto-file-preview-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: var(--edvanto-white);
+    border: 1px solid rgba(255, 179, 3, 0.3);
+    color: #9A6D00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .edvanto-file-preview-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .edvanto-file-preview-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .edvanto-file-preview-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+  .edvanto-file-preview-actions {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+  .edvanto-file-preview-actions .btn {
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.35rem 0.65rem;
+  }
+
+  /* Marking controls */
+  .edvanto-mark-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    padding-top: 0.85rem;
+    margin-top: 0.6rem;
+    border-top: 1px dashed var(--edvanto-gray-200);
+  }
+  .edvanto-mark-controls .form-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.3rem;
+  }
+  .edvanto-mark-controls .form-control {
+    font-size: 0.85rem;
+  }
+  .edvanto-mark-rollup {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+  }
+  .edvanto-mark-rollup .val {
+    color: var(--edvanto-violet);
+    font-size: 0.95rem;
+  }
+
+  .form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .form-control, .form-select {
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    font-size: 0.88rem;
+    padding: 0.5rem 0.75rem;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-white);
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+
+  /* Info panel */
+  .edvanto-info-panel {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: rgba(69, 28, 238, 0.04);
+    border-left: 3px solid var(--edvanto-violet);
+    font-size: 0.78rem;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .edvanto-info-panel i {
+    color: var(--edvanto-violet);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 575.98px) {
+    .edvanto-grade-modal .modal-body { padding: 1rem; }
+    .edvanto-grade-card { padding: 1rem; }
+    .edvanto-grade-summary { padding: 0.85rem 1rem; }
+    .edvanto-mark-controls { gap: 0.5rem; }
+    .edvanto-mark-rollup { width: 100%; margin-left: 0; text-align: right; }
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#assessments' %}">Assessments</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Submissions</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Submissions</h1>
+    <p class="edvanto-page-subtitle">Review, grade and return student assessment submissions.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filters
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>Grade Sheet PDF</a></li>
+      </ul>
+    </div>
+    <button class="btn btn-edvanto-primary btn-sm px-3" onclick="bulkGradeSelected()">
+      <i class="bi bi-check2-all me-1"></i> Bulk Grade
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Awaiting Grading -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card gold">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <div class="edvanto-stat-label">Awaiting Grading</div>
+      <div class="edvanto-stat-value">28</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-exclamation-triangle-fill warning"></i>
+        <span class="warning">Needs review</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- In Progress -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card cyan">
+      <div class="edvanto-stat-icon cyan">
+        <i class="bi bi-pencil-square"></i>
+      </div>
+      <div class="edvanto-stat-label">In Progress</div>
+      <div class="edvanto-stat-value">6</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-person-workspace" style="color: #0099B5; font-size: 0.75rem;"></i>
+        <span>Partially graded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graded -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Graded</div>
+      <div class="edvanto-stat-value">142</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-graph-up-arrow" style="color: #0F9D58; font-size: 0.75rem;"></i>
+        <span>Avg. score 74%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Returned -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </div>
+      <div class="edvanto-stat-label">Returned</div>
+      <div class="edvanto-stat-value">9</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-repeat" style="color: var(--edvanto-violet); font-size: 0.75rem;"></i>
+        <span>For correction</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER BAR
+     ============================================================ -->
+<div class="collapse show" id="filterCollapse">
+  <div class="edvanto-filter-bar">
+    <form method="get" action="" id="submissionFilterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Course -->
+        <div class="col-12 col-lg-2">
+          <label class="form-label mb-1" for="courseFilter">Course</label>
+          <select class="form-select" id="courseFilter" name="course">
+            <option value="">All Courses</option>
+            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Dev</option>
+            <option value="datascience" {% if request.GET.course == 'datascience' %}selected{% endif %}>Data Science & AI</option>
+            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design</option>
+            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics</option>
+          </select>
+        </div>
+
+        <!-- Assessment -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="assessmentFilter">Assessment</label>
+          <select class="form-select" id="assessmentFilter" name="assessment">
+            <option value="">All Assessments</option>
+            <option value="html5-quiz" {% if request.GET.assessment == 'html5-quiz' %}selected{% endif %}>HTML5 Fundamentals Quiz</option>
+            <option value="js-quiz" {% if request.GET.assessment == 'js-quiz' %}selected{% endif %}>JavaScript Basics Quiz</option>
+            <option value="portfolio" {% if request.GET.assessment == 'portfolio' %}selected{% endif %}>Build a Portfolio Page</option>
+            <option value="react-quiz" {% if request.GET.assessment == 'react-quiz' %}selected{% endif %}>React Components Quiz</option>
+          </select>
+        </div>
+
+        <!-- Student -->
+        <div class="col-12 col-lg-2">
+          <label class="form-label mb-1" for="studentSearch">Student</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" id="studentSearch" name="student"
+                   placeholder="Search…"
+                   value="{{ request.GET.student|default:'' }}">
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="statusFilter">Status</label>
+          <select class="form-select" id="statusFilter" name="status">
+            <option value="">All Status</option>
+            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="graded" {% if request.GET.status == 'graded' %}selected{% endif %}>Graded</option>
+            <option value="returned" {% if request.GET.status == 'returned' %}selected{% endif %}>Returned</option>
+          </select>
+        </div>
+
+        <!-- Date -->
+        <div class="col-6 col-lg-1">
+          <label class="form-label mb-1" for="dateFilter">Date</label>
+          <select class="form-select" id="dateFilter" name="date">
+            <option value="">Any</option>
+            <option value="today" {% if request.GET.date == 'today' %}selected{% endif %}>Today</option>
+            <option value="week" {% if request.GET.date == 'week' %}selected{% endif %}>7d</option>
+            <option value="month" {% if request.GET.date == 'month' %}selected{% endif %}>30d</option>
+          </select>
+        </div>
+
+        <!-- Apply / Reset -->
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
+            Apply
+          </button>
+          <a href="#assessment_submissions' %}" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
+             style="height: 42px;" title="Reset filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     SUBMISSIONS TABLE / CARDS
+     ============================================================ -->
+<div class="edvanto-card">
+
+  <!-- Card header -->
+  <div class="edvanto-card-header">
+    <h2 class="edvanto-card-title">All Submissions</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
+        185 submissions
+      </span>
+      <div class="dropdown">
+        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
+          <i class="bi bi-sort-down"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+          <li><a class="dropdown-item" href="?sort=oldest">Oldest First</a></li>
+          <li><a class="dropdown-item" href="?sort=score_high">Score (High–Low)</a></li>
+          <li><a class="dropdown-item" href="?sort=score_low">Score (Low–High)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DESKTOP TABLE ---------- -->
+  <div class="edvanto-submissions-table-wrap">
+    <div class="table-responsive-edvanto">
+      <table class="edvanto-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Assessment</th>
+            <th>Submitted</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Graded By</th>
+            <th>Graded Date</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# {% for submission in submissions %} #}
+
+          <!-- Row 1: Pending -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
+                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.8rem;">15 Apr 2025, 7:22 PM</span></td>
+            <td>
+              <div class="edvanto-score">
+                <span class="edvanto-score-value pending">Awaiting</span>
+                <span class="edvanto-score-meta">0 / 50</span>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-sub-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
+            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn success" title="Grade" onclick="openGradeModal(1)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Ananya Kapoor')">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2: In Progress -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Rohan Sharma</div>
+                  <div class="edvanto-user-meta">rohan.s@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <div class="edvanto-assessment-title">JavaScript Basics Quiz</div>
+                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.8rem;">15 Apr 2025, 6:50 PM</span></td>
+            <td>
+              <div class="edvanto-score">
+                <span class="edvanto-score-value">32 / 40</span>
+                <span class="edvanto-score-meta">Q2 of 16 graded</span>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-sub-in-progress"><i class="bi bi-pencil-square"></i> In Progress</span></td>
+            <td><span style="font-size:0.8rem;">Priya Nair</span></td>
+            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">In progress</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn success" title="Continue Grading" onclick="openGradeModal(2)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Rohan Sharma')">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3: Graded – Pass -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PM</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Mehta</div>
+                  <div class="edvanto-user-meta">priya.m@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
+                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.8rem;">14 Apr 2025, 8:05 PM</span></td>
+            <td>
+              <div class="edvanto-score">
+                <span class="edvanto-score-value pass">42 / 50</span>
+                <span class="edvanto-score-meta">84% · Passed</span>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-sub-graded"><i class="bi bi-check-circle-fill"></i> Graded</span></td>
+            <td><span style="font-size:0.8rem;">Priya Nair</span></td>
+            <td><span style="font-size:0.8rem;">14 Apr 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View / Edit Grade" onclick="openGradeModal(3)">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Priya Mehta')">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4: Graded – File Submission -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">AV</span>
+                <div>
+                  <div class="edvanto-user-name">Arjun Verma</div>
+                  <div class="edvanto-user-meta">arjun.v@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <div class="edvanto-assessment-title">Build a Portfolio Page</div>
+                <div class="edvanto-assessment-meta">Full Stack Web Dev · Assignment</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.8rem;">13 Apr 2025, 9:12 PM</span></td>
+            <td>
+              <div class="edvanto-score">
+                <span class="edvanto-score-value pass">88 / 100</span>
+                <span class="edvanto-score-meta">88% · Passed</span>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-sub-graded"><i class="bi bi-check-circle-fill"></i> Graded</span></td>
+            <td><span style="font-size:0.8rem;">Dr. Rajesh Sharma</span></td>
+            <td><span style="font-size:0.8rem;">13 Apr 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View / Edit Grade" onclick="openGradeModal(4)">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Arjun Verma')">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5: Returned -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v5">SN</span>
+                <div>
+                  <div class="edvanto-user-name">Sneha Nair</div>
+                  <div class="edvanto-user-meta">sneha.n@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <div class="edvanto-assessment-title">JavaScript Basics Quiz</div>
+                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.8rem;">12 Apr 2025, 5:40 PM</span></td>
+            <td>
+              <div class="edvanto-score">
+                <span class="edvanto-score-value fail">18 / 40</span>
+                <span class="edvanto-score-meta">45% · Below pass</span>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-sub-returned"><i class="bi bi-arrow-counterclockwise"></i> Returned</span></td>
+            <td><span style="font-size:0.8rem;">Priya Nair</span></td>
+            <td><span style="font-size:0.8rem;">12 Apr 2025</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View / Edit Grade" onclick="openGradeModal(5)">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6: Pending – File Submission -->
+          <tr>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v6">KG</span>
+                <div>
+                  <div class="edvanto-user-name">Kavita Gupta</div>
+                  <div class="edvanto-user-meta">kavita.g@example.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-assessment-cell">
+                <div class="edvanto-assessment-title">Data Visualization Project</div>
+                <div class="edvanto-assessment-meta">Data Science &amp; AI · Assignment</div>
+              </div>
+            </td>
+            <td><span style="font-size:0.8rem;">15 Apr 2025, 4:30 PM</span></td>
+            <td>
+              <div class="edvanto-score">
+                <span class="edvanto-score-value pending">Awaiting</span>
+                <span class="edvanto-score-meta">0 / 100</span>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-sub-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
+            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn success" title="Grade" onclick="openGradeModal(6)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Kavita Gupta')">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ---------- MOBILE CARDS ---------- -->
+  <div class="edvanto-submissions-cards">
+
+    <div class="edvanto-submission-card">
+      <div class="edvanto-submission-card-header">
+        <span class="edvanto-avatar-sm v1">AK</span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-user-name">Ananya Kapoor</div>
+          <div class="edvanto-user-meta">HTML5 Fundamentals Quiz</div>
+        </div>
+        <span class="edvanto-badge badge-sub-pending">Pending</span>
+      </div>
+      <div class="edvanto-submission-card-row"><span class="label">Submitted</span><span class="value">15 Apr, 7:22 PM</span></div>
+      <div class="edvanto-submission-card-row"><span class="label">Score</span><span class="value" style="color: var(--edvanto-gold);">Awaiting</span></div>
+      <div class="edvanto-submission-card-row"><span class="label">Graded By</span><span class="value">—</span></div>
+      <div class="edvanto-submission-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openGradeModal(1)"><i class="bi bi-pencil-square me-1"></i>Grade</button>
+        <button class="btn btn-edvanto-outline text-danger" onclick="returnSubmission('Ananya Kapoor')"><i class="bi bi-arrow-counterclockwise me-1"></i>Return</button>
+      </div>
+    </div>
+
+    <div class="edvanto-submission-card">
+      <div class="edvanto-submission-card-header">
+        <span class="edvanto-avatar-sm v3">PM</span>
+        <div style="flex:1;min-width:0;">
+          <div class="edvanto-user-name">Priya Mehta</div>
+          <div class="edvanto-user-meta">HTML5 Fundamentals Quiz</div>
+        </div>
+        <span class="edvanto-badge badge-sub-graded">Graded</span>
+      </div>
+      <div class="edvanto-submission-card-row"><span class="label">Submitted</span><span class="value">14 Apr, 8:05 PM</span></div>
+      <div class="edvanto-submission-card-row"><span class="label">Score</span><span class="value" style="color:#0F6B3E;">42 / 50 (84%)</span></div>
+      <div class="edvanto-submission-card-row"><span class="label">Graded By</span><span class="value">Priya Nair</span></div>
+      <div class="edvanto-submission-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openGradeModal(3)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline text-danger" onclick="returnSubmission('Priya Mehta')"><i class="bi bi-arrow-counterclockwise me-1"></i>Return</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–6 of 185 submissions</span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      <li class="page-item"><a class="page-link" href="#">26</a></li>
+      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+    </ul>
+  </nav>
+
+</div>
+
+<!-- ============================================================
+     GRADING MODAL
+     ============================================================ -->
+<div class="modal fade edvanto-grade-modal" id="gradeModal" tabindex="-1"
+     aria-labelledby="gradeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="gradeModalLabel">
+          <i class="bi bi-pencil-square"></i>
+          Grade Submission
+          <span class="sub" id="gradeSubtitle">HTML5 Fundamentals Quiz</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Info panel -->
+        <div class="edvanto-info-panel">
+          <i class="bi bi-shield-lock-fill"></i>
+          <div>
+            <strong>Grading guidance.</strong>
+            MCQ answers are auto-marked but you can override. Text answers and file submissions require manual review.
+            Card numbers, CVV and other sensitive data are never stored or displayed.
+          </div>
+        </div>
+
+        <!-- Student summary -->
+        <div class="edvanto-grade-summary">
+          <div class="edvanto-grade-summary-left">
+            <span class="edvanto-avatar-sm v1" id="gradeAvatar">AK</span>
+            <div class="edvanto-grade-summary-info">
+              <p class="name" id="gradeStudentName">Ananya Kapoor</p>
+              <div class="meta" id="gradeStudentMeta">
+                ananya.k@example.com · Submitted 15 Apr 2025, 7:22 PM
+              </div>
+            </div>
+          </div>
+          <div class="edvanto-grade-summary-right">
+            <div class="edvanto-grade-tile">
+              <div class="lbl">Total Marks</div>
+              <div class="val" id="gradeTotalMarks">50</div>
+            </div>
+            <div class="edvanto-grade-tile">
+              <div class="lbl">Pass Mark</div>
+              <div class="val">60%</div>
+            </div>
+            <div class="edvanto-grade-tile">
+              <div class="lbl">Score</div>
+              <div class="val pass" id="gradeCurrentScore">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions container (populated by JS) -->
+        <div id="gradingQuestionsContainer">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Overall feedback -->
+        <div class="edvanto-grade-card">
+          <div class="edvanto-grade-q-header">
+            <div class="edvanto-grade-q-num">
+              <span class="chip"><i class="bi bi-chat-square-text"></i></span>
+              <span>Overall Feedback</span>
+            </div>
+          </div>
+          <label for="gradeFeedback" class="form-label">Feedback to Student</label>
+          <textarea class="form-control" id="gradeFeedback" rows="3"
+                    placeholder="Add feedback that will be shown to the student…"></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-edvanto-outline btn-sm" onclick="saveGrading(true)">
+          <i class="bi bi-file-earmark me-1"></i> Save Draft
+        </button>
+        <button type="button" class="btn btn-edvanto-outline btn-sm"
+                onclick="returnFromModal()">
+          <i class="bi bi-arrow-counterclockwise me-1"></i> Return for Correction
+        </button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="saveGrading(false)">
+          <i class="bi bi-check-lg me-1"></i> Save &amp; Publish Grade
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     RETURN CONFIRMATION MODAL
+     ============================================================ -->
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="returnModalLabel" style="font-weight: 700; color: var(--edvanto-navy); font-size: 1rem;">
+          <i class="bi bi-arrow-counterclockwise me-2" style="color: #DC3545;"></i>
+          Return for Correction
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2" style="font-size: 0.88rem; color: var(--edvanto-gray-600);">
+        <span id="returnModalMessage">Return this submission for correction?</span>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
+                onclick="performReturn()">
+          Return
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       DEMO SUBMISSION DATA (replace with fetch)
+       ============================================================ */
+    var demoSubmissions = {
+      1: {
+        student: 'Ananya Kapoor',
+        initials: 'AK',
+        avatar: 'v1',
+        email: 'ananya.k@example.com',
+        assessment: 'HTML5 Fundamentals Quiz',
+        totalMarks: 50,
+        submittedAt: '15 Apr 2025, 7:22 PM',
+        currentScore: null,
+        questions: [
+          {
+            type: 'mcq',
+            prompt: 'Which HTML5 tag is used to define an independent, self-contained content block?',
+            studentAnswer: '&lt;article&gt;',
+            expectedAnswer: '&lt;article&gt;',
+            correct: true,
+            maxMarks: 10,
+            awarded: null,
+            explanation: 'The &lt;article&gt; tag represents a self-contained composition in a document.'
+          },
+          {
+            type: 'mcq',
+            prompt: 'Which attribute is required to associate a &lt;label&gt; with an input field?',
+            studentAnswer: 'for',
+            expectedAnswer: 'for',
+            correct: true,
+            maxMarks: 10,
+            awarded: null,
+            explanation: 'The "for" attribute matches the id of the input it describes.'
+          },
+          {
+            type: 'text',
+            prompt: 'Explain the difference between semantic and non-semantic HTML elements with an example.',
+            studentAnswer: 'Semantic elements describe their meaning to the browser and developer (e.g. <article>, <header>). Non-semantic elements tell nothing about their content (e.g. <div>, <span>).',
+            expectedAnswer: 'A strong answer should mention that semantic elements clearly describe their meaning (e.g. <article>, <header>, <footer>), while non-semantic elements tell nothing about their content (e.g. <div>, <span>). Award full marks for a correct example of each.',
+            correct: null,
+            maxMarks: 15,
+            awarded: null
+          },
+          {
+            type: 'text',
+            prompt: 'What is the purpose of the alt attribute in an &lt;img&gt; tag?',
+            studentAnswer: 'The alt attribute provides alternative text for an image if it cannot be displayed.',
+            expectedAnswer: 'The alt attribute provides alternative text for an image if it cannot be displayed, and improves accessibility for screen readers.',
+            correct: null,
+            maxMarks: 15,
+            awarded: null
+          }
+        ]
+      },
+      2: {
+        student: 'Rohan Sharma',
+        initials: 'RS',
+        avatar: 'v2',
+        email: 'rohan.s@example.com',
+        assessment: 'JavaScript Basics Quiz',
+        totalMarks: 40,
+        submittedAt: '15 Apr 2025, 6:50 PM',
+        currentScore: '32 / 40',
+        questions: [
+          {
+            type: 'mcq',
+            prompt: 'What is the correct way to declare a block-scoped variable in JavaScript?',
+            studentAnswer: 'let x = 10;',
+            expectedAnswer: 'let x = 10;',
+            correct: true,
+            maxMarks: 10,
+            awarded: 10,
+            explanation: 'The "let" keyword declares a block-scoped variable.'
+          },
+          {
+            type: 'mcq',
+            prompt: 'Which method adds one or more elements to the end of an array?',
+            studentAnswer: 'push()',
+            expectedAnswer: 'push()',
+            correct: true,
+            maxMarks: 10,
+            awarded: 10,
+            explanation: 'Array.prototype.push() adds elements to the end of an array.'
+          },
+          {
+            type: 'text',
+            prompt: 'Briefly explain what a closure is in JavaScript.',
+            studentAnswer: 'A closure is a function that remembers the variables from the scope where it was created.',
+            expectedAnswer: 'A closure is the combination of a function and the lexical environment within which it was declared, allowing it to access variables from an outer scope even after the outer function has returned.',
+            correct: null,
+            maxMarks: 20,
+            awarded: 12
+          }
+        ]
+      },
+      3: {
+        student: 'Priya Mehta',
+        initials: 'PM',
+        avatar: 'v3',
+        email: 'priya.m@example.com',
+        assessment: 'HTML5 Fundamentals Quiz',
+        totalMarks: 50,
+        submittedAt: '14 Apr 2025, 8:05 PM',
+        currentScore: '42 / 50',
+        questions: [
+          {
+            type: 'mcq',
+            prompt: 'Which HTML5 tag is used to define an independent, self-contained content block?',
+            studentAnswer: '&lt;article&gt;',
+            expectedAnswer: '&lt;article&gt;',
+            correct: true,
+            maxMarks: 10,
+            awarded: 10,
+            explanation: 'The &lt;article&gt; tag represents a self-contained composition.'
+          },
+          {
+            type: 'mcq',
+            prompt: 'Which attribute is required to associate a &lt;label&gt; with an input field?',
+            studentAnswer: 'for',
+            expectedAnswer: 'for',
+            correct: true,
+            maxMarks: 10,
+            awarded: 10
+          },
+          {
+            type: 'text',
+            prompt: 'Explain the difference between semantic and non-semantic HTML elements with an example.',
+            studentAnswer: 'Semantic elements describe their meaning to the browser and developer, like <article>. Non-semantic elements like <div> tell nothing about their content.',
+            expectedAnswer: 'A strong answer should mention that semantic elements clearly describe their meaning (e.g. <article>, <header>, <footer>), while non-semantic elements tell nothing about their content (e.g. <div>, <span>). Award full marks for a correct example of each.',
+            correct: null,
+            maxMarks: 15,
+            awarded: 13
+          },
+          {
+            type: 'text',
+            prompt: 'What is the purpose of the alt attribute in an &lt;img&gt; tag?',
+            studentAnswer: 'Provides alternative text for accessibility.',
+            expectedAnswer: 'The alt attribute provides alternative text for an image if it cannot be displayed, and improves accessibility for screen readers.',
+            correct: null,
+            maxMarks: 15,
+            awarded: 9
+          }
+        ]
+      },
+      4: {
+        student: 'Arjun Verma',
+        initials: 'AV',
+        avatar: 'v4',
+        email: 'arjun.v@example.com',
+        assessment: 'Build a Portfolio Page',
+        totalMarks: 100,
+        submittedAt: '13 Apr 2025, 9:12 PM',
+        currentScore: '88 / 100',
+        questions: [
+          {
+            type: 'file',
+            prompt: 'Submit your completed HTML page for the "About Me" project.',
+            studentFileName: 'arjun-verma-portfolio.zip',
+            studentFileSize: '2.4 MB',
+            studentFileType: 'ZIP',
+            expectedAnswer: 'A responsive, accessible HTML page using semantic HTML5 elements, external CSS and at least one image with an alt attribute.',
+            correct: null,
+            maxMarks: 100,
+            awarded: 88
+          }
+        ]
+      },
+      5: {
+        student: 'Sneha Nair',
+        initials: 'SN',
+        avatar: 'v5',
+        email: 'sneha.n@example.com',
+        assessment: 'JavaScript Basics Quiz',
+        totalMarks: 40,
+        submittedAt: '12 Apr 2025, 5:40 PM',
+        currentScore: '18 / 40',
+        questions: [
+          {
+            type: 'mcq',
+            prompt: 'What is the correct way to declare a block-scoped variable in JavaScript?',
+            studentAnswer: 'var x = 10;',
+            expectedAnswer: 'let x = 10;',
+            correct: false,
+            maxMarks: 10,
+            awarded: 0,
+            explanation: 'The "let" keyword declares a block-scoped variable.'
+          },
+          {
+            type: 'text',
+            prompt: 'Briefly explain what a closure is in JavaScript.',
+            studentAnswer: 'A closure is a function inside another function.',
+            expectedAnswer: 'A closure is the combination of a function and the lexical environment within which it was declared, allowing it to access variables from an outer scope even after the outer function has returned.',
+            correct: null,
+            maxMarks: 30,
+            awarded: 18
+          }
+        ]
+      },
+      6: {
+        student: 'Kavita Gupta',
+        initials: 'KG',
+        avatar: 'v6',
+        email: 'kavita.g@example.com',
+        assessment: 'Data Visualization Project',
+        totalMarks: 100,
+        submittedAt: '15 Apr 2025, 4:30 PM',
+        currentScore: null,
+        questions: [
+          {
+            type: 'file',
+            prompt: 'Upload your Jupyter Notebook and exported chart images.',
+            studentFileName: 'kavita-dataviz-project.ipynb',
+            studentFileSize: '1.8 MB',
+            studentFileType: 'IPYNB',
+            expectedAnswer: 'A notebook using Python, Pandas and Plotly to create at least three interactive charts with proper titles, legends and axis labels.',
+            correct: null,
+            maxMarks: 100,
+            awarded: null
+          }
+        ]
+      }
+    };
+
+    var currentSubmissionId = null;
+    var currentSubmissionData = null;
+
+    /* ============================================================
+       OPEN GRADE MODAL
+       ============================================================ */
+    window.openGradeModal = function (submissionId) {
+      var data = demoSubmissions[submissionId];
+      if (!data) {
+        edvantoToast('Submission details unavailable.', 'error');
+        return;
+      }
+
+      currentSubmissionId = submissionId;
+      currentSubmissionData = data;
+
+      /* Header */
+      document.getElementById('gradeSubtitle').textContent = data.assessment;
+
+      /* Student summary */
+      var avatarEl = document.getElementById('gradeAvatar');
+      avatarEl.className = 'edvanto-avatar-sm ' + data.avatar;
+      avatarEl.textContent = data.initials;
+      document.getElementById('gradeStudentName').textContent = data.student;
+      document.getElementById('gradeStudentMeta').textContent =
+        data.email + ' · Submitted ' + data.submittedAt;
+      document.getElementById('gradeTotalMarks').textContent = data.totalMarks;
+      document.getElementById('gradeCurrentScore').textContent = data.currentScore || '—';
+      document.getElementById('gradeCurrentScore').className =
+        'val ' + (data.currentScore ? 'pass' : '');
+
+      /* Reset feedback */
+      document.getElementById('gradeFeedback').value = '';
+
+      /* Render questions */
+      renderGradingQuestions(data.questions);
+
+      /* Show modal */
+      new bootstrap.Modal(document.getElementById('gradeModal')).show();
+    };
+
+    /* ============================================================
+       RENDER GRADING QUESTIONS
+       ============================================================ */
+    function renderGradingQuestions(questions) {
+      var container = document.getElementById('gradingQuestionsContainer');
+      container.innerHTML = '';
+
+      questions.forEach(function (q, i) {
+        var card = document.createElement('div');
+        card.className = 'edvanto-grade-card';
+        card.dataset.index = i;
+
+        /* Header */
+        var headerHtml =
+          '<div class="edvanto-grade-q-header">' +
+            '<div class="edvanto-grade-q-num">' +
+              '<span class="chip">' + (i + 1) + '</span>' +
+              '<span>Question ' + (i + 1) + ' · ' +
+                (q.type === 'mcq' ? 'MCQ' : (q.type === 'text' ? 'Text Answer' : 'File Upload')) +
+              '</span>' +
+            '</div>' +
+            '<span class="edvanto-grade-q-marks' + (q.awarded === null ? ' pending' : '') + '">' +
+              '<i class="bi bi-trophy"></i>' +
+              (q.awarded !== null ? q.awarded : '—') + ' / ' + q.maxMarks +
+            '</span>' +
+          '</div>';
+
+        /* Question prompt */
+        var promptHtml =
+          '<p class="edvanto-grade-question">' + escapeHtml(q.prompt) + '</p>';
+
+        /* Answer blocks */
+        var answersHtml = '';
+
+        if (q.type === 'mcq') {
+          var verdict = q.correct === true ? 'correct' : (q.correct === false ? 'wrong' : '');
+          var verdictLabel = q.correct === true
+            ? '<span class="edvanto-answer-verdict correct"><i class="bi bi-check-circle-fill"></i> Correct</span>'
+            : (q.correct === false
+              ? '<span class="edvanto-answer-verdict wrong"><i class="bi bi-x-circle-fill"></i> Incorrect</span>'
+              : '');
+
+          answersHtml +=
+            '<div class="edvanto-answer-block student">' +
+              '<div class="lbl"><i class="bi bi-person-fill"></i> Student Answer ' + verdictLabel + '</div>' +
+              '<div class="val">' + escapeHtml(q.studentAnswer) + '</div>' +
+            '</div>';
+
+          answersHtml +=
+            '<div class="edvanto-answer-block mcq-correct">' +
+              '<div class="lbl"><i class="bi bi-check-circle-fill"></i> Correct Answer</div>' +
+              '<div class="val">' + escapeHtml(q.expectedAnswer) + '</div>' +
+            '</div>';
+
+        } else if (q.type === 'text') {
+          answersHtml +=
+            '<div class="edvanto-answer-block student">' +
+              '<div class="lbl"><i class="bi bi-person-fill"></i> Student Answer</div>' +
+              '<div class="val">' + escapeHtml(q.studentAnswer) + '</div>' +
+            '</div>';
+
+          answersHtml +=
+            '<div class="edvanto-answer-block expected">' +
+              '<div class="lbl"><i class="bi bi-bookmark-fill"></i> Expected Answer / Grading Guidance</div>' +
+              '<div class="val">' + escapeHtml(q.expectedAnswer) + '</div>' +
+            '</div>';
+
+        } else if (q.type === 'file') {
+          answersHtml +=
+            '<div class="edvanto-answer-block student">' +
+              '<div class="lbl"><i class="bi bi-file-earmark-arrow-up-fill"></i> Submitted File</div>' +
+              '<div class="edvanto-file-preview">' +
+                '<div class="edvanto-file-preview-icon"><i class="bi bi-file-earmark-zip-fill"></i></div>' +
+                '<div class="edvanto-file-preview-info">' +
+                  '<p class="edvanto-file-preview-name">' + escapeHtml(q.studentFileName) + '</p>' +
+                  '<div class="edvanto-file-preview-meta">' +
+                    q.studentFileType + ' · ' + q.studentFileSize + ' · Uploaded ' +
+                    'at submission time' +
+                  '</div>' +
+                '</div>' +
+                '<div class="edvanto-file-preview-actions">' +
+                  '<button type="button" class="btn btn-edvanto-outline" onclick="previewFile(\'' +
+                    escapeAttr(q.studentFileName) + '\')">' +
+                    '<i class="bi bi-eye"></i> Preview' +
+                  '</button>' +
+                  '<button type="button" class="btn btn-edvanto-outline" onclick="downloadFile(\'' +
+                    escapeAttr(q.studentFileName) + '\')">' +
+                    '<i class="bi bi-download"></i> Download' +
+                  '</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+
+          answersHtml +=
+            '<div class="edvanto-answer-block expected">' +
+              '<div class="lbl"><i class="bi bi-bookmark-fill"></i> Expected Submission</div>' +
+              '<div class="val">' + escapeHtml(q.expectedAnswer) + '</div>' +
+            '</div>';
+        }
+
+        /* Marking controls */
+        var markingHtml =
+          '<div class="edvanto-mark-controls">' +
+            '<div style="flex: 0 0 130px;">' +
+              '<label class="form-label">Marks Awarded</label>' +
+              '<input type="number" class="form-control marks-award-input" ' +
+                'data-index="' + i + '" ' +
+                'min="0" max="' + q.maxMarks + '" step="1" ' +
+                'value="' + (q.awarded !== null ? q.awarded : '') + '" ' +
+                'placeholder="0 – ' + q.maxMarks + '" ' +
+                'oninput="onMarkInput(this)">' +
+            '</div>' +
+            '<div class="edvanto-mark-rollup">' +
+              'Max: <span class="val">' + q.maxMarks + '</span>' +
+            '</div>' +
+          '</div>';
+
+        card.innerHTML = headerHtml + promptHtml + answersHtml + markingHtml;
+        container.appendChild(card);
+      });
+
+      /* Recompute score summary */
+      recomputeScoreSummary();
+    }
+
+    /* ============================================================
+       MARK INPUT
+       ============================================================ */
+    window.onMarkInput = function (input) {
+      var max = parseInt(input.getAttribute('max'), 10) || 0;
+      var val = parseInt(input.value, 10);
+
+      if (!isNaN(val)) {
+        if (val < 0) input.value = 0;
+        if (val > max) input.value = max;
+      }
+
+      /* Update the marks pill on the card header */
+      var card = input.closest('.edvanto-grade-card');
+      var pill = card.querySelector('.edvanto-grade-q-marks');
+      var current = input.value === '' ? '—' : input.value;
+      pill.innerHTML = '<i class="bi bi-trophy"></i>' + current + ' / ' + max;
+      pill.classList.toggle('pending', input.value === '');
+
+      recomputeScoreSummary();
+    };
+
+    function recomputeScoreSummary() {
+      if (!currentSubmissionData) return;
+
+      var totalAwarded = 0;
+      var allGraded = true;
+
+      document.querySelectorAll('#gradingQuestionsContainer .marks-award-input').forEach(function (input) {
+        if (input.value === '') {
+          allGraded = false;
+        } else {
+          totalAwarded += parseInt(input.value, 10) || 0;
+        }
+      });
+
+      var scoreEl = document.getElementById('gradeCurrentScore');
+      if (allGraded) {
+        var total = currentSubmissionData.totalMarks;
+        var pct = total > 0 ? Math.round((totalAwarded / total) * 100) : 0;
+        scoreEl.textContent = totalAwarded + ' / ' + total + ' (' + pct + '%)';
+        scoreEl.className = 'val ' + (pct >= 60 ? 'pass' : 'fail');
+      } else {
+        scoreEl.textContent = totalAwarded + ' / ' + currentSubmissionData.totalMarks + ' (partial)';
+        scoreEl.className = 'val';
+      }
+    }
+
+    /* ============================================================
+       FILE PREVIEW / DOWNLOAD (placeholder)
+       ============================================================ */
+    window.previewFile = function (fileName) {
+      edvantoToast('Previewing "' + fileName + '"…', 'info');
+      /* Replace with: window.open('/admin/submissions/file/' + fileId + '/preview/', '_blank'); */
+    };
+
+    window.downloadFile = function (fileName) {
+      edvantoToast('Downloading "' + fileName + '"…', 'info');
+      /* Replace with: window.location.href = '/admin/submissions/file/' + fileId + '/download/'; */
+    };
+
+    /* ============================================================
+       SAVE GRADING
+       ============================================================ */
+    window.saveGrading = function (asDraft) {
+      var totalAwarded = 0;
+      var allGraded = true;
+
+      document.querySelectorAll('#gradingQuestionsContainer .marks-award-input').forEach(function (input) {
+        if (input.value === '') {
+          allGraded = false;
+        } else {
+          totalAwarded += parseInt(input.value, 10) || 0;
+        }
+      });
+
+      if (!asDraft && !allGraded) {
+        edvantoToast('Please award marks for every question before publishing.', 'error');
+        return;
+      }
+
+      var modalEl = document.getElementById('gradeModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (asDraft) {
+        edvantoToast('Grading saved as draft.', 'info');
+      } else {
+        edvantoToast('Grade published successfully.', 'success');
+      }
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       RETURN FOR CORRECTION
+       ============================================================ */
+    var pendingReturnName = '';
+
+    window.returnSubmission = function (studentName) {
+      pendingReturnName = studentName;
+      document.getElementById('returnModalMessage').innerHTML =
+        'Return the submission from <strong class="text-edvanto-navy">' + studentName +
+        '</strong> for correction? The student will be notified and can resubmit.';
+      new bootstrap.Modal(document.getElementById('returnModal')).show();
+    };
+
+    window.returnFromModal = function () {
+      /* Close the grade modal first */
+      var gradeModalEl = document.getElementById('gradeModal');
+      if (gradeModalEl) {
+        var gm = bootstrap.Modal.getInstance(gradeModalEl);
+        if (gm) gm.hide();
+      }
+      var name = currentSubmissionData ? currentSubmissionData.student : 'this student';
+      pendingReturnName = name;
+      document.getElementById('returnModalMessage').innerHTML =
+        'Return the submission from <strong class="text-edvanto-navy">' + name +
+        '</strong> for correction? The student will be notified and can resubmit.';
+      setTimeout(function () {
+        new bootstrap.Modal(document.getElementById('returnModal')).show();
+      }, 250);
+    };
+
+    window.performReturn = function () {
+      var modalEl = document.getElementById('returnModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      edvantoToast('Submission returned to ' + pendingReturnName + '.', 'warning');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       BULK GRADE
+       ============================================================ */
+    window.bulkGradeSelected = function () {
+      edvantoToast('Bulk grading is not yet available.', 'info');
+      /* Replace with a real bulk grading workflow */
+    };
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /* For attribute values we keep plain text but escape quotes */
+    function escapeAttr(str) {
+      if (str === null || str === undefined) return '';
+      return String(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    }
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    document.addEventListener('DOMContentLoaded', function () {
+      /* Auto-submit filter form on select change (optional) */
+      document.querySelectorAll('#submissionFilterForm select').forEach(function (select) {
+        select.addEventListener('change', function () {
+          /* Uncomment to auto-apply filters */
+          /* document.getElementById('submissionFilterForm').submit(); */
+        });
+      });
+    });
+
+  })();
+</script>
+
+{% endblock %}

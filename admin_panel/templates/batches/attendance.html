@@ -1,0 +1,1388 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – ATTENDANCE MANAGEMENT
+     Fast daily marking · Bulk actions · Live summary
+     ============================================================ -->
+
+<style>
+  /* ---------- Attendance header banner ---------- */
+  .edvanto-att-banner {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 55%, #0D4E96 100%);
+    border-radius: var(--edvanto-radius-card);
+    padding: 1.35rem 1.6rem;
+    color: var(--edvanto-white);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 28px rgba(3, 42, 90, 0.14);
+  }
+  .edvanto-att-banner::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, rgba(1, 223, 254, 0) 70%);
+    pointer-events: none;
+  }
+  .edvanto-att-banner-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+  .edvanto-att-banner-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--edvanto-cyan);
+    flex-shrink: 0;
+  }
+  .edvanto-att-banner-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-att-banner-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.35rem;
+    color: var(--edvanto-white);
+  }
+  .edvanto-att-banner-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .edvanto-att-banner-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-att-banner-meta i {
+    color: var(--edvanto-cyan);
+    font-size: 0.88rem;
+  }
+  .edvanto-att-banner-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+  }
+  .edvanto-att-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--edvanto-radius-sm);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-white);
+  }
+  .edvanto-att-date-badge i { color: var(--edvanto-cyan); }
+
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.2rem 1.35rem 1rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-card.green::before  { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
+  .edvanto-stat-card.gold::before   { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
+  .edvanto-stat-card.cyan::before   { background: linear-gradient(90deg, #00B8D4 0%, var(--edvanto-cyan) 100%); }
+
+  .edvanto-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+  .edvanto-stat-icon.cyan  { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
+
+  .edvanto-stat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+  .edvanto-stat-meta .danger   { color: #DC3545; font-weight: 600; }
+
+  /* ---------- Toolbar ---------- */
+  .edvanto-att-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 0.9rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-att-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Date picker chip ---------- */
+  .edvanto-date-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: var(--edvanto-border-medium);
+    border-radius: var(--edvanto-radius-sm);
+    padding: 0.35rem 0.7rem;
+    background: var(--edvanto-gray-50);
+    color: var(--edvanto-navy);
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .edvanto-date-input i { color: var(--edvanto-violet); }
+  .edvanto-date-input input {
+    border: none;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    outline: none;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  /* ---------- Bulk action buttons ---------- */
+  .edvanto-bulk-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .edvanto-bulk-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    border: 1px solid var(--edvanto-gray-200);
+    background: var(--edvanto-white);
+    color: var(--edvanto-navy);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .edvanto-bulk-btn i { font-size: 0.85rem; }
+  .edvanto-bulk-btn:hover {
+    border-color: var(--edvanto-violet);
+    color: var(--edvanto-violet);
+    background: rgba(69, 28, 238, 0.03);
+  }
+  .edvanto-bulk-btn.present:hover {
+    border-color: #0F9D58;
+    color: #0F9D58;
+    background: rgba(15, 157, 88, 0.04);
+  }
+  .edvanto-bulk-btn.absent:hover {
+    border-color: #DC3545;
+    color: #DC3545;
+    background: rgba(220, 53, 69, 0.04);
+  }
+  .edvanto-bulk-btn.late:hover {
+    border-color: var(--edvanto-gold);
+    color: #9A6D00;
+    background: rgba(255, 179, 3, 0.05);
+  }
+  .edvanto-bulk-btn.excused:hover {
+    border-color: #0099B5;
+    color: #007A8F;
+    background: rgba(1, 223, 254, 0.06);
+  }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table thead th.center { text-align: center; }
+  .edvanto-table tbody td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody td.center { text-align: center; }
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.012); }
+  .edvanto-table tbody tr.all-present { background: rgba(15, 157, 88, 0.025); }
+  .edvanto-table tbody tr.all-absent { background: rgba(220, 53, 69, 0.025); }
+
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Student cell ---------- */
+  .edvanto-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 180px;
+  }
+  .edvanto-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--edvanto-white);
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
+
+  .edvanto-user-name {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.25;
+  }
+  .edvanto-user-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Attendance radio group ---------- */
+  .edvanto-att-radio {
+    display: inline-flex;
+    gap: 0.3rem;
+    justify-content: center;
+  }
+  .edvanto-att-radio input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .edvanto-att-radio label {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1.5px solid var(--edvanto-gray-200);
+    background: var(--edvanto-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.95rem;
+    color: var(--edvanto-gray-500);
+    margin: 0;
+  }
+  .edvanto-att-radio label:hover {
+    border-color: var(--edvanto-gray-400);
+  }
+  /* Present */
+  .edvanto-att-radio input[value="present"]:checked + label {
+    background: #0F9D58;
+    border-color: #0F9D58;
+    color: var(--edvanto-white);
+    box-shadow: 0 2px 8px rgba(15, 157, 88, 0.25);
+  }
+  /* Absent */
+  .edvanto-att-radio input[value="absent"]:checked + label {
+    background: #DC3545;
+    border-color: #DC3545;
+    color: var(--edvanto-white);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.25);
+  }
+  /* Late */
+  .edvanto-att-radio input[value="late"]:checked + label {
+    background: var(--edvanto-gold);
+    border-color: var(--edvanto-gold);
+    color: var(--edvanto-white);
+    box-shadow: 0 2px 8px rgba(255, 179, 3, 0.25);
+  }
+  /* Excused */
+  .edvanto-att-radio input[value="excused"]:checked + label {
+    background: #00B8D4;
+    border-color: #00B8D4;
+    color: var(--edvanto-white);
+    box-shadow: 0 2px 8px rgba(1, 223, 254, 0.28);
+  }
+
+  /* ---------- Remarks input ---------- */
+  .edvanto-remarks {
+    width: 100%;
+    min-width: 160px;
+    border: var(--edvanto-border-light);
+    background: var(--edvanto-gray-50);
+    border-radius: var(--edvanto-radius-xs);
+    font-size: 0.78rem;
+    padding: 0.35rem 0.6rem;
+    color: var(--edvanto-navy);
+    transition: all 0.15s ease;
+  }
+  .edvanto-remarks:focus {
+    outline: none;
+    border-color: var(--edvanto-violet);
+    background: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.08);
+  }
+  .edvanto-remarks::placeholder {
+    color: var(--edvanto-gray-400);
+    font-style: italic;
+  }
+
+  /* ---------- Actions bar ---------- */
+  .edvanto-actions-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-card);
+    box-shadow: 0 -4px 20px rgba(3, 42, 90, 0.06);
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .edvanto-actions-bar .btn {
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-sm);
+    padding: 0.5rem 1.15rem;
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-actions-bar .btn { flex: 1; }
+  }
+
+  /* ---------- Live summary strip ---------- */
+  .edvanto-live-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 600;
+  }
+  .edvanto-live-summary .item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: var(--edvanto-gray-100);
+  }
+  .edvanto-live-summary .item.present  { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .edvanto-live-summary .item.absent   { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+  .edvanto-live-summary .item.late     { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+  .edvanto-live-summary .item.excused  { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
+  .edvanto-live-summary .item .count {
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Info notice ---------- */
+  .edvanto-info-notice {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.65rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: rgba(69, 28, 238, 0.04);
+    border-left: 3px solid var(--edvanto-violet);
+    font-size: 0.76rem;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .edvanto-info-notice i {
+    color: var(--edvanto-violet);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .edvanto-info-notice .key {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(69, 28, 238, 0.08);
+    padding: 0.05rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    color: var(--edvanto-violet);
+    font-size: 0.72rem;
+    margin: 0 0.15rem;
+  }
+
+  /* ---------- Empty state ---------- */
+  .edvanto-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+  }
+  .edvanto-empty i {
+    font-size: 2.25rem;
+    color: var(--edvanto-gray-400);
+    margin-bottom: 0.85rem;
+    display: block;
+  }
+  .edvanto-empty h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .edvanto-empty p {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-att-banner-right { align-items: flex-start; width: 100%; }
+    .edvanto-att-radio label { width: 30px; height: 30px; font-size: 0.85rem; }
+    .edvanto-table tbody td { padding: 0.6rem 0.7rem; }
+    .edvanto-remarks { min-width: 110px; font-size: 0.72rem; }
+    .edvanto-user-cell { min-width: auto; }
+    .edvanto-user-meta { display: none; }
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-att-banner { padding: 1.1rem 1.25rem; }
+    .edvanto-att-banner-title { font-size: 1.1rem; }
+    .edvanto-stat-value { font-size: 1.35rem; }
+    .edvanto-att-radio { gap: 0.2rem; }
+    .edvanto-att-radio label { width: 28px; height: 28px; font-size: 0.78rem; }
+  }
+
+  /* ---------- Keyboard shortcut hint ---------- */
+  .edvanto-shortcut-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--edvanto-gray-500);
+    background: var(--edvanto-gray-100);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Focus ring for accessibility ---------- */
+  .edvanto-att-radio input:focus-visible + label {
+    outline: 2px solid var(--edvanto-violet);
+    outline-offset: 2px;
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#batches' %}">Batches</a></li>
+      <li class="breadcrumb-item"><a href="#">BATCH-0241</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Attendance</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ============================================================
+     ATTENDANCE HEADER BANNER
+     ============================================================ -->
+<div class="edvanto-att-banner">
+  <div class="edvanto-att-banner-inner">
+    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+      <div class="edvanto-att-banner-icon">
+        <i class="bi bi-clipboard2-check-fill"></i>
+      </div>
+      <div style="min-width: 0;">
+        <div class="edvanto-att-banner-label">Attendance · BATCH-0241</div>
+        <h1 class="edvanto-att-banner-title">UI/UX Design – Weekend Batch</h1>
+        <div class="edvanto-att-banner-meta">
+          <span><i class="bi bi-journal-bookmark-fill"></i> UI/UX Design Masterclass</span>
+          <span><i class="bi bi-person-badge"></i> Priya Nair</span>
+          <span><i class="bi bi-geo-alt-fill"></i> Mumbai – Andheri</span>
+        </div>
+      </div>
+    </div>
+    <div class="edvanto-att-banner-right">
+      <div class="edvanto-att-date-badge">
+        <i class="bi bi-calendar-event"></i>
+        <span id="bannerDate">Monday, 15 April 2025</span>
+      </div>
+      <div style="font-size: 0.72rem; color: rgba(255,255,255,0.6); font-weight: 600; text-align: right;">
+        Session 4 of 12 · 6:30 PM – 8:30 PM
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SUMMARY STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Present % -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Present Today</div>
+      <div class="edvanto-stat-value" id="statPresentPct">—</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-people-fill" style="color: #0F9D58; font-size: 0.75rem;"></i>
+        <span id="statPresentCount">0 students</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Absent % -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card gold">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-x-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Absent Today</div>
+      <div class="edvanto-stat-value" id="statAbsentPct">—</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-person-dash-fill" style="color: var(--edvanto-gold); font-size: 0.75rem;"></i>
+        <span id="statAbsentCount">0 students</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Sessions -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card cyan">
+      <div class="edvanto-stat-icon cyan">
+        <i class="bi bi-calendar2-check-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Total Sessions</div>
+      <div class="edvanto-stat-value">12</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-play-circle-fill" style="color: #0099B5; font-size: 0.75rem;"></i>
+        <span>3 completed · 9 upcoming</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student attendance % -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-graph-up-arrow"></i>
+      </div>
+      <div class="edvanto-stat-label">Batch Avg. Attendance</div>
+      <div class="edvanto-stat-value">82%</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+4%</span>
+        <span>vs last session</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOOLBAR
+     ============================================================ -->
+<div class="edvanto-att-toolbar">
+  <div class="edvanto-att-toolbar-left">
+    <div class="edvanto-date-input">
+      <i class="bi bi-calendar-event"></i>
+      <input type="date" id="attDatePicker" value="2025-04-15"
+             onchange="updateDate(this.value)" aria-label="Attendance date">
+    </div>
+
+    <div class="edvanto-bulk-group">
+      <button type="button" class="edvanto-bulk-btn present" onclick="markAll('present')">
+        <i class="bi bi-check-circle-fill"></i> Mark All Present
+      </button>
+      <button type="button" class="edvanto-bulk-btn absent" onclick="markAll('absent')">
+        <i class="bi bi-x-circle-fill"></i> Mark All Absent
+      </button>
+      <button type="button" class="edvanto-bulk-btn" onclick="resetAll()">
+        <i class="bi bi-arrow-counterclockwise"></i> Reset
+      </button>
+    </div>
+  </div>
+
+  <div class="edvanto-live-summary" id="liveSummary" aria-live="polite">
+    <span class="item present">
+      <i class="bi bi-check-circle-fill"></i>
+      Present: <span class="count" id="livePresent">0</span>
+    </span>
+    <span class="item absent">
+      <i class="bi bi-x-circle-fill"></i>
+      Absent: <span class="count" id="liveAbsent">0</span>
+    </span>
+    <span class="item late">
+      <i class="bi bi-clock-fill"></i>
+      Late: <span class="count" id="liveLate">0</span>
+    </span>
+    <span class="item excused">
+      <i class="bi bi-shield-fill-check"></i>
+      Excused: <span class="count" id="liveExcused">0</span>
+    </span>
+  </div>
+</div>
+
+<!-- ============================================================
+     INFO NOTICE
+     ============================================================ -->
+<div class="edvanto-info-notice">
+  <i class="bi bi-lightning-charge-fill"></i>
+  <div>
+    <strong>Fast marking:</strong> Use the toggle buttons per student, or bulk-mark the whole batch.
+    Press <span class="key">P</span> for Present, <span class="key">A</span> for Absent,
+    <span class="key">L</span> for Late, <span class="key">E</span> for Excused — then press
+    <span class="key">↓</span> to move to the next row.
+  </div>
+</div>
+
+<!-- ============================================================
+     ATTENDANCE TABLE
+     ============================================================ -->
+<div class="edvanto-card" style="padding: 0; overflow: hidden;">
+
+  <div class="edvanto-card-header" style="padding: 1rem 1.5rem; margin-bottom: 0; border-bottom: var(--edvanto-border-light);">
+    <h2 class="edvanto-card-title">Mark Attendance</h2>
+    <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
+      24 students
+    </span>
+  </div>
+
+  <div class="table-responsive-edvanto" style="padding: 0 0.75rem;">
+    <table class="edvanto-table" id="attendanceTable">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th class="center">Present</th>
+          <th class="center">Absent</th>
+          <th class="center">Late</th>
+          <th class="center">Excused</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        {# {% for student in students %} #}
+
+        <!-- Row 1 -->
+        <tr data-student-id="1" data-student-name="Ananya Kapoor">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v1">AK</span>
+              <div>
+                <div class="edvanto-user-name">Ananya Kapoor</div>
+                <div class="edvanto-user-meta">ananya.k@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_1" id="att_1_present" value="present" onchange="updateRow(this)">
+              <label for="att_1_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_1" id="att_1_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_1_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_1" id="att_1_late" value="late" onchange="updateRow(this)">
+              <label for="att_1_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_1" id="att_1_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_1_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+        <!-- Row 2 -->
+        <tr data-student-id="2" data-student-name="Rohan Sharma">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v2">RS</span>
+              <div>
+                <div class="edvanto-user-name">Rohan Sharma</div>
+                <div class="edvanto-user-meta">rohan.s@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_2" id="att_2_present" value="present" onchange="updateRow(this)">
+              <label for="att_2_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_2" id="att_2_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_2_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_2" id="att_2_late" value="late" onchange="updateRow(this)">
+              <label for="att_2_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_2" id="att_2_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_2_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+        <!-- Row 3 -->
+        <tr data-student-id="3" data-student-name="Priya Mehta">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v3">PM</span>
+              <div>
+                <div class="edvanto-user-name">Priya Mehta</div>
+                <div class="edvanto-user-meta">priya.m@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_3" id="att_3_present" value="present" onchange="updateRow(this)">
+              <label for="att_3_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_3" id="att_3_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_3_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_3" id="att_3_late" value="late" onchange="updateRow(this)">
+              <label for="att_3_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_3" id="att_3_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_3_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+        <!-- Row 4 -->
+        <tr data-student-id="4" data-student-name="Arjun Verma">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v4">AV</span>
+              <div>
+                <div class="edvanto-user-name">Arjun Verma</div>
+                <div class="edvanto-user-meta">arjun.v@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_4" id="att_4_present" value="present" onchange="updateRow(this)">
+              <label for="att_4_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_4" id="att_4_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_4_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_4" id="att_4_late" value="late" onchange="updateRow(this)">
+              <label for="att_4_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_4" id="att_4_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_4_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+        <!-- Row 5 -->
+        <tr data-student-id="5" data-student-name="Sneha Nair">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v5">SN</span>
+              <div>
+                <div class="edvanto-user-name">Sneha Nair</div>
+                <div class="edvanto-user-meta">sneha.n@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_5" id="att_5_present" value="present" onchange="updateRow(this)">
+              <label for="att_5_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_5" id="att_5_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_5_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_5" id="att_5_late" value="late" onchange="updateRow(this)">
+              <label for="att_5_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_5" id="att_5_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_5_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+        <!-- Row 6 -->
+        <tr data-student-id="6" data-student-name="Kavita Gupta">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v6">KG</span>
+              <div>
+                <div class="edvanto-user-name">Kavita Gupta</div>
+                <div class="edvanto-user-meta">kavita.g@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_6" id="att_6_present" value="present" onchange="updateRow(this)">
+              <label for="att_6_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_6" id="att_6_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_6_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_6" id="att_6_late" value="late" onchange="updateRow(this)">
+              <label for="att_6_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_6" id="att_6_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_6_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+        <!-- Row 7 -->
+        <tr data-student-id="7" data-student-name="Rohan Kumar">
+          <td>
+            <div class="edvanto-user-cell">
+              <span class="edvanto-avatar-sm v1">RK</span>
+              <div>
+                <div class="edvanto-user-name">Rohan Kumar</div>
+                <div class="edvanto-user-meta">rohan.k@example.com</div>
+              </div>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_7" id="att_7_present" value="present" onchange="updateRow(this)">
+              <label for="att_7_present" title="Present"><i class="bi bi-check-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_7" id="att_7_absent" value="absent" onchange="updateRow(this)">
+              <label for="att_7_absent" title="Absent"><i class="bi bi-x-lg"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_7" id="att_7_late" value="late" onchange="updateRow(this)">
+              <label for="att_7_late" title="Late"><i class="bi bi-clock"></i></label>
+            </div>
+          </td>
+          <td class="center">
+            <div class="edvanto-att-radio">
+              <input type="radio" name="att_7" id="att_7_excused" value="excused" onchange="updateRow(this)">
+              <label for="att_7_excused" title="Excused"><i class="bi bi-shield-check"></i></label>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="edvanto-remarks" placeholder="Optional note…" maxlength="80">
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     STICKY ACTIONS BAR
+     ============================================================ -->
+<div class="edvanto-actions-bar">
+  <div class="d-flex align-items-center gap-2" style="font-size: 0.78rem; color: var(--edvanto-gray-600); font-weight: 600;">
+    <i class="bi bi-info-circle" style="color: var(--edvanto-violet);"></i>
+    <span id="actionSummary">No changes yet</span>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-edvanto-outline" onclick="discardChanges()">
+      <i class="bi bi-x-lg me-1"></i> Discard
+    </button>
+    <button type="button" class="btn btn-edvanto-outline" onclick="saveDraft()">
+      <i class="bi bi-file-earmark me-1"></i> Save Draft
+    </button>
+    <button type="button" class="btn btn-edvanto-primary" onclick="saveAttendance()">
+      <i class="bi bi-check-lg me-1"></i> Save Attendance
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     CONFIRM SAVE MODAL
+     ============================================================ -->
+<div class="modal fade" id="saveConfirmModal" tabindex="-1" aria-labelledby="saveConfirmLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="saveConfirmLabel" style="font-weight: 700; color: var(--edvanto-navy); font-size: 1rem;">
+          <i class="bi bi-check-circle-fill me-2" style="color: #0F9D58;"></i>
+          Confirm Attendance
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2" style="font-size: 0.88rem; color: var(--edvanto-gray-600);">
+        <span id="saveConfirmMessage">Are you sure you want to save this attendance?</span>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm text-white" style="background: #0F9D58;"
+                onclick="performSave()">
+          Save Attendance
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       STATE
+       ============================================================ */
+    var totalStudents = 0;
+    var currentRowIndex = -1;
+
+    /* ============================================================
+       LIVE SUMMARY UPDATES
+       ============================================================ */
+    function updateSummary() {
+      var counts = { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 };
+      var rows = document.querySelectorAll('#attendanceTable tbody tr');
+      totalStudents = rows.length;
+
+      rows.forEach(function (row) {
+        var checked = row.querySelector('input[type="radio"]:checked');
+        if (checked) {
+          counts[checked.value] = (counts[checked.value] || 0) + 1;
+        } else {
+          counts.unmarked++;
+        }
+      });
+
+      /* Update live strip */
+      document.getElementById('livePresent').textContent = counts.present;
+      document.getElementById('liveAbsent').textContent = counts.absent;
+      document.getElementById('liveLate').textContent = counts.late;
+      document.getElementById('liveExcused').textContent = counts.excused;
+
+      /* Update stat cards */
+      var marked = totalStudents - counts.unmarked;
+      var presentPct = marked > 0 ? Math.round((counts.present / totalStudents) * 100) : 0;
+      var absentPct = marked > 0 ? Math.round((counts.absent / totalStudents) * 100) : 0;
+
+      document.getElementById('statPresentPct').textContent = presentPct + '%';
+      document.getElementById('statPresentCount').textContent =
+        counts.present + ' of ' + totalStudents + ' students';
+      document.getElementById('statAbsentPct').textContent = absentPct + '%';
+      document.getElementById('statAbsentCount').textContent =
+        counts.absent + ' of ' + totalStudents + ' students';
+
+      /* Update action summary */
+      var actionSummary = document.getElementById('actionSummary');
+      if (marked === 0) {
+        actionSummary.textContent = 'No changes yet';
+      } else if (counts.unmarked > 0) {
+        actionSummary.textContent = marked + ' of ' + totalStudents + ' marked · ' +
+                                     counts.unmarked + ' unmarked';
+      } else {
+        actionSummary.textContent = 'All ' + totalStudents + ' students marked';
+      }
+
+      /* Per-row highlight */
+      rows.forEach(function (row) {
+        row.classList.remove('all-present', 'all-absent');
+        var checked = row.querySelector('input[type="radio"]:checked');
+        if (checked) {
+          if (checked.value === 'present') row.classList.add('all-present');
+          if (checked.value === 'absent') row.classList.add('all-absent');
+        }
+      });
+    }
+
+    window.updateRow = function (input) {
+      updateSummary();
+      /* Highlight row briefly for feedback */
+      var row = input.closest('tr');
+      if (row) {
+        row.style.transition = 'background 0.3s ease';
+        row.style.background = 'rgba(69, 28, 238, 0.04)';
+        setTimeout(function () { row.style.background = ''; }, 350);
+      }
+    };
+
+    /* ============================================================
+       BULK ACTIONS
+       ============================================================ */
+    window.markAll = function (value) {
+      var rows = document.querySelectorAll('#attendanceTable tbody tr');
+      rows.forEach(function (row, i) {
+        var radio = row.querySelector('input[type="radio"][value="' + value + '"]');
+        if (radio) {
+          radio.checked = true;
+        }
+      });
+      updateSummary();
+      edvantoToast('All students marked as ' + value + '.', 'success');
+    };
+
+    window.resetAll = function () {
+      var rows = document.querySelectorAll('#attendanceTable tbody tr');
+      rows.forEach(function (row) {
+        row.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+        var remark = row.querySelector('.edvanto-remarks');
+        if (remark) remark.value = '';
+      });
+      updateSummary();
+      edvantoToast('Attendance reset.', 'info');
+    };
+
+    window.discardChanges = function () {
+      resetAll();
+    };
+
+    /* ============================================================
+       SAVE / DRAFT
+       ============================================================ */
+    window.saveDraft = function () {
+      edvantoToast('Attendance saved as draft.', 'info');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    window.saveAttendance = function () {
+      var counts = { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 };
+      var rows = document.querySelectorAll('#attendanceTable tbody tr');
+
+      rows.forEach(function (row) {
+        var checked = row.querySelector('input[type="radio"]:checked');
+        if (checked) {
+          counts[checked.value] = (counts[checked.value] || 0) + 1;
+        } else {
+          counts.unmarked++;
+        }
+      });
+
+      if (counts.unmarked > 0) {
+        document.getElementById('saveConfirmMessage').innerHTML =
+          '<strong class="text-edvanto-navy">' + counts.unmarked + ' student' +
+          (counts.unmarked > 1 ? 's have' : ' has') + ' not been marked.</strong><br>' +
+          'Unmarked students will be saved as <em>absent</em> by default. Continue?';
+      } else {
+        document.getElementById('saveConfirmMessage').innerHTML =
+          'Save attendance for <strong class="text-edvanto-navy">' + totalStudents +
+          ' students</strong>?<br>' +
+          '<span style="font-size: 0.8rem; color: var(--edvanto-gray-500);">' +
+          'Present: ' + counts.present + ' · ' +
+          'Absent: ' + counts.absent + ' · ' +
+          'Late: ' + counts.late + ' · ' +
+          'Excused: ' + counts.excused + '</span>';
+      }
+
+      new bootstrap.Modal(document.getElementById('saveConfirmModal')).show();
+    };
+
+    window.performSave = function () {
+      var modalEl = document.getElementById('saveConfirmModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      edvantoToast('Attendance saved successfully.', 'success');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       DATE HANDLING
+       ============================================================ */
+    window.updateDate = function (value) {
+      if (!value) return;
+      var date = new Date(value + 'T00:00:00');
+      var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+
+      var formatted = days[date.getDay()] + ', ' + date.getDate() + ' ' +
+                      months[date.getMonth()] + ' ' + date.getFullYear();
+      document.getElementById('bannerDate').textContent = formatted;
+
+      edvantoToast('Switched to ' + formatted, 'info');
+      /* Replace with a real fetch() to load that day's attendance */
+    };
+
+    /* ============================================================
+       KEYBOARD SHORTCUTS (fast staff marking)
+       ============================================================ */
+    document.addEventListener('keydown', function (e) {
+      /* Only when not typing in an input */
+      var tag = document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        if (e.key === 'ArrowDown') {
+          /* Allow arrow-down to move to next row from remarks input */
+          var rows = Array.from(document.querySelectorAll('#attendanceTable tbody tr'));
+          var currentRow = document.activeElement.closest('tr');
+          var idx = rows.indexOf(currentRow);
+          if (idx >= 0 && idx < rows.length - 1) {
+            e.preventDefault();
+            var nextRemark = rows[idx + 1].querySelector('.edvanto-remarks');
+            if (nextRemark) nextRemark.focus();
+          }
+        }
+        return;
+      }
+
+      var key = e.key.toLowerCase();
+      var rows = Array.from(document.querySelectorAll('#attendanceTable tbody tr'));
+      var focusRow = document.activeElement.closest('tr');
+      var idx = rows.indexOf(focusRow);
+
+      /* If no row is focused, start from first */
+      if (idx === -1) idx = 0;
+
+      if (key === 'p' || key === 'a' || key === 'l' || key === 'e') {
+        e.preventDefault();
+        var map = { p: 'present', a: 'absent', l: 'late', e: 'excused' };
+        var value = map[key];
+        var row = rows[idx];
+        if (row) {
+          var radio = row.querySelector('input[type="radio"][value="' + value + '"]');
+          if (radio) {
+            radio.checked = true;
+            updateSummary();
+          }
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (idx < rows.length - 1) {
+          var nextRow = rows[idx + 1];
+          nextRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx > 0) {
+          var prevRow = rows[idx - 1];
+          prevRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    });
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    document.addEventListener('DOMContentLoaded', function () {
+      updateSummary();
+
+      /* Pre-fill some demo data for context (remove on real data) */
+      var demoPresets = {
+        1: 'present',
+        2: 'present',
+        3: 'late',
+        4: 'present',
+        6: 'present',
+        7: 'absent'
+      };
+      Object.keys(demoPresets).forEach(function (studentId) {
+        var row = document.querySelector('#attendanceTable tbody tr[data-student-id="' + studentId + '"]');
+        if (row) {
+          var radio = row.querySelector('input[type="radio"][value="' + demoPresets[studentId] + '"]');
+          if (radio) radio.checked = true;
+        }
+      });
+
+      /* Demo remarks */
+      var row3 = document.querySelector('#attendanceTable tbody tr[data-student-id="3"] .edvanto-remarks');
+      if (row3) row3.value = 'Arrived 15 min late';
+      var row7 = document.querySelector('#attendanceTable tbody tr[data-student-id="7"] .edvanto-remarks');
+      if (row7) row7.value = 'Informed in advance';
+
+      updateSummary();
+    });
+
+  })();
+</script>
+
+{% endblock %}

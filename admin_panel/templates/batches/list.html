@@ -1,0 +1,2020 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Batches{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – BATCH MANAGEMENT
+     Offline Classroom Batches · Schedules · Attendance · Sessions
+     ============================================================ -->
+
+<style>
+  /* ---------- Stat cards ---------- */
+  .edvanto-stat-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 1.4rem 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .edvanto-stat-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+    transform: translateY(-2px);
+  }
+  .edvanto-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    opacity: 0.85;
+  }
+  .edvanto-stat-card.cyan::before  { background: linear-gradient(90deg, #00B8D4 0%, var(--edvanto-cyan) 100%); }
+  .edvanto-stat-card.green::before { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
+  .edvanto-stat-card.gray::before  { background: linear-gradient(90deg, #8A9BB5 0%, #B7C4D6 100%); }
+
+  .edvanto-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    margin-bottom: 0.9rem;
+  }
+  .edvanto-stat-icon.cyan  { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
+  .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
+  .edvanto-stat-icon.gray  { background: rgba(138, 155, 181, 0.12); color: #5A6E8A; }
+  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
+
+  .edvanto-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .edvanto-stat-meta {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-600);
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
+  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
+
+  /* ---------- Filter bar ---------- */
+  .edvanto-filter-bar {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edvanto-filter-bar .form-control,
+  .edvanto-filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    height: 42px;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-gray-50);
+  }
+  .edvanto-filter-bar .form-control:focus,
+  .edvanto-filter-bar .form-select:focus {
+    border-color: var(--edvanto-violet);
+    background-color: var(--edvanto-white);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-filter-bar .input-icon-wrapper {
+    position: relative;
+  }
+  .edvanto-filter-bar .input-icon-wrapper i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--edvanto-gray-500);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .edvanto-filter-bar .input-icon-wrapper .form-control {
+    padding-left: 2.5rem;
+  }
+
+  /* ---------- Table cells ---------- */
+  .edvanto-batch-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 180px;
+  }
+  .edvanto-batch-name {
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    font-size: 0.88rem;
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-batch-name .code {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 5px;
+    background: rgba(69, 28, 238, 0.08);
+    color: var(--edvanto-violet);
+    letter-spacing: -0.01em;
+  }
+  .edvanto-batch-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 170px;
+  }
+  .edvanto-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--edvanto-white);
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
+
+  .edvanto-user-name {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.85rem;
+    line-height: 1.25;
+  }
+  .edvanto-user-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-course-title {
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    min-width: 150px;
+  }
+  .edvanto-course-meta {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  .edvanto-center-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+    min-width: 130px;
+  }
+  .edvanto-center-cell i {
+    color: var(--edvanto-violet);
+    font-size: 0.9rem;
+  }
+
+  /* ---------- Date range ---------- */
+  .edvanto-date-range {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 130px;
+  }
+  .edvanto-date-main {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-date-main i {
+    font-size: 0.78rem;
+    color: var(--edvanto-gray-500);
+  }
+  .edvanto-date-sub {
+    font-size: 0.7rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Capacity ---------- */
+  .edvanto-capacity {
+    min-width: 100px;
+  }
+  .edvanto-capacity-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 0.3rem;
+  }
+  .edvanto-capacity-label .count {
+    color: var(--edvanto-navy);
+    font-weight: 700;
+  }
+  .edvanto-capacity-track {
+    height: 6px;
+    background: var(--edvanto-gray-200);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .edvanto-capacity-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
+    transition: width 0.3s ease;
+  }
+  .edvanto-capacity-fill.low    { background: linear-gradient(90deg, var(--edvanto-cyan) 0%, #4DE8FF 100%); }
+  .edvanto-capacity-fill.mid    { background: linear-gradient(90deg, var(--edvanto-violet) 0%, #6B4EFF 100%); }
+  .edvanto-capacity-fill.high   { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
+  .edvanto-capacity-fill.full   { background: linear-gradient(90deg, #DC3545 0%, #E4606D 100%); }
+
+  /* ---------- Badges ---------- */
+  .edvanto-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .badge-batch-upcoming  { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
+  .badge-batch-active    { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
+  .badge-batch-completed { background: rgba(138, 155, 181, 0.14); color: #5A6E8A; }
+  .badge-batch-cancelled { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
+
+  /* ---------- Table ---------- */
+  .edvanto-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .edvanto-table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-600);
+    background: var(--edvanto-gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-200);
+    white-space: nowrap;
+  }
+  .edvanto-table tbody td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    vertical-align: middle;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+  }
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
+  }
+
+  /* ---------- Action buttons ---------- */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.gold:hover {
+    background: rgba(255, 179, 3, 0.10);
+    color: #9A6D00;
+  }
+  .edvanto-action-btn.success:hover {
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F9D58;
+  }
+
+  /* ---------- Mobile batch cards ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-batches-table-wrap { display: none; }
+    .edvanto-batches-cards { display: block; }
+  }
+  @media (min-width: 768px) {
+    .edvanto-batches-cards { display: none; }
+  }
+  .edvanto-batch-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .edvanto-batch-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+  }
+  .edvanto-batch-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.8rem;
+  }
+  .edvanto-batch-card-row:last-child { border-bottom: none; }
+  .edvanto-batch-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
+  .edvanto-batch-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
+  .edvanto-batch-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--edvanto-gray-100);
+    flex-wrap: wrap;
+  }
+  .edvanto-batch-card-actions .btn {
+    flex: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.45rem 0.4rem;
+  }
+
+  /* ============================================================
+     BATCH DETAIL MODAL
+     ============================================================ */
+  .edvanto-detail-modal .modal-dialog {
+    max-width: 860px;
+  }
+  .edvanto-detail-modal .modal-content {
+    border-radius: var(--edvanto-radius-card);
+    border: none;
+    overflow: hidden;
+  }
+  .edvanto-detail-modal .modal-header {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 100%);
+    color: var(--edvanto-white);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .edvanto-detail-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .edvanto-detail-modal .modal-title {
+    color: var(--edvanto-white);
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+  }
+  .edvanto-detail-modal .modal-title i { color: var(--edvanto-cyan); }
+  .edvanto-detail-modal .modal-title .batch-code {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    color: var(--edvanto-cyan);
+  }
+  .edvanto-detail-modal .btn-close {
+    filter: invert(1) brightness(2);
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+  }
+  .edvanto-detail-modal .btn-close:hover { opacity: 1; }
+
+  .edvanto-detail-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--edvanto-gray-50);
+  }
+
+  /* Detail sections */
+  .edvanto-detail-section {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-detail-section:last-child { margin-bottom: 0; }
+  .edvanto-detail-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--edvanto-violet);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-detail-section-title i { font-size: 0.95rem; }
+
+  .edvanto-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.85rem;
+  }
+  .edvanto-detail-item .lbl {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-detail-item .val {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.01em;
+    word-break: break-word;
+  }
+  .edvanto-detail-item .val.mono {
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.78rem;
+    background: var(--edvanto-gray-100);
+    padding: 0.25rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+  }
+
+  /* Tabs inside detail modal */
+  .edvanto-detail-tabs {
+    border-bottom: var(--edvanto-border-light);
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .edvanto-detail-tabs .nav-link {
+    border: none;
+    border-bottom: 2.5px solid transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.6rem 0.95rem;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .edvanto-detail-tabs .nav-link i { font-size: 0.95rem; }
+  .edvanto-detail-tabs .nav-link:hover { color: var(--edvanto-violet); }
+  .edvanto-detail-tabs .nav-link.active {
+    color: var(--edvanto-violet);
+    border-bottom-color: var(--edvanto-violet);
+  }
+
+  /* ---------- Schedule list ---------- */
+  .edvanto-schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    margin-bottom: 0.4rem;
+  }
+  .edvanto-schedule-row:last-child { margin-bottom: 0; }
+  .edvanto-schedule-day {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
+    color: var(--edvanto-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .edvanto-schedule-day .day-name {
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.85;
+  }
+  .edvanto-schedule-day .day-num {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-top: 0.1rem;
+  }
+  .edvanto-schedule-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .edvanto-schedule-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+  }
+  .edvanto-schedule-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-schedule-meta .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--edvanto-gray-400);
+  }
+
+  /* ---------- Students list ---------- */
+  .edvanto-student-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    margin-bottom: 0.35rem;
+  }
+  .edvanto-student-row:last-child { margin-bottom: 0; }
+  .edvanto-student-row .edvanto-user-cell { min-width: 0; flex: 1; }
+  .edvanto-student-attendance {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #0F6B3E;
+    background: rgba(15, 157, 88, 0.08);
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .edvanto-student-attendance.warn {
+    color: #9A6D00;
+    background: rgba(255, 179, 3, 0.12);
+  }
+  .edvanto-student-attendance.danger {
+    color: #B02A37;
+    background: rgba(220, 53, 69, 0.10);
+  }
+
+  /* ---------- Attendance summary tiles ---------- */
+  .edvanto-att-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-att-tile {
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.75rem 0.9rem;
+  }
+  .edvanto-att-tile .lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--edvanto-gray-500);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-att-tile .val {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .edvanto-att-tile .val.green { color: #0F6B3E; }
+  .edvanto-att-tile .val.gold  { color: #9A6D00; }
+  .edvanto-att-tile .val.red   { color: #B02A37; }
+
+  /* ---------- Sessions list ---------- */
+  .edvanto-session-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-light);
+    margin-bottom: 0.4rem;
+  }
+  .edvanto-session-row:last-child { margin-bottom: 0; }
+  .edvanto-session-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(69, 28, 238, 0.07);
+    color: var(--edvanto-violet);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .edvanto-session-num.done {
+    background: #0F9D58;
+    color: var(--edvanto-white);
+  }
+  .edvanto-session-num.upcoming {
+    background: var(--edvanto-cyan);
+    color: #003B47;
+  }
+  .edvanto-session-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .edvanto-session-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+  }
+  .edvanto-session-meta {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ---------- Empty state ---------- */
+  .edvanto-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  .edvanto-empty i {
+    font-size: 2rem;
+    color: var(--edvanto-gray-400);
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .edvanto-empty p {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+  }
+
+  /* ---------- Info panel ---------- */
+  .edvanto-info-panel {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: rgba(1, 223, 254, 0.06);
+    border-left: 3px solid var(--edvanto-cyan);
+    font-size: 0.78rem;
+    color: #005A6B;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .edvanto-info-panel i {
+    color: #0099B5;
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Batches</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Batches</h1>
+    <p class="edvanto-page-subtitle">Manage offline classroom batches, schedules and attendance.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filters
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>Attendance Report</a></li>
+      </ul>
+    </div>
+    <a href="#batch_add' %}" class="btn btn-edvanto-primary btn-sm px-3">
+      <i class="bi bi-plus-lg me-1"></i> Create Batch
+    </a>
+  </div>
+</div>
+
+<!-- ============================================================
+     STAT CARDS
+     ============================================================ -->
+<div class="row g-3 g-lg-4 mb-4">
+  <!-- Total Batches -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-calendar2-week-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Total Batches</div>
+      <div class="edvanto-stat-value">42</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-arrow-up-short positive"></i>
+        <span class="positive">+5</span>
+        <span>this quarter</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-play-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Active</div>
+      <div class="edvanto-stat-value">18</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-circle-fill" style="color: #0F9D58; font-size: 0.5rem;"></i>
+        <span>Currently running</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card cyan">
+      <div class="edvanto-stat-icon cyan">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="edvanto-stat-label">Upcoming</div>
+      <div class="edvanto-stat-value">12</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-calendar-event" style="color: #0099B5; font-size: 0.75rem;"></i>
+        <span>Starting soon</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed -->
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card gray">
+      <div class="edvanto-stat-icon gray">
+        <i class="bi bi-check2-circle"></i>
+      </div>
+      <div class="edvanto-stat-label">Completed</div>
+      <div class="edvanto-stat-value">12</div>
+      <div class="edvanto-stat-meta">
+        <i class="bi bi-award" style="color: #5A6E8A; font-size: 0.75rem;"></i>
+        <span>Certificates issued</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER BAR
+     ============================================================ -->
+<div class="collapse show" id="filterCollapse">
+  <div class="edvanto-filter-bar">
+    <form method="get" action="" id="batchFilterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Search -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label mb-1" for="batchSearch">Search</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" id="batchSearch" name="q"
+                   placeholder="Search by batch name or code…"
+                   value="{{ request.GET.q|default:'' }}">
+          </div>
+        </div>
+
+        <!-- Course -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="courseFilter">Course</label>
+          <select class="form-select" id="courseFilter" name="course">
+            <option value="">All Courses</option>
+            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design</option>
+            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics</option>
+            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Dev</option>
+            <option value="marketing" {% if request.GET.course == 'marketing' %}selected{% endif %}>Digital Marketing</option>
+          </select>
+        </div>
+
+        <!-- Center -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="centerFilter">Center</label>
+          <select class="form-select" id="centerFilter" name="center">
+            <option value="">All Centers</option>
+            <option value="mumbai" {% if request.GET.center == 'mumbai' %}selected{% endif %}>Mumbai – Andheri</option>
+            <option value="delhi" {% if request.GET.center == 'delhi' %}selected{% endif %}>Delhi – CP</option>
+            <option value="bangalore" {% if request.GET.center == 'bangalore' %}selected{% endif %}>Bangalore – Koramangala</option>
+            <option value="pune" {% if request.GET.center == 'pune' %}selected{% endif %}>Pune – Baner</option>
+          </select>
+        </div>
+
+        <!-- Instructor -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="instructorFilter">Instructor</label>
+          <select class="form-select" id="instructorFilter" name="instructor">
+            <option value="">All Instructors</option>
+            <option value="priya" {% if request.GET.instructor == 'priya' %}selected{% endif %}>Priya Nair</option>
+            <option value="arun" {% if request.GET.instructor == 'arun' %}selected{% endif %}>Arun Kapoor</option>
+            <option value="rajesh" {% if request.GET.instructor == 'rajesh' %}selected{% endif %}>Dr. Rajesh Sharma</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="col-6 col-lg-2">
+          <label class="form-label mb-1" for="statusFilter">Status</label>
+          <select class="form-select" id="statusFilter" name="status">
+            <option value="">All Status</option>
+            <option value="upcoming" {% if request.GET.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+            <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+            <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+        </div>
+
+        <!-- Apply / Reset -->
+        <div class="col-12 col-lg-1 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
+            Apply
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     BATCHES TABLE / CARDS
+     ============================================================ -->
+<div class="edvanto-card">
+
+  <!-- Card header -->
+  <div class="edvanto-card-header">
+    <h2 class="edvanto-card-title">All Batches</h2>
+    <div class="d-flex align-items-center gap-2">
+      <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
+        42 batches
+      </span>
+      <div class="dropdown">
+        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
+          <i class="bi bi-sort-down"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="?sort=start">Start Date (Soonest)</a></li>
+          <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+          <li><a class="dropdown-item" href="?sort=capacity">Capacity (Full First)</a></li>
+          <li><a class="dropdown-item" href="?sort=name">Name (A–Z)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- DESKTOP TABLE ---------- -->
+  <div class="edvanto-batches-table-wrap">
+    <div class="table-responsive-edvanto">
+      <table class="edvanto-table">
+        <thead>
+          <tr>
+            <th>Batch</th>
+            <th>Course</th>
+            <th>Center</th>
+            <th>Instructor</th>
+            <th>Start / End</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# {% for batch in batches %} #}
+
+          <!-- Row 1: Active, mostly full -->
+          <tr>
+            <td>
+              <div class="edvanto-batch-cell">
+                <div class="edvanto-batch-name">
+                  UI/UX Design – Weekend Batch
+                  <span class="code">BATCH-0241</span>
+                </div>
+                <div class="edvanto-batch-meta">Mon, Wed, Fri · 6:30 PM – 8:30 PM</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">UI/UX Design Masterclass</div>
+              <div class="edvanto-course-meta">CRS-1032</div>
+            </td>
+            <td>
+              <div class="edvanto-center-cell">
+                <i class="bi bi-geo-alt-fill"></i> Mumbai – Andheri
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PN</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Nair</div>
+                  <div class="edvanto-user-meta">Instructor</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-date-range">
+                <div class="edvanto-date-main"><i class="bi bi-play-circle"></i> 15 Apr 2025</div>
+                <div class="edvanto-date-sub">Ends 30 Jun 2025</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-capacity">
+                <div class="edvanto-capacity-label">
+                  <span class="count">24 / 30</span>
+                  <span>80%</span>
+                </div>
+                <div class="edvanto-capacity-track">
+                  <div class="edvanto-capacity-fill high" style="width: 80%;"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-batch-active"><i class="bi bi-play-circle-fill"></i> Active</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Batch" onclick="openBatchDetail(241)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Assign Instructor" onclick="assignInstructor('UI/UX Design – Weekend Batch')"><i class="bi bi-person-badge"></i></button>
+                <button class="edvanto-action-btn success" title="Add Student" onclick="addStudent('UI/UX Design – Weekend Batch')"><i class="bi bi-person-plus"></i></button>
+                <button class="edvanto-action-btn" title="View Attendance" onclick="openAttendance(241)"><i class="bi bi-clipboard-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2: Upcoming, low enrollment -->
+          <tr>
+            <td>
+              <div class="edvanto-batch-cell">
+                <div class="edvanto-batch-name">
+                  Business Analytics – Morning Batch
+                  <span class="code">BATCH-0242</span>
+                </div>
+                <div class="edvanto-batch-meta">Tue, Thu, Sat · 9:00 AM – 11:00 AM</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Business Analytics Pro</div>
+              <div class="edvanto-course-meta">CRS-1041</div>
+            </td>
+            <td>
+              <div class="edvanto-center-cell">
+                <i class="bi bi-geo-alt-fill"></i> Delhi – CP
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Arun Kapoor</div>
+                  <div class="edvanto-user-meta">Instructor</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-date-range">
+                <div class="edvanto-date-main"><i class="bi bi-calendar-event"></i> 01 Aug 2025</div>
+                <div class="edvanto-date-sub">Ends 15 Nov 2025</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-capacity">
+                <div class="edvanto-capacity-label">
+                  <span class="count">8 / 25</span>
+                  <span>32%</span>
+                </div>
+                <div class="edvanto-capacity-track">
+                  <div class="edvanto-capacity-fill low" style="width: 32%;"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-batch-upcoming"><i class="bi bi-clock-history"></i> Upcoming</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Batch" onclick="openBatchDetail(242)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Assign Instructor" onclick="assignInstructor('Business Analytics – Morning Batch')"><i class="bi bi-person-badge"></i></button>
+                <button class="edvanto-action-btn success" title="Add Student" onclick="addStudent('Business Analytics – Morning Batch')"><i class="bi bi-person-plus"></i></button>
+                <button class="edvanto-action-btn" title="View Attendance" onclick="openAttendance(242)"><i class="bi bi-clipboard-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3: Active, near full -->
+          <tr>
+            <td>
+              <div class="edvanto-batch-cell">
+                <div class="edvanto-batch-name">
+                  Full Stack Web Dev – Evening Batch
+                  <span class="code">BATCH-0238</span>
+                </div>
+                <div class="edvanto-batch-meta">Mon – Fri · 7:00 PM – 9:00 PM</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Full Stack Web Development</div>
+              <div class="edvanto-course-meta">CRS-1024</div>
+            </td>
+            <td>
+              <div class="edvanto-center-cell">
+                <i class="bi bi-geo-alt-fill"></i> Bangalore – Koramangala
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Dr. Rajesh Sharma</div>
+                  <div class="edvanto-user-meta">Instructor</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-date-range">
+                <div class="edvanto-date-main"><i class="bi bi-play-circle"></i> 10 Mar 2025</div>
+                <div class="edvanto-date-sub">Ends 10 Jul 2025</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-capacity">
+                <div class="edvanto-capacity-label">
+                  <span class="count">34 / 35</span>
+                  <span>97%</span>
+                </div>
+                <div class="edvanto-capacity-track">
+                  <div class="edvanto-capacity-fill full" style="width: 97%;"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-batch-active"><i class="bi bi-play-circle-fill"></i> Active</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Batch" onclick="openBatchDetail(238)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Assign Instructor" onclick="assignInstructor('Full Stack Web Dev – Evening Batch')"><i class="bi bi-person-badge"></i></button>
+                <button class="edvanto-action-btn success" title="Add Student" onclick="addStudent('Full Stack Web Dev – Evening Batch')"><i class="bi bi-person-plus"></i></button>
+                <button class="edvanto-action-btn" title="View Attendance" onclick="openAttendance(238)"><i class="bi bi-clipboard-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4: Upcoming, mid enrollment -->
+          <tr>
+            <td>
+              <div class="edvanto-batch-cell">
+                <div class="edvanto-batch-name">
+                  Digital Marketing – Weekend Batch
+                  <span class="code">BATCH-0244</span>
+                </div>
+                <div class="edvanto-batch-meta">Sat, Sun · 10:00 AM – 1:00 PM</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Digital Marketing Pro</div>
+              <div class="edvanto-course-meta">CRS-1055</div>
+            </td>
+            <td>
+              <div class="edvanto-center-cell">
+                <i class="bi bi-geo-alt-fill"></i> Pune – Baner
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v5">SN</span>
+                <div>
+                  <div class="edvanto-user-name">Sneha Nair</div>
+                  <div class="edvanto-user-meta">Instructor</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-date-range">
+                <div class="edvanto-date-main"><i class="bi bi-calendar-event"></i> 12 Jul 2025</div>
+                <div class="edvanto-date-sub">Ends 05 Oct 2025</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-capacity">
+                <div class="edvanto-capacity-label">
+                  <span class="count">14 / 30</span>
+                  <span>47%</span>
+                </div>
+                <div class="edvanto-capacity-track">
+                  <div class="edvanto-capacity-fill mid" style="width: 47%;"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-batch-upcoming"><i class="bi bi-clock-history"></i> Upcoming</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Batch" onclick="openBatchDetail(244)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn gold" title="Assign Instructor" onclick="assignInstructor('Digital Marketing – Weekend Batch')"><i class="bi bi-person-badge"></i></button>
+                <button class="edvanto-action-btn success" title="Add Student" onclick="addStudent('Digital Marketing – Weekend Batch')"><i class="bi bi-person-plus"></i></button>
+                <button class="edvanto-action-btn" title="View Attendance" onclick="openAttendance(244)"><i class="bi bi-clipboard-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5: Completed -->
+          <tr>
+            <td>
+              <div class="edvanto-batch-cell">
+                <div class="edvanto-batch-name">
+                  UI/UX Design – Weekday Batch
+                  <span class="code">BATCH-0229</span>
+                </div>
+                <div class="edvanto-batch-meta">Mon – Fri · 10:00 AM – 12:00 PM</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">UI/UX Design Masterclass</div>
+              <div class="edvanto-course-meta">CRS-1032</div>
+            </td>
+            <td>
+              <div class="edvanto-center-cell">
+                <i class="bi bi-geo-alt-fill"></i> Mumbai – Andheri
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PN</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Nair</div>
+                  <div class="edvanto-user-meta">Instructor</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-date-range">
+                <div class="edvanto-date-main"><i class="bi bi-check2-circle"></i> 05 Jan 2025</div>
+                <div class="edvanto-date-sub">Ended 28 Mar 2025</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-capacity">
+                <div class="edvanto-capacity-label">
+                  <span class="count">28 / 30</span>
+                  <span>93%</span>
+                </div>
+                <div class="edvanto-capacity-track">
+                  <div class="edvanto-capacity-fill high" style="width: 93%;"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-batch-completed"><i class="bi bi-check2-circle"></i> Completed</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Batch" onclick="openBatchDetail(229)"><i class="bi bi-eye"></i></button>
+                <button class="edvanto-action-btn" title="View Attendance" onclick="openAttendance(229)"><i class="bi bi-clipboard-check"></i></button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6: Cancelled -->
+          <tr>
+            <td>
+              <div class="edvanto-batch-cell">
+                <div class="edvanto-batch-name">
+                  Cloud Computing – Weekend Batch
+                  <span class="code">BATCH-0236</span>
+                </div>
+                <div class="edvanto-batch-meta">Sat, Sun · 3:00 PM – 5:00 PM</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-course-title">Cloud Computing with AWS</div>
+              <div class="edvanto-course-meta">CRS-0987</div>
+            </td>
+            <td>
+              <div class="edvanto-center-cell">
+                <i class="bi bi-geo-alt-fill"></i> Delhi – CP
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Dr. Rajesh Sharma</div>
+                  <div class="edvanto-user-meta">Instructor</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-date-range">
+                <div class="edvanto-date-main"><i class="bi bi-x-circle"></i> 20 Feb 2025</div>
+                <div class="edvanto-date-sub">Cancelled 18 Feb 2025</div>
+              </div>
+            </td>
+            <td>
+              <div class="edvanto-capacity">
+                <div class="edvanto-capacity-label">
+                  <span class="count">4 / 25</span>
+                  <span>16%</span>
+                </div>
+                <div class="edvanto-capacity-track">
+                  <div class="edvanto-capacity-fill low" style="width: 16%;"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="edvanto-badge badge-batch-cancelled"><i class="bi bi-x-circle-fill"></i> Cancelled</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <button class="edvanto-action-btn" title="View Batch" onclick="openBatchDetail(236)"><i class="bi bi-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ---------- MOBILE CARDS ---------- -->
+  <div class="edvanto-batches-cards">
+
+    <div class="edvanto-batch-card">
+      <div class="edvanto-batch-card-header">
+        <div>
+          <div class="edvanto-batch-name">
+            UI/UX Design – Weekend
+            <span class="code">BATCH-0241</span>
+          </div>
+          <div class="edvanto-batch-meta">Mon, Wed, Fri · 6:30 PM</div>
+        </div>
+        <span class="edvanto-badge badge-batch-active">Active</span>
+      </div>
+      <div class="edvanto-batch-card-row"><span class="label">Course</span><span class="value">UI/UX Design Masterclass</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Center</span><span class="value">Mumbai – Andheri</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Instructor</span><span class="value">Priya Nair</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Dates</span><span class="value">15 Apr – 30 Jun 2025</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Capacity</span><span class="value">24 / 30 (80%)</span></div>
+      <div class="edvanto-batch-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openBatchDetail(241)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline" onclick="assignInstructor('UI/UX Design – Weekend Batch')"><i class="bi bi-person-badge me-1"></i>Instructor</button>
+        <button class="btn btn-edvanto-outline" onclick="addStudent('UI/UX Design – Weekend Batch')"><i class="bi bi-person-plus me-1"></i>Student</button>
+        <button class="btn btn-edvanto-outline" onclick="openAttendance(241)"><i class="bi bi-clipboard-check me-1"></i>Attendance</button>
+      </div>
+    </div>
+
+    <div class="edvanto-batch-card">
+      <div class="edvanto-batch-card-header">
+        <div>
+          <div class="edvanto-batch-name">
+            Business Analytics – Morning
+            <span class="code">BATCH-0242</span>
+          </div>
+          <div class="edvanto-batch-meta">Tue, Thu, Sat · 9:00 AM</div>
+        </div>
+        <span class="edvanto-badge badge-batch-upcoming">Upcoming</span>
+      </div>
+      <div class="edvanto-batch-card-row"><span class="label">Course</span><span class="value">Business Analytics Pro</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Center</span><span class="value">Delhi – CP</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Instructor</span><span class="value">Arun Kapoor</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Dates</span><span class="value">01 Aug – 15 Nov 2025</span></div>
+      <div class="edvanto-batch-card-row"><span class="label">Capacity</span><span class="value">8 / 25 (32%)</span></div>
+      <div class="edvanto-batch-card-actions">
+        <button class="btn btn-edvanto-outline" onclick="openBatchDetail(242)"><i class="bi bi-eye me-1"></i>View</button>
+        <button class="btn btn-edvanto-outline" onclick="assignInstructor('Business Analytics – Morning Batch')"><i class="bi bi-person-badge me-1"></i>Instructor</button>
+        <button class="btn btn-edvanto-outline" onclick="addStudent('Business Analytics – Morning Batch')"><i class="bi bi-person-plus me-1"></i>Student</button>
+        <button class="btn btn-edvanto-outline" onclick="openAttendance(242)"><i class="bi bi-clipboard-check me-1"></i>Attendance</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–6 of 42 batches</span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+    </ul>
+  </nav>
+
+</div>
+
+<!-- ============================================================
+     BATCH DETAIL MODAL
+     ============================================================ -->
+<div class="modal fade edvanto-detail-modal" id="batchDetailModal" tabindex="-1"
+     aria-labelledby="batchDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="batchDetailModalLabel">
+          <i class="bi bi-calendar2-week-fill"></i>
+          <span id="detailBatchName">UI/UX Design – Weekend Batch</span>
+          <span class="batch-code" id="detailBatchCode">BATCH-0241</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Info panel -->
+        <div class="edvanto-info-panel">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            <strong>Batch-based delivery.</strong>
+            Offline courses are delivered in scheduled batches with fixed classroom locations.
+          </div>
+        </div>
+
+        <!-- Overview -->
+        <div class="edvanto-detail-section">
+          <div class="edvanto-detail-section-title">
+            <i class="bi bi-info-circle"></i> Batch Overview
+          </div>
+          <div class="edvanto-detail-grid">
+            <div class="edvanto-detail-item">
+              <div class="lbl">Course</div>
+              <div class="val" id="detailCourse">UI/UX Design Masterclass</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Instructor</div>
+              <div class="val" id="detailInstructor">Priya Nair</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Center</div>
+              <div class="val" id="detailCenter">Mumbai – Andheri</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Duration</div>
+              <div class="val" id="detailDuration">15 Apr – 30 Jun 2025</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Capacity</div>
+              <div class="val" id="detailCapacity">24 / 30 (80%)</div>
+            </div>
+            <div class="edvanto-detail-item">
+              <div class="lbl">Status</div>
+              <div class="val" id="detailStatus">
+                <span class="edvanto-badge badge-batch-active">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs: Schedule / Students / Attendance / Sessions -->
+        <div class="edvanto-detail-tabs" role="tablist">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-schedule" type="button" role="tab">
+            <i class="bi bi-calendar-week"></i> Schedule
+          </button>
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-students" type="button" role="tab">
+            <i class="bi bi-people-fill"></i> Students
+          </button>
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-attendance" type="button" role="tab">
+            <i class="bi bi-clipboard-check"></i> Attendance
+          </button>
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sessions" type="button" role="tab">
+            <i class="bi bi-play-btn"></i> Sessions
+          </button>
+        </div>
+
+        <div class="tab-content">
+
+          <!-- SCHEDULE TAB -->
+          <div class="tab-pane fade show active" id="tab-schedule" role="tabpanel">
+            <div class="edvanto-schedule-row">
+              <div class="edvanto-schedule-day">
+                <span class="day-name">Mon</span>
+                <span class="day-num">15</span>
+              </div>
+              <div class="edvanto-schedule-info">
+                <p class="edvanto-schedule-title">Introduction to UI/UX</p>
+                <div class="edvanto-schedule-meta">
+                  <span><i class="bi bi-clock"></i> 6:30 PM – 8:30 PM</span>
+                  <span class="dot"></span>
+                  <span>Priya Nair</span>
+                </div>
+              </div>
+            </div>
+            <div class="edvanto-schedule-row">
+              <div class="edvanto-schedule-day">
+                <span class="day-name">Wed</span>
+                <span class="day-num">17</span>
+              </div>
+              <div class="edvanto-schedule-info">
+                <p class="edvanto-schedule-title">Design Thinking Workshop</p>
+                <div class="edvanto-schedule-meta">
+                  <span><i class="bi bi-clock"></i> 6:30 PM – 8:30 PM</span>
+                  <span class="dot"></span>
+                  <span>Priya Nair</span>
+                </div>
+              </div>
+            </div>
+            <div class="edvanto-schedule-row">
+              <div class="edvanto-schedule-day">
+                <span class="day-name">Fri</span>
+                <span class="day-num">19</span>
+              </div>
+              <div class="edvanto-schedule-info">
+                <p class="edvanto-schedule-title">Wireframing with Figma</p>
+                <div class="edvanto-schedule-meta">
+                  <span><i class="bi bi-clock"></i> 6:30 PM – 8:30 PM</span>
+                  <span class="dot"></span>
+                  <span>Priya Nair</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STUDENTS TAB -->
+          <div class="tab-pane fade" id="tab-students" role="tabpanel">
+            <div class="edvanto-student-row">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">AK</span>
+                <div>
+                  <div class="edvanto-user-name">Ananya Kapoor</div>
+                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+                </div>
+              </div>
+              <span class="edvanto-student-attendance"><i class="bi bi-check-circle-fill"></i> 95%</span>
+            </div>
+            <div class="edvanto-student-row">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v2">RS</span>
+                <div>
+                  <div class="edvanto-user-name">Rohan Sharma</div>
+                  <div class="edvanto-user-meta">rohan.s@example.com</div>
+                </div>
+              </div>
+              <span class="edvanto-student-attendance warn"><i class="bi bi-exclamation-triangle-fill"></i> 72%</span>
+            </div>
+            <div class="edvanto-student-row">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v3">PM</span>
+                <div>
+                  <div class="edvanto-user-name">Priya Mehta</div>
+                  <div class="edvanto-user-meta">priya.m@example.com</div>
+                </div>
+              </div>
+              <span class="edvanto-student-attendance danger"><i class="bi bi-x-circle-fill"></i> 48%</span>
+            </div>
+            <div class="edvanto-student-row">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v4">AV</span>
+                <div>
+                  <div class="edvanto-user-name">Arjun Verma</div>
+                  <div class="edvanto-user-meta">arjun.v@example.com</div>
+                </div>
+              </div>
+              <span class="edvanto-student-attendance"><i class="bi bi-check-circle-fill"></i> 88%</span>
+            </div>
+
+            <button class="btn btn-edvanto-outline btn-sm w-100 mt-3"
+                    onclick="addStudent('UI/UX Design – Weekend Batch')">
+              <i class="bi bi-person-plus me-1"></i> Add Student to Batch
+            </button>
+          </div>
+
+          <!-- ATTENDANCE TAB -->
+          <div class="tab-pane fade" id="tab-attendance" role="tabpanel">
+            <div class="edvanto-att-tiles">
+              <div class="edvanto-att-tile">
+                <div class="lbl">Total Sessions</div>
+                <div class="val">12</div>
+              </div>
+              <div class="edvanto-att-tile">
+                <div class="lbl">Avg Attendance</div>
+                <div class="val green">82%</div>
+              </div>
+              <div class="edvanto-att-tile">
+                <div class="lbl">Below 75%</div>
+                <div class="val gold">3 students</div>
+              </div>
+              <div class="edvanto-att-tile">
+                <div class="lbl">Below 50%</div>
+                <div class="val red">1 student</div>
+              </div>
+            </div>
+
+            <div class="edvanto-info-panel" style="margin-bottom: 0;">
+              <i class="bi bi-info-circle-fill"></i>
+              <div>
+                Attendance is recorded per session. Students below 75% attendance may require
+                special approval to receive their certificate.
+              </div>
+            </div>
+
+            <button class="btn btn-edvanto-primary btn-sm w-100 mt-3"
+                    onclick="openAttendance(241)">
+              <i class="bi bi-clipboard-check me-1"></i> Open Attendance Sheet
+            </button>
+          </div>
+
+          <!-- SESSIONS TAB -->
+          <div class="tab-pane fade" id="tab-sessions" role="tabpanel">
+            <div class="edvanto-session-row">
+              <div class="edvanto-session-num done"><i class="bi bi-check-lg"></i></div>
+              <div class="edvanto-session-info">
+                <p class="edvanto-session-title">Session 1 · Introduction to UI/UX</p>
+                <div class="edvanto-session-meta">
+                  <span><i class="bi bi-calendar-check"></i> 15 Apr 2025</span>
+                  <span class="dot"></span>
+                  <span>24 / 24 attended</span>
+                </div>
+              </div>
+            </div>
+            <div class="edvanto-session-row">
+              <div class="edvanto-session-num done"><i class="bi bi-check-lg"></i></div>
+              <div class="edvanto-session-info">
+                <p class="edvanto-session-title">Session 2 · Design Thinking Workshop</p>
+                <div class="edvanto-session-meta">
+                  <span><i class="bi bi-calendar-check"></i> 17 Apr 2025</span>
+                  <span class="dot"></span>
+                  <span>22 / 24 attended</span>
+                </div>
+              </div>
+            </div>
+            <div class="edvanto-session-row">
+              <div class="edvanto-session-num done"><i class="bi bi-check-lg"></i></div>
+              <div class="edvanto-session-info">
+                <p class="edvanto-session-title">Session 3 · Wireframing with Figma</p>
+                <div class="edvanto-session-meta">
+                  <span><i class="bi bi-calendar-check"></i> 19 Apr 2025</span>
+                  <span class="dot"></span>
+                  <span>20 / 24 attended</span>
+                </div>
+              </div>
+            </div>
+            <div class="edvanto-session-row">
+              <div class="edvanto-session-num upcoming"><i class="bi bi-play-fill"></i></div>
+              <div class="edvanto-session-info">
+                <p class="edvanto-session-title">Session 4 · Prototyping Basics</p>
+                <div class="edvanto-session-meta">
+                  <span><i class="bi bi-calendar-event"></i> 22 Apr 2025</span>
+                  <span class="dot"></span>
+                  <span>Upcoming</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.tab-content -->
+
+      </div>
+
+      <div class="modal-footer" style="background: var(--edvanto-white); border-top: var(--edvanto-border-light); flex-wrap: wrap;">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-edvanto-outline btn-sm" onclick="assignInstructor('UI/UX Design – Weekend Batch')">
+          <i class="bi bi-person-badge me-1"></i> Assign Instructor
+        </button>
+        <button type="button" class="btn btn-edvanto-outline btn-sm" onclick="addStudent('UI/UX Design – Weekend Batch')">
+          <i class="bi bi-person-plus me-1"></i> Add Student
+        </button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="openAttendance(241)">
+          <i class="bi bi-clipboard-check me-1"></i> View Attendance
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ASSIGN INSTRUCTOR MODAL
+     ============================================================ -->
+<div class="modal fade" id="assignInstructorModal" tabindex="-1" aria-labelledby="assignInstructorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="assignInstructorModalLabel" style="font-weight: 700; color: var(--edvanto-navy);">
+          <i class="bi bi-person-badge-fill me-2" style="color: var(--edvanto-violet);"></i>
+          Assign Instructor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="edvanto-info-panel">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            Assigning an instructor to <strong id="assignBatchName" class="text-edvanto-navy">this batch</strong>
+            will update the batch schedule and notify the instructor.
+          </div>
+        </div>
+
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="assignInstructorSelect">Select Instructor</label>
+          <select class="form-select" id="assignInstructorSelect">
+            <option value="">Choose an instructor…</option>
+            <option value="priya">Priya Nair · UI/UX Design</option>
+            <option value="arun">Arun Kapoor · Business Analytics</option>
+            <option value="rajesh">Dr. Rajesh Sharma · Full Stack</option>
+            <option value="meera">Dr. Meera Iyer · Data Science</option>
+            <option value="sneha">Sneha Nair · Digital Marketing</option>
+          </select>
+        </div>
+
+        <div class="mb-0">
+          <label class="form-label" for="assignNote">Note to Instructor (optional)</label>
+          <textarea class="form-control" id="assignNote" rows="2"
+                    placeholder="Any instructions or context for the instructor…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="confirmAssignInstructor()">
+          <i class="bi bi-check-lg me-1"></i> Assign Instructor
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADD STUDENT MODAL
+     ============================================================ -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="addStudentModalLabel" style="font-weight: 700; color: var(--edvanto-navy);">
+          <i class="bi bi-person-plus-fill me-2" style="color: var(--edvanto-violet);"></i>
+          Add Student to Batch
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="edvanto-info-panel">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            Adding a student to <strong id="addStudentBatchName" class="text-edvanto-navy">this batch</strong>
+            will enroll them and send a welcome notification.
+          </div>
+        </div>
+
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="addStudentSearch">Search Student</label>
+          <div class="input-icon-wrapper" style="position: relative;">
+            <input type="search" class="form-control" id="addStudentSearch"
+                   placeholder="Search by name or email…" style="padding-left: 2.5rem;">
+            <i class="bi bi-search" style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--edvanto-gray-500);pointer-events:none;"></i>
+          </div>
+        </div>
+
+        <div class="mb-0">
+          <label class="form-label">Suggested Students</label>
+          <div class="d-flex flex-column gap-2">
+            <label class="edvanto-student-row mb-0" style="cursor:pointer;">
+              <input type="checkbox" class="form-check-input m-0" style="flex-shrink:0;">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v6">KG</span>
+                <div>
+                  <div class="edvanto-user-name">Kavita Gupta</div>
+                  <div class="edvanto-user-meta">kavita.g@example.com</div>
+                </div>
+              </div>
+            </label>
+            <label class="edvanto-student-row mb-0" style="cursor:pointer;">
+              <input type="checkbox" class="form-check-input m-0" style="flex-shrink:0;">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v5">RK</span>
+                <div>
+                  <div class="edvanto-user-name">Rohan Kumar</div>
+                  <div class="edvanto-user-meta">rohan.k@example.com</div>
+                </div>
+              </div>
+            </label>
+            <label class="edvanto-student-row mb-0" style="cursor:pointer;">
+              <input type="checkbox" class="form-check-input m-0" style="flex-shrink:0;">
+              <div class="edvanto-user-cell">
+                <span class="edvanto-avatar-sm v1">NP</span>
+                <div>
+                  <div class="edvanto-user-name">Neha Patel</div>
+                  <div class="edvanto-user-meta">neha.p@example.com</div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="confirmAddStudent()">
+          <i class="bi bi-check-lg me-1"></i> Add to Batch
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       BATCH DETAIL MODAL (demo data — replace with fetch)
+       ============================================================ */
+    var demoBatches = {
+      241: {
+        name: 'UI/UX Design – Weekend Batch',
+        code: 'BATCH-0241',
+        course: 'UI/UX Design Masterclass',
+        instructor: 'Priya Nair',
+        center: 'Mumbai – Andheri',
+        duration: '15 Apr – 30 Jun 2025',
+        capacity: '24 / 30 (80%)',
+        status: 'Active',
+        statusClass: 'badge-batch-active'
+      },
+      242: {
+        name: 'Business Analytics – Morning Batch',
+        code: 'BATCH-0242',
+        course: 'Business Analytics Pro',
+        instructor: 'Arun Kapoor',
+        center: 'Delhi – CP',
+        duration: '01 Aug – 15 Nov 2025',
+        capacity: '8 / 25 (32%)',
+        status: 'Upcoming',
+        statusClass: 'badge-batch-upcoming'
+      },
+      238: {
+        name: 'Full Stack Web Dev – Evening Batch',
+        code: 'BATCH-0238',
+        course: 'Full Stack Web Development',
+        instructor: 'Dr. Rajesh Sharma',
+        center: 'Bangalore – Koramangala',
+        duration: '10 Mar – 10 Jul 2025',
+        capacity: '34 / 35 (97%)',
+        status: 'Active',
+        statusClass: 'badge-batch-active'
+      },
+      244: {
+        name: 'Digital Marketing – Weekend Batch',
+        code: 'BATCH-0244',
+        course: 'Digital Marketing Pro',
+        instructor: 'Sneha Nair',
+        center: 'Pune – Baner',
+        duration: '12 Jul – 05 Oct 2025',
+        capacity: '14 / 30 (47%)',
+        status: 'Upcoming',
+        statusClass: 'badge-batch-upcoming'
+      },
+      229: {
+        name: 'UI/UX Design – Weekday Batch',
+        code: 'BATCH-0229',
+        course: 'UI/UX Design Masterclass',
+        instructor: 'Priya Nair',
+        center: 'Mumbai – Andheri',
+        duration: '05 Jan – 28 Mar 2025',
+        capacity: '28 / 30 (93%)',
+        status: 'Completed',
+        statusClass: 'badge-batch-completed'
+      },
+      236: {
+        name: 'Cloud Computing – Weekend Batch',
+        code: 'BATCH-0236',
+        course: 'Cloud Computing with AWS',
+        instructor: 'Dr. Rajesh Sharma',
+        center: 'Delhi – CP',
+        duration: '20 Feb 2025 (Cancelled)',
+        capacity: '4 / 25 (16%)',
+        status: 'Cancelled',
+        statusClass: 'badge-batch-cancelled'
+      }
+    };
+
+    window.openBatchDetail = function (batchId) {
+      var data = demoBatches[batchId];
+      if (!data) {
+        edvantoToast('Batch details unavailable.', 'error');
+        return;
+      }
+
+      document.getElementById('detailBatchName').textContent = data.name;
+      document.getElementById('detailBatchCode').textContent = data.code;
+      document.getElementById('detailCourse').textContent = data.course;
+      document.getElementById('detailInstructor').textContent = data.instructor;
+      document.getElementById('detailCenter').textContent = data.center;
+      document.getElementById('detailDuration').textContent = data.duration;
+      document.getElementById('detailCapacity').textContent = data.capacity;
+      document.getElementById('detailStatus').innerHTML =
+        '<span class="edvanto-badge ' + data.statusClass + '">' + data.status + '</span>';
+
+      new bootstrap.Modal(document.getElementById('batchDetailModal')).show();
+
+      /* Replace with a real fetch:
+         fetch('/admin/batches/' + batchId + '/detail/')
+           .then(r => r.json())
+           .then(populateModal);
+      */
+    };
+
+    /* ============================================================
+       ASSIGN INSTRUCTOR
+       ============================================================ */
+    window.assignInstructor = function (batchName) {
+      document.getElementById('assignBatchName').textContent = batchName;
+      document.getElementById('assignInstructorSelect').value = '';
+      document.getElementById('assignNote').value = '';
+
+      /* Close any open modal first */
+      var detailModalEl = document.getElementById('batchDetailModal');
+      if (detailModalEl) {
+        var dm = bootstrap.Modal.getInstance(detailModalEl);
+        if (dm) dm.hide();
+      }
+
+      new bootstrap.Modal(document.getElementById('assignInstructorModal')).show();
+    };
+
+    window.confirmAssignInstructor = function () {
+      var select = document.getElementById('assignInstructorSelect');
+      if (!select.value) {
+        edvantoToast('Please select an instructor.', 'error');
+        return;
+      }
+      var instructorName = select.options[select.selectedIndex].text.split('·')[0].trim();
+
+      var modalEl = document.getElementById('assignInstructorModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      edvantoToast(instructorName + ' assigned successfully.', 'success');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       ADD STUDENT
+       ============================================================ */
+    window.addStudent = function (batchName) {
+      document.getElementById('addStudentBatchName').textContent = batchName;
+      document.getElementById('addStudentSearch').value = '';
+
+      /* Close any open modal first */
+      var detailModalEl = document.getElementById('batchDetailModal');
+      if (detailModalEl) {
+        var dm = bootstrap.Modal.getInstance(detailModalEl);
+        if (dm) dm.hide();
+      }
+
+      new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+    };
+
+    window.confirmAddStudent = function () {
+      var checked = document.querySelectorAll('#addStudentModal input[type="checkbox"]:checked');
+      if (checked.length === 0) {
+        edvantoToast('Please select at least one student.', 'error');
+        return;
+      }
+
+      var modalEl = document.getElementById('addStudentModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      edvantoToast(checked.length + ' student(s) added to the batch.', 'success');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       VIEW ATTENDANCE
+       ============================================================ */
+    window.openAttendance = function (batchId) {
+      /* Close detail modal if open */
+      var detailModalEl = document.getElementById('batchDetailModal');
+      if (detailModalEl) {
+        var dm = bootstrap.Modal.getInstance(detailModalEl);
+        if (dm) dm.hide();
+      }
+
+      edvantoToast('Opening attendance sheet…', 'info');
+      /* Replace with: window.location.href = '/admin/batches/' + batchId + '/attendance/'; */
+    };
+
+    /* ============================================================
+       AUTO-SUBMIT FILTERS (optional)
+       ============================================================ */
+    document.querySelectorAll('#batchFilterForm select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        /* Uncomment to auto-apply */
+        /* document.getElementById('batchFilterForm').submit(); */
+      });
+    });
+
+  })();
+</script>
+
+{% endblock %}

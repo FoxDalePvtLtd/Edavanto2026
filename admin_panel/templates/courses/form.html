@@ -1,0 +1,1401 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}{% if course %}Edit Course{% else %}Add Course{% endif %}{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – COURSE EDITOR
+     Basic · Delivery · Pricing · Learning · Access
+     ============================================================ -->
+
+<style>
+  /* ---------- Form layout ---------- */
+  .edvanto-form-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+  .edvanto-form-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--edvanto-violet);
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-form-section-title i {
+    font-size: 1rem;
+  }
+  .edvanto-form-section-desc {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    margin-bottom: 1.35rem;
+    font-weight: 400;
+  }
+
+  /* ---------- Tabs (Edvanto skin) ---------- */
+  .edvanto-editor-tabs {
+    border-bottom: var(--edvanto-border-light);
+    gap: 0.25rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .edvanto-editor-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .edvanto-editor-tabs .nav-link {
+    border: none;
+    border-bottom: 2.5px solid transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.75rem 1.1rem;
+    border-radius: 0;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .edvanto-editor-tabs .nav-link i {
+    font-size: 1rem;
+  }
+  .edvanto-editor-tabs .nav-link:hover {
+    color: var(--edvanto-violet);
+    border-color: rgba(69, 28, 238, 0.25);
+  }
+  .edvanto-editor-tabs .nav-link.active {
+    color: var(--edvanto-violet);
+    border-bottom-color: var(--edvanto-violet);
+    background: transparent;
+  }
+  .edvanto-editor-tabs .nav-link .tab-badge {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 179, 3, 0.16);
+    color: #9A6D00;
+    font-weight: 700;
+  }
+  .edvanto-editor-tabs .nav-link.active .tab-badge {
+    background: rgba(69, 28, 238, 0.12);
+    color: var(--edvanto-violet);
+  }
+
+  /* ---------- Form controls ---------- */
+  .form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .form-label .req {
+    color: #DC3545;
+  }
+  .form-control, .form-select {
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    font-size: 0.9rem;
+    padding: 0.6rem 0.85rem;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-white);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .form-control.is-invalid, .form-select.is-invalid {
+    border-color: #DC3545;
+    background-image: none;
+  }
+  .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+  }
+  .invalid-feedback {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #B02A37;
+    margin-top: 0.25rem;
+  }
+  .form-text {
+    font-size: 0.75rem;
+    color: var(--edvanto-gray-500);
+  }
+  textarea.form-control {
+    min-height: 110px;
+    resize: vertical;
+  }
+
+  /* ---------- Slug input group ---------- */
+  .edvanto-slug-group .input-group-text {
+    background: var(--edvanto-gray-50);
+    border: var(--edvanto-border-medium);
+    border-right: none;
+    color: var(--edvanto-gray-500);
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: var(--edvanto-radius-sm) 0 0 var(--edvanto-radius-sm);
+  }
+  .edvanto-slug-group .form-control {
+    border-radius: 0 var(--edvanto-radius-sm) var(--edvanto-radius-sm) 0;
+    border-left: none;
+  }
+
+  /* ---------- Mode selector (radio cards) ---------- */
+  .edvanto-mode-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  .edvanto-mode-option {
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+  }
+  .edvanto-mode-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .edvanto-mode-option .mode-card {
+    border: 1.5px solid var(--edvanto-gray-200);
+    border-radius: var(--edvanto-radius-sm);
+    padding: 1rem 1.1rem;
+    background: var(--edvanto-white);
+    transition: all 0.15s ease;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .edvanto-mode-option .mode-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+    transition: all 0.15s ease;
+  }
+  .edvanto-mode-option .mode-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+  }
+  .edvanto-mode-option .mode-desc {
+    font-size: 0.75rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+    line-height: 1.35;
+  }
+  .edvanto-mode-option:hover .mode-card {
+    border-color: rgba(69, 28, 238, 0.35);
+    box-shadow: 0 4px 14px rgba(3, 42, 90, 0.05);
+  }
+  .edvanto-mode-option input:checked + .mode-card {
+    border-color: var(--edvanto-violet);
+    background: rgba(69, 28, 238, 0.025);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  .edvanto-mode-option input:checked + .mode-card .mode-icon {
+    background: var(--edvanto-violet);
+    color: var(--edvanto-white);
+  }
+  /* Cyan variant for offline */
+  .edvanto-mode-option.mode-offline input:checked + .mode-card {
+    border-color: var(--edvanto-cyan);
+    background: rgba(1, 223, 254, 0.03);
+    box-shadow: 0 0 0 3px rgba(1, 223, 254, 0.14);
+  }
+  .edvanto-mode-option.mode-offline input:checked + .mode-card .mode-icon {
+    background: var(--edvanto-cyan);
+    color: #004E5C;
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-mode-selector { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Toggle switches ---------- */
+  .edvanto-switch-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-light);
+    background: var(--edvanto-gray-50);
+    transition: border-color 0.15s ease, background 0.15s ease;
+    height: 100%;
+  }
+  .edvanto-switch-row:hover {
+    border-color: rgba(69, 28, 238, 0.2);
+    background: rgba(69, 28, 238, 0.02);
+  }
+  .edvanto-switch-row .form-check-input {
+    width: 2.4rem;
+    height: 1.3rem;
+    margin-top: 0.1rem;
+    cursor: pointer;
+    border-radius: 999px;
+    border: 1px solid var(--edvanto-gray-300);
+    background-color: var(--edvanto-gray-200);
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .edvanto-switch-row .form-check-input:checked {
+    background-color: var(--edvanto-violet);
+    border-color: var(--edvanto-violet);
+  }
+  .edvanto-switch-row .form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.15);
+    border-color: var(--edvanto-violet);
+  }
+  .edvanto-switch-row .form-check-input.cyan-check:checked {
+    background-color: #00B8D4;
+    border-color: #00B8D4;
+  }
+  .edvanto-switch-row .form-check-input.cyan-check:focus {
+    box-shadow: 0 0 0 3px rgba(1, 223, 254, 0.2);
+    border-color: #00B8D4;
+  }
+  .edvanto-switch-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin: 0;
+    line-height: 1.3;
+  }
+  .edvanto-switch-help {
+    font-size: 0.75rem;
+    color: var(--edvanto-gray-600);
+    margin: 0.15rem 0 0;
+  }
+
+  /* ---------- Conditional info panel ---------- */
+  .edvanto-info-panel {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    border-radius: var(--edvanto-radius-sm);
+    background: rgba(1, 223, 254, 0.06);
+    border-left: 3px solid var(--edvanto-cyan);
+    font-size: 0.8rem;
+    color: #005A6B;
+    margin-top: 0.75rem;
+  }
+  .edvanto-info-panel i {
+    color: #0099B5;
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .edvanto-info-panel.violet {
+    background: rgba(69, 28, 238, 0.05);
+    border-left-color: var(--edvanto-violet);
+    color: #3A1AA8;
+  }
+  .edvanto-info-panel.violet i { color: var(--edvanto-violet); }
+  .edvanto-info-panel.gold {
+    background: rgba(255, 179, 3, 0.08);
+    border-left-color: var(--edvanto-gold);
+    color: #7A5600;
+  }
+  .edvanto-info-panel.gold i { color: var(--edvanto-gold); }
+
+  /* ---------- Thumbnail uploader ---------- */
+  .edvanto-thumb-uploader {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .edvanto-thumb-preview {
+    width: 200px;
+    height: 130px;
+    border-radius: var(--edvanto-radius-sm);
+    background: linear-gradient(135deg, rgba(69,28,238,0.08) 0%, rgba(1,223,254,0.06) 100%);
+    border: 1.5px dashed var(--edvanto-gray-300);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--edvanto-gray-500);
+    font-size: 0.78rem;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    cursor: pointer;
+  }
+  .edvanto-thumb-preview:hover {
+    border-color: var(--edvanto-violet);
+    background: rgba(69, 28, 238, 0.04);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-thumb-preview i {
+    font-size: 1.6rem;
+  }
+  .edvanto-thumb-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .edvanto-thumb-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .edvanto-thumb-actions .btn {
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-xs);
+    padding: 0.4rem 0.9rem;
+  }
+
+  /* ---------- Sticky action bar ---------- */
+  .edvanto-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-card);
+    box-shadow: 0 -4px 20px rgba(3, 42, 90, 0.05);
+    padding: 0.9rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .edvanto-action-bar .btn {
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-sm);
+    padding: 0.55rem 1.25rem;
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-action-bar .btn { flex: 1; }
+  }
+
+  /* ---------- Sidebar summary card ---------- */
+  .edvanto-summary-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 1.25rem 1.4rem 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .edvanto-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    font-size: 0.82rem;
+  }
+  .edvanto-summary-row:last-child { border-bottom: none; }
+  .edvanto-summary-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
+  .edvanto-summary-row .value { color: var(--edvanto-navy); font-weight: 700; text-align: right; }
+
+  .edvanto-completion-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--edvanto-gray-200);
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+  .edvanto-completion-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    transition: width 0.4s ease;
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB + PAGE HEADER
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#">Courses</a></li>
+      <li class="breadcrumb-item active" aria-current="page">
+        {% if course %}Edit Course{% else %}Add Course{% endif %}
+      </li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">
+      {% if course %}Edit Course{% else %}Add Course{% endif %}
+    </h1>
+    <p class="edvanto-page-subtitle">
+      {% if course %}
+        Update curriculum, pricing and delivery settings for <strong>{{ course.title }}</strong>.
+      {% else %}
+        Create a new online or offline course for the Edvanto platform.
+      {% endif %}
+    </p>
+  </div>
+  <a href="#" class="btn btn-edvanto-outline btn-sm px-3">
+    <i class="bi bi-arrow-left me-1"></i> Back to Courses
+  </a>
+</div>
+
+<!-- ============================================================
+     FORM
+     ============================================================ -->
+<form method="post" enctype="multipart/form-data" novalidate id="edvantoCourseForm"
+      action="{% if course %}#course_edit' course.pk %}{% else %}#{% endif %}">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger d-flex align-items-start gap-2 border-0" role="alert"
+         style="border-radius: var(--edvanto-radius-sm); font-size: 0.85rem;">
+      <i class="bi bi-exclamation-triangle-fill" style="color: #B02A37; font-size: 1.1rem;"></i>
+      <div>
+        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="row g-3 g-lg-4">
+    <!-- ============================================================
+         LEFT COLUMN (tabbed editor)
+         ============================================================ -->
+    <div class="col-12 col-lg-8">
+      <div class="edvanto-form-card">
+
+        <!-- Tabs -->
+        <ul class="nav edvanto-editor-tabs" id="courseEditorTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-basic-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-basic" type="button" role="tab"
+                    aria-controls="tab-basic" aria-selected="true">
+              <i class="bi bi-info-circle"></i> Basic
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-delivery-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-delivery" type="button" role="tab"
+                    aria-controls="tab-delivery" aria-selected="false">
+              <i class="bi bi-truck"></i> Delivery
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-pricing-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-pricing" type="button" role="tab"
+                    aria-controls="tab-pricing" aria-selected="false">
+              <i class="bi bi-currency-rupee"></i> Pricing
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-learning-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-learning" type="button" role="tab"
+                    aria-controls="tab-learning" aria-selected="false">
+              <i class="bi bi-mortarboard"></i> Learning
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-access-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-access" type="button" role="tab"
+                    aria-controls="tab-access" aria-selected="false">
+              <i class="bi bi-shield-lock"></i> Access
+            </button>
+          </li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="tab-content" id="courseEditorTabContent">
+
+          <!-- ============ BASIC INFORMATION ============ -->
+          <div class="tab-pane fade show active" id="tab-basic" role="tabpanel"
+               aria-labelledby="tab-basic-btn" tabindex="0">
+            <div class="edvanto-form-section-title">
+              <i class="bi bi-info-circle-fill"></i> Basic Information
+            </div>
+            <p class="edvanto-form-section-desc">
+              The core identity of your course, shown in listings and search results.
+            </p>
+
+            <div class="row g-3">
+              <!-- Course title -->
+              <div class="col-12">
+                <label for="id_title" class="form-label">Course Title <span class="req">*</span></label>
+                <input type="text" class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                       id="id_title" name="title" placeholder="e.g. Full Stack Web Development"
+                       value="{{ form.title.value|default:'' }}" required>
+                {% if form.title.errors %}
+                  <div class="invalid-feedback">{{ form.title.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Slug -->
+              <div class="col-12">
+                <label for="id_slug" class="form-label">Slug <span class="req">*</span></label>
+                <div class="input-group edvanto-slug-group">
+                  <span class="input-group-text">edvanto.com/course/</span>
+                  <input type="text" class="form-control {% if form.slug.errors %}is-invalid{% endif %}"
+                         id="id_slug" name="slug" placeholder="full-stack-web-development"
+                         value="{{ form.slug.value|default:'' }}" required>
+                </div>
+                {% if form.slug.errors %}
+                  <div class="invalid-feedback d-block">{{ form.slug.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text mt-1">Auto-generated from the title. Must be unique.</div>
+              </div>
+
+              <!-- Short description -->
+              <div class="col-12">
+                <label for="id_short_description" class="form-label">Short Description</label>
+                <textarea class="form-control {% if form.short_description.errors %}is-invalid{% endif %}"
+                          id="id_short_description" name="short_description" maxlength="200"
+                          placeholder="A concise summary shown on course cards (max 200 characters)."
+                          style="min-height: 80px;">{{ form.short_description.value|default:'' }}</textarea>
+                {% if form.short_description.errors %}
+                  <div class="invalid-feedback">{{ form.short_description.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text mt-1">
+                  <span id="shortDescCount">0</span>/200 characters
+                </div>
+              </div>
+
+              <!-- Full description -->
+              <div class="col-12">
+                <label for="id_full_description" class="form-label">Full Description</label>
+                <textarea class="form-control {% if form.full_description.errors %}is-invalid{% endif %}"
+                          id="id_full_description" name="full_description"
+                          placeholder="Detailed course overview, what students will learn, and who it's for."
+                          style="min-height: 150px;">{{ form.full_description.value|default:'' }}</textarea>
+                {% if form.full_description.errors %}
+                  <div class="invalid-feedback">{{ form.full_description.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Category -->
+              <div class="col-12 col-sm-6">
+                <label for="id_category" class="form-label">Category <span class="req">*</span></label>
+                <select class="form-select {% if form.category.errors %}is-invalid{% endif %}"
+                        id="id_category" name="category" required>
+                  <option value="" disabled {% if not form.category.value %}selected{% endif %}>Select Category</option>
+                  <option value="development" {% if form.category.value == 'development' %}selected{% endif %}>Development</option>
+                  <option value="data-science" {% if form.category.value == 'data-science' %}selected{% endif %}>Data Science</option>
+                  <option value="design" {% if form.category.value == 'design' %}selected{% endif %}>Design</option>
+                  <option value="business" {% if form.category.value == 'business' %}selected{% endif %}>Business</option>
+                  <option value="marketing" {% if form.category.value == 'marketing' %}selected{% endif %}>Marketing</option>
+                  <option value="cloud" {% if form.category.value == 'cloud' %}selected{% endif %}>Cloud Computing</option>
+                  <option value="other" {% if form.category.value == 'other' %}selected{% endif %}>Other</option>
+                </select>
+                {% if form.category.errors %}
+                  <div class="invalid-feedback">{{ form.category.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Difficulty level -->
+              <div class="col-12 col-sm-6">
+                <label for="id_difficulty" class="form-label">Difficulty Level</label>
+                <select class="form-select {% if form.difficulty.errors %}is-invalid{% endif %}"
+                        id="id_difficulty" name="difficulty">
+                  <option value="beginner" {% if form.difficulty.value == 'beginner' %}selected{% endif %}>Beginner</option>
+                  <option value="intermediate" {% if form.difficulty.value == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                  <option value="advanced" {% if form.difficulty.value == 'advanced' %}selected{% endif %}>Advanced</option>
+                  <option value="all" {% if form.difficulty.value == 'all' %}selected{% endif %}>All Levels</option>
+                </select>
+                {% if form.difficulty.errors %}
+                  <div class="invalid-feedback">{{ form.difficulty.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ DELIVERY ============ -->
+          <div class="tab-pane fade" id="tab-delivery" role="tabpanel"
+               aria-labelledby="tab-delivery-btn" tabindex="0">
+            <div class="edvanto-form-section-title">
+              <i class="bi bi-truck"></i> Delivery
+            </div>
+            <p class="edvanto-form-section-desc">
+              How the course is delivered and who is responsible for teaching it.
+            </p>
+
+            <!-- Mode selector -->
+            <label class="form-label mb-2">Delivery Mode <span class="req">*</span></label>
+            <div class="edvanto-mode-selector mb-3">
+              <label class="edvanto-mode-option mode-online">
+                <input type="radio" name="mode" value="online"
+                       {% if form.mode.value != 'offline' %}checked{% endif %}
+                       onchange="toggleDeliveryMode()">
+                <div class="mode-card">
+                  <div class="mode-icon"><i class="bi bi-globe2"></i></div>
+                  <div>
+                    <p class="mode-title">Online</p>
+                    <p class="mode-desc">Live sessions and recorded lessons delivered digitally.</p>
+                  </div>
+                </div>
+              </label>
+              <label class="edvanto-mode-option mode-offline">
+                <input type="radio" name="mode" value="offline"
+                       {% if form.mode.value == 'offline' %}checked{% endif %}
+                       onchange="toggleDeliveryMode()">
+                <div class="mode-card">
+                  <div class="mode-icon"><i class="bi bi-building"></i></div>
+                  <div>
+                    <p class="mode-title">Offline</p>
+                    <p class="mode-desc">Classroom-based training at a physical Edvanto center.</p>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <div class="row g-3">
+              <!-- Instructor -->
+              <div class="col-12 col-sm-6">
+                <label for="id_instructor" class="form-label">Instructor <span class="req">*</span></label>
+                <select class="form-select {% if form.instructor.errors %}is-invalid{% endif %}"
+                        id="id_instructor" name="instructor" required>
+                  <option value="" disabled {% if not form.instructor.value %}selected{% endif %}>Select Instructor</option>
+                  <option value="rajesh" {% if form.instructor.value == 'rajesh' %}selected{% endif %}>Dr. Rajesh Sharma</option>
+                  <option value="meera" {% if form.instructor.value == 'meera' %}selected{% endif %}>Dr. Meera Iyer</option>
+                  <option value="priya" {% if form.instructor.value == 'priya' %}selected{% endif %}>Priya Nair</option>
+                  <option value="arun" {% if form.instructor.value == 'arun' %}selected{% endif %}>Arun Kapoor</option>
+                </select>
+                {% if form.instructor.errors %}
+                  <div class="invalid-feedback">{{ form.instructor.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Center (offline only) -->
+              <div class="col-12 col-sm-6" id="centerField"
+                   style="{% if form.mode.value != 'offline' %}display: none;{% endif %}">
+                <label for="id_center" class="form-label">Center <span class="req">*</span></label>
+                <select class="form-select {% if form.center.errors %}is-invalid{% endif %}"
+                        id="id_center" name="center">
+                  <option value="" disabled {% if not form.center.value %}selected{% endif %}>Select Center</option>
+                  <option value="mumbai" {% if form.center.value == 'mumbai' %}selected{% endif %}>Edvanto Mumbai – Andheri</option>
+                  <option value="delhi" {% if form.center.value == 'delhi' %}selected{% endif %}>Edvanto Delhi – Connaught Place</option>
+                  <option value="bangalore" {% if form.center.value == 'bangalore' %}selected{% endif %}>Edvanto Bangalore – Koramangala</option>
+                  <option value="pune" {% if form.center.value == 'pune' %}selected{% endif %}>Edvanto Pune – Baner</option>
+                </select>
+                {% if form.center.errors %}
+                  <div class="invalid-feedback">{{ form.center.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Course duration -->
+              <div class="col-12 col-sm-6">
+                <label for="id_duration" class="form-label">Course Duration</label>
+                <input type="text" class="form-control {% if form.duration.errors %}is-invalid{% endif %}"
+                       id="id_duration" name="duration" placeholder="e.g. 12 weeks / 60 hours"
+                       value="{{ form.duration.value|default:'' }}">
+                {% if form.duration.errors %}
+                  <div class="invalid-feedback">{{ form.duration.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Conditional delivery info -->
+            <div id="onlineDeliveryInfo" class="edvanto-info-panel"
+                 style="{% if form.mode.value == 'offline' %}display: none;{% endif %}">
+              <i class="bi bi-info-circle-fill"></i>
+              <div>
+                <strong>Sequential lesson unlocking enabled.</strong>
+                Students must complete each lesson before the next becomes available.
+                You can change this in Learning settings.
+              </div>
+            </div>
+
+            <div id="offlineDeliveryInfo" class="edvanto-info-panel violet"
+                 style="{% if form.mode.value != 'offline' %}display: none;{% endif %}">
+              <i class="bi bi-info-circle-fill"></i>
+              <div>
+                <strong>Batch-based delivery enabled.</strong>
+                This course will be assigned to batches with fixed schedules and classroom locations.
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ PRICING ============ -->
+          <div class="tab-pane fade" id="tab-pricing" role="tabpanel"
+               aria-labelledby="tab-pricing-btn" tabindex="0">
+            <div class="edvanto-form-section-title">
+              <i class="bi bi-currency-rupee"></i> Pricing
+            </div>
+            <p class="edvanto-form-section-desc">
+              Set the course fee, discounts and installment options.
+            </p>
+
+            <div class="row g-3">
+              <!-- Original price -->
+              <div class="col-12 col-sm-6">
+                <label for="id_original_price" class="form-label">Original Price (₹) <span class="req">*</span></label>
+                <input type="number" class="form-control {% if form.original_price.errors %}is-invalid{% endif %}"
+                       id="id_original_price" name="original_price" min="0" step="1"
+                       placeholder="34999"
+                       value="{{ form.original_price.value|default:'' }}" required
+                       oninput="updatePricingPreview()">
+                {% if form.original_price.errors %}
+                  <div class="invalid-feedback">{{ form.original_price.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Discounted price -->
+              <div class="col-12 col-sm-6">
+                <label for="id_discounted_price" class="form-label">Discounted Price (₹)</label>
+                <input type="number" class="form-control {% if form.discounted_price.errors %}is-invalid{% endif %}"
+                       id="id_discounted_price" name="discounted_price" min="0" step="1"
+                       placeholder="24999"
+                       value="{{ form.discounted_price.value|default:'' }}"
+                       oninput="updatePricingPreview()">
+                {% if form.discounted_price.errors %}
+                  <div class="invalid-feedback">{{ form.discounted_price.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text mt-1">Leave empty if there is no discount.</div>
+              </div>
+            </div>
+
+            <!-- Discount preview -->
+            <div id="discountPreview" class="edvanto-info-panel gold mt-2" style="display: none;">
+              <i class="bi bi-tag-fill"></i>
+              <div>
+                Students save <strong id="discountAmount">₹0</strong>
+                (<strong id="discountPercent">0%</strong> off the original price).
+              </div>
+            </div>
+
+            <!-- Installment available -->
+            <div class="row g-3 mt-1">
+              <div class="col-12 col-sm-6">
+                <div class="edvanto-switch-row">
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="id_installment_available" name="installment_available"
+                           onchange="toggleInstallments()"
+                           {% if form.installment_available.value %}checked{% endif %}>
+                  </div>
+                  <div>
+                    <p class="edvanto-switch-label">Installment Available</p>
+                    <p class="edvanto-switch-help">Allow students to pay in multiple installments.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Number of installments -->
+              <div class="col-12 col-sm-6" id="installmentCountField"
+                   style="{% if not form.installment_available.value %}display: none;{% endif %}">
+                <label for="id_installment_count" class="form-label">Number of Installments</label>
+                <select class="form-select {% if form.installment_count.errors %}is-invalid{% endif %}"
+                        id="id_installment_count" name="installment_count">
+                  <option value="2" {% if form.installment_count.value == '2' %}selected{% endif %}>2 installments</option>
+                  <option value="3" {% if form.installment_count.value == '3' %}selected{% endif %}>3 installments</option>
+                  <option value="4" {% if form.installment_count.value == '4' %}selected{% endif %}>4 installments</option>
+                  <option value="6" {% if form.installment_count.value == '6' %}selected{% endif %}>6 installments</option>
+                  <option value="12" {% if form.installment_count.value == '12' %}selected{% endif %}>12 installments</option>
+                </select>
+                {% if form.installment_count.errors %}
+                  <div class="invalid-feedback">{{ form.installment_count.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ LEARNING ============ -->
+          <div class="tab-pane fade" id="tab-learning" role="tabpanel"
+               aria-labelledby="tab-learning-btn" tabindex="0">
+            <div class="edvanto-form-section-title">
+              <i class="bi bi-mortarboard-fill"></i> Learning
+            </div>
+            <p class="edvanto-form-section-desc">
+              Curriculum details, prerequisites and what students will achieve.
+            </p>
+
+            <div class="row g-3">
+              <!-- Thumbnail -->
+              <div class="col-12">
+                <label class="form-label">Course Thumbnail</label>
+                <div class="edvanto-thumb-uploader">
+                  <label for="id_thumbnail" class="edvanto-thumb-preview mb-0" id="thumbPreview">
+                    {% if course and course.thumbnail %}
+                      <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                    {% else %}
+                      <i class="bi bi-image"></i>
+                      <span>Click to upload</span>
+                    {% endif %}
+                  </label>
+                  <div class="edvanto-thumb-actions">
+                    <label for="id_thumbnail" class="btn btn-edvanto-outline mb-0">
+                      <i class="bi bi-upload me-1"></i> Upload Image
+                    </label>
+                    <input type="file" id="id_thumbnail" name="thumbnail"
+                           accept="image/png,image/jpeg,image/webp" class="d-none">
+                    <button type="button" class="btn btn-edvanto-outline text-danger"
+                            onclick="clearThumbnail()">
+                      <i class="bi bi-trash me-1"></i> Remove
+                    </button>
+                    <div class="form-text mt-1" style="font-size: 0.72rem;">
+                      Recommended: 1280×720px · JPG, PNG or WEBP · Max 2 MB
+                    </div>
+                  </div>
+                </div>
+                {% if form.thumbnail.errors %}
+                  <div class="invalid-feedback d-block">{{ form.thumbnail.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Requirements -->
+              <div class="col-12">
+                <label for="id_requirements" class="form-label">Requirements</label>
+                <textarea class="form-control {% if form.requirements.errors %}is-invalid{% endif %}"
+                          id="id_requirements" name="requirements"
+                          placeholder="e.g. Basic knowledge of HTML & CSS&#10;A computer with internet access"
+                          style="min-height: 100px;">{{ form.requirements.value|default:'' }}</textarea>
+                {% if form.requirements.errors %}
+                  <div class="invalid-feedback">{{ form.requirements.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text mt-1">One requirement per line.</div>
+              </div>
+
+              <!-- Learning outcomes -->
+              <div class="col-12">
+                <label for="id_learning_outcomes" class="form-label">Learning Outcomes</label>
+                <textarea class="form-control {% if form.learning_outcomes.errors %}is-invalid{% endif %}"
+                          id="id_learning_outcomes" name="learning_outcomes"
+                          placeholder="e.g. Build responsive web applications&#10;Deploy projects to production"
+                          style="min-height: 100px;">{{ form.learning_outcomes.value|default:'' }}</textarea>
+                {% if form.learning_outcomes.errors %}
+                  <div class="invalid-feedback">{{ form.learning_outcomes.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text mt-1">One outcome per line.</div>
+              </div>
+
+              <!-- Sequential lesson unlocking (online only) -->
+              <div class="col-12" id="sequentialUnlockField"
+                   style="{% if form.mode.value == 'offline' %}display: none;{% endif %}">
+                <div class="edvanto-switch-row">
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input cyan-check" type="checkbox" role="switch"
+                           id="id_sequential_unlock" name="sequential_unlock"
+                           {% if form.sequential_unlock.value|default:True %}checked{% endif %}>
+                  </div>
+                  <div>
+                    <p class="edvanto-switch-label">Sequential Lesson Unlocking</p>
+                    <p class="edvanto-switch-help">
+                      Students must complete each lesson before the next becomes available.
+                      Applies to online courses only.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Batch-based delivery (offline only) -->
+              <div class="col-12" id="batchDeliveryField"
+                   style="{% if form.mode.value != 'offline' %}display: none;{% endif %}">
+                <div class="edvanto-switch-row">
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="id_batch_delivery" name="batch_delivery"
+                           {% if form.batch_delivery.value|default:True %}checked{% endif %}>
+                  </div>
+                  <div>
+                    <p class="edvanto-switch-label">Batch-Based Delivery</p>
+                    <p class="edvanto-switch-help">
+                      Students are assigned to batches with fixed schedules and classroom locations.
+                      Applies to offline courses only.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ ACCESS ============ -->
+          <div class="tab-pane fade" id="tab-access" role="tabpanel"
+               aria-labelledby="tab-access-btn" tabindex="0">
+            <div class="edvanto-form-section-title">
+              <i class="bi bi-shield-lock-fill"></i> Access
+            </div>
+            <p class="edvanto-form-section-desc">
+              Control enrollment approval, publication status and featured placement.
+            </p>
+
+            <div class="d-flex flex-column gap-2">
+              <!-- Requires instructor approval -->
+              <div class="edvanto-switch-row">
+                <div class="form-check form-switch m-0">
+                  <input class="form-check-input" type="checkbox" role="switch"
+                         id="id_requires_approval" name="requires_approval"
+                         {% if form.requires_approval.value %}checked{% endif %}>
+                </div>
+                <div>
+                  <p class="edvanto-switch-label">Requires Instructor Approval</p>
+                  <p class="edvanto-switch-help">
+                    Enrollments must be manually approved by the instructor before students can access the course.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Published -->
+              <div class="edvanto-switch-row">
+                <div class="form-check form-switch m-0">
+                  <input class="form-check-input" type="checkbox" role="switch"
+                         id="id_is_published" name="is_published"
+                         {% if form.is_published.value %}checked{% endif %}>
+                </div>
+                <div>
+                  <p class="edvanto-switch-label">Published</p>
+                  <p class="edvanto-switch-help">
+                    When enabled, the course is visible to students on the Edvanto platform.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Featured -->
+              <div class="edvanto-switch-row">
+                <div class="form-check form-switch m-0">
+                  <input class="form-check-input" type="checkbox" role="switch"
+                         id="id_is_featured" name="is_featured"
+                         {% if form.is_featured.value %}checked{% endif %}>
+                </div>
+                <div>
+                  <p class="edvanto-switch-label">Featured Course</p>
+                  <p class="edvanto-switch-help">
+                    Highlight this course on the homepage and in promotional sections.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.tab-content -->
+      </div><!-- /.edvanto-form-card -->
+    </div>
+
+    <!-- ============================================================
+         RIGHT COLUMN (summary + status)
+         ============================================================ -->
+    <div class="col-12 col-lg-4">
+
+      <!-- Summary -->
+      <div class="edvanto-summary-card">
+        <div class="edvanto-form-section-title">
+          <i class="bi bi-clipboard-check"></i> Course Summary
+        </div>
+        <p class="edvanto-form-section-desc" style="margin-bottom: 1rem;">
+          A live preview of the course as you edit it.
+        </p>
+
+        <div class="edvanto-summary-row">
+          <span class="label">Title</span>
+          <span class="value" id="summaryTitle" style="max-width: 60%; text-align: right;">Not set</span>
+        </div>
+        <div class="edvanto-summary-row">
+          <span class="label">Mode</span>
+          <span class="value" id="summaryMode">Online</span>
+        </div>
+        <div class="edvanto-summary-row">
+          <span class="label">Instructor</span>
+          <span class="value" id="summaryInstructor">Not set</span>
+        </div>
+        <div class="edvanto-summary-row">
+          <span class="label">Price</span>
+          <span class="value" id="summaryPrice">₹0</span>
+        </div>
+        <div class="edvanto-summary-row">
+          <span class="label">Status</span>
+          <span class="value" id="summaryStatus">
+            <span class="edvanto-badge badge-status-draft">Draft</span>
+          </span>
+        </div>
+
+        <div class="mt-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--edvanto-gray-600);">
+              Form completion
+            </span>
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--edvanto-violet);" id="completionPercent">
+              0%
+            </span>
+          </div>
+          <div class="edvanto-completion-bar">
+            <span id="completionBar" style="width: 0%;"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick help -->
+      <div class="edvanto-summary-card">
+        <div class="edvanto-form-section-title">
+          <i class="bi bi-lightbulb"></i> Quick Tips
+        </div>
+        <ul class="mb-0 ps-3" style="font-size: 0.8rem; color: var(--edvanto-gray-600); line-height: 1.6;">
+          <li>Use a clear, descriptive title for better search visibility.</li>
+          <li>Add a thumbnail (1280×720px) for the best listing appearance.</li>
+          <li>Set a discounted price to highlight savings on course cards.</li>
+          <li>Enable installments for higher-priced programs.</li>
+          <li>Save as Draft first, then Publish when ready.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       STICKY ACTION BAR
+       ============================================================ -->
+  <div class="edvanto-action-bar">
+    <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
+      <i class="bi bi-info-circle"></i>
+      <span>
+        {% if course %}
+          Editing <strong class="text-edvanto-navy">{{ course.title|truncatechars:40 }}</strong>
+        {% else %}
+          Creating a new course
+        {% endif %}
+      </span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="#" class="btn btn-edvanto-outline">
+        <i class="bi bi-x-lg me-1"></i> Cancel
+      </a>
+      <button type="submit" name="action" value="save_draft" class="btn btn-edvanto-outline">
+        <i class="bi bi-file-earmark me-1"></i> Save Draft
+      </button>
+      <button type="submit" name="action" value="save_continue" class="btn btn-edvanto-outline">
+        <i class="bi bi-arrow-repeat me-1"></i> Save &amp; Continue
+      </button>
+      <button type="submit" name="action" value="publish" class="btn btn-edvanto-primary">
+        <i class="bi bi-upload me-1"></i> Publish Course
+      </button>
+    </div>
+  </div>
+
+</form>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ---------- Delivery mode conditional fields ---------- */
+    window.toggleDeliveryMode = function () {
+      var modeRadios = document.querySelectorAll('input[name="mode"]');
+      var selected = 'online';
+      modeRadios.forEach(function (r) { if (r.checked) selected = r.value; });
+
+      var centerField = document.getElementById('centerField');
+      var onlineInfo = document.getElementById('onlineDeliveryInfo');
+      var offlineInfo = document.getElementById('offlineDeliveryInfo');
+      var seqField = document.getElementById('sequentialUnlockField');
+      var batchField = document.getElementById('batchDeliveryField');
+
+      if (selected === 'offline') {
+        if (centerField) centerField.style.display = '';
+        if (onlineInfo) onlineInfo.style.display = 'none';
+        if (offlineInfo) offlineInfo.style.display = '';
+        if (seqField) seqField.style.display = 'none';
+        if (batchField) batchField.style.display = '';
+      } else {
+        if (centerField) centerField.style.display = 'none';
+        if (onlineInfo) onlineInfo.style.display = '';
+        if (offlineInfo) offlineInfo.style.display = 'none';
+        if (seqField) seqField.style.display = '';
+        if (batchField) batchField.style.display = 'none';
+      }
+
+      updateSummary();
+    };
+
+    /* ---------- Installment toggle ---------- */
+    window.toggleInstallments = function () {
+      var checkbox = document.getElementById('id_installment_available');
+      var field = document.getElementById('installmentCountField');
+      if (!checkbox || !field) return;
+      field.style.display = checkbox.checked ? '' : 'none';
+    };
+
+    /* ---------- Slug auto-generation from title ---------- */
+    var titleInput = document.getElementById('id_title');
+    var slugInput = document.getElementById('id_slug');
+    var slugManuallyEdited = false;
+
+    if (slugInput) {
+      slugInput.addEventListener('input', function () { slugManuallyEdited = true; });
+    }
+
+    if (titleInput && slugInput) {
+      titleInput.addEventListener('input', function () {
+        if (!slugManuallyEdited) {
+          slugInput.value = this.value
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+        }
+        updateSummary();
+      });
+    }
+
+    /* ---------- Short description counter ---------- */
+    var shortDesc = document.getElementById('id_short_description');
+    var shortDescCount = document.getElementById('shortDescCount');
+    if (shortDesc && shortDescCount) {
+      var updateCount = function () {
+        shortDescCount.textContent = shortDesc.value.length;
+      };
+      shortDesc.addEventListener('input', updateCount);
+      updateCount();
+    }
+
+    /* ---------- Thumbnail preview ---------- */
+    var thumbInput = document.getElementById('id_thumbnail');
+    var thumbPreview = document.getElementById('thumbPreview');
+
+    if (thumbInput && thumbPreview) {
+      thumbInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            thumbPreview.innerHTML = '<img src="' + e.target.result + '" alt="Thumbnail preview">';
+          };
+          reader.readAsDataURL(this.files[0]);
+        }
+      });
+    }
+
+    window.clearThumbnail = function () {
+      if (thumbInput) thumbInput.value = '';
+      if (thumbPreview) {
+        thumbPreview.innerHTML = '<i class="bi bi-image"></i><span>Click to upload</span>';
+      }
+    };
+
+    /* ---------- Pricing preview ---------- */
+    window.updatePricingPreview = function () {
+      var original = parseFloat(document.getElementById('id_original_price')?.value) || 0;
+      var discounted = parseFloat(document.getElementById('id_discounted_price')?.value) || 0;
+      var preview = document.getElementById('discountPreview');
+      var amountEl = document.getElementById('discountAmount');
+      var percentEl = document.getElementById('discountPercent');
+
+      if (preview && original > 0 && discounted > 0 && discounted < original) {
+        var save = original - discounted;
+        var pct = Math.round((save / original) * 100);
+        amountEl.textContent = '₹' + save.toLocaleString('en-IN');
+        percentEl.textContent = pct + '%';
+        preview.style.display = '';
+      } else if (preview) {
+        preview.style.display = 'none';
+      }
+      updateSummary();
+    };
+
+    /* ---------- Live summary updates ---------- */
+    function updateSummary() {
+      var titleEl = document.getElementById('summaryTitle');
+      var modeEl = document.getElementById('summaryMode');
+      var instructorEl = document.getElementById('summaryInstructor');
+      var priceEl = document.getElementById('summaryPrice');
+      var statusEl = document.getElementById('summaryStatus');
+
+      if (titleEl && titleInput) {
+        titleEl.textContent = titleInput.value.trim() || 'Not set';
+      }
+
+      if (modeEl) {
+        var mode = 'online';
+        document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+          if (r.checked) mode = r.value;
+        });
+        modeEl.textContent = mode === 'offline' ? 'Offline' : 'Online';
+      }
+
+      if (instructorEl) {
+        var instSelect = document.getElementById('id_instructor');
+        if (instSelect && instSelect.value) {
+          instructorEl.textContent = instSelect.options[instSelect.selectedIndex].text;
+        } else {
+          instructorEl.textContent = 'Not set';
+        }
+      }
+
+      if (priceEl) {
+        var original = parseFloat(document.getElementById('id_original_price')?.value) || 0;
+        var discounted = parseFloat(document.getElementById('id_discounted_price')?.value) || 0;
+        var finalPrice = discounted > 0 && discounted < original ? discounted : original;
+        priceEl.textContent = finalPrice > 0 ? '₹' + finalPrice.toLocaleString('en-IN') : '₹0';
+      }
+
+      if (statusEl) {
+        var published = document.getElementById('id_is_published');
+        if (published && published.checked) {
+          statusEl.innerHTML = '<span class="edvanto-badge badge-status-published">Published</span>';
+        } else {
+          statusEl.innerHTML = '<span class="edvanto-badge badge-status-draft">Draft</span>';
+        }
+      }
+
+      updateCompletion();
+    }
+
+    /* ---------- Form completion meter ---------- */
+    function updateCompletion() {
+      var fields = [
+        'id_title', 'id_slug', 'id_short_description', 'id_full_description',
+        'id_category', 'id_difficulty', 'id_instructor', 'id_duration',
+        'id_original_price', 'id_requirements', 'id_learning_outcomes'
+      ];
+      var filled = 0;
+      fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && el.value && el.value.trim()) filled++;
+      });
+      var pct = Math.round((filled / fields.length) * 100);
+      var bar = document.getElementById('completionBar');
+      var label = document.getElementById('completionPercent');
+      if (bar) bar.style.width = pct + '%';
+      if (label) label.textContent = pct + '%';
+    }
+
+    /* ---------- Attach listeners ---------- */
+    document.addEventListener('DOMContentLoaded', function () {
+      toggleDeliveryMode();
+      toggleInstallments();
+      updatePricingPreview();
+      updateSummary();
+
+      /* Update summary on key inputs */
+      ['id_title', 'id_instructor', 'id_original_price', 'id_discounted_price',
+       'id_is_published'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', updateSummary);
+          el.addEventListener('change', updateSummary);
+        }
+      });
+
+      /* Update completion on any field change */
+      document.querySelectorAll('#edvantoCourseForm input, #edvantoCourseForm select, #edvantoCourseForm textarea')
+        .forEach(function (el) {
+          el.addEventListener('input', updateCompletion);
+          el.addEventListener('change', updateCompletion);
+        });
+    });
+
+    /* ---------- Client-side validation ---------- */
+    var form = document.getElementById('edvantoCourseForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        var action = e.submitter ? e.submitter.value : 'save';
+        var valid = true;
+
+        /* Required fields (always) */
+        ['id_title', 'id_slug', 'id_category', 'id_instructor', 'id_original_price'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          if (!el.value.trim()) {
+            el.classList.add('is-invalid');
+            valid = false;
+          } else {
+            el.classList.remove('is-invalid');
+          }
+        });
+
+        /* Publish requires more fields */
+        if (action === 'publish') {
+          ['id_short_description', 'id_full_description', 'id_duration',
+           'id_requirements', 'id_learning_outcomes'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (!el.value.trim()) {
+              el.classList.add('is-invalid');
+              valid = false;
+            } else {
+              el.classList.remove('is-invalid');
+            }
+          });
+
+          /* Offline requires center */
+          var mode = 'online';
+          document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+            if (r.checked) mode = r.value;
+          });
+          if (mode === 'offline') {
+            var center = document.getElementById('id_center');
+            if (center && !center.value.trim()) {
+              center.classList.add('is-invalid');
+              valid = false;
+            }
+          }
+        }
+
+        if (!valid) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          /* Switch to the first tab containing an invalid field */
+          var firstInvalid = form.querySelector('.is-invalid');
+          if (firstInvalid) {
+            var tabPane = firstInvalid.closest('.tab-pane');
+            if (tabPane) {
+              var tabBtn = document.querySelector('[data-bs-target="#' + tabPane.id + '"]');
+              if (tabBtn) {
+                var tab = new bootstrap.Tab(tabBtn);
+                tab.show();
+              }
+            }
+            setTimeout(function () {
+              firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              firstInvalid.focus({ preventScroll: true });
+            }, 200);
+          }
+
+          var msg = action === 'publish'
+            ? 'Please complete all required fields before publishing.'
+            : 'Please complete the required fields to save.';
+          edvantoToast(msg, 'error');
+        }
+      });
+
+      /* Remove invalid state on input */
+      form.querySelectorAll('input, select, textarea').forEach(function (el) {
+        el.addEventListener('input', function () {
+          if (this.value && this.value.trim()) this.classList.remove('is-invalid');
+        });
+        el.addEventListener('change', function () {
+          if (this.value && this.value.trim()) this.classList.remove('is-invalid');
+        });
+      });
+    }
+
+  })();
+</script>
+
+{% endblock %}

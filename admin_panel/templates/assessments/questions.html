@@ -1,0 +1,1804 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Question Builder{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     EDVANTO ADMIN – QUESTION BUILDER
+     MCQ · Text · File Upload · Reorder · Duplicate
+     ============================================================ -->
+
+<style>
+  /* ---------- Assessment header banner ---------- */
+  .edvanto-qb-banner {
+    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 55%, #0D4E96 100%);
+    border-radius: var(--edvanto-radius-card);
+    padding: 1.35rem 1.6rem;
+    color: var(--edvanto-white);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 28px rgba(3, 42, 90, 0.14);
+  }
+  .edvanto-qb-banner::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, rgba(1, 223, 254, 0) 70%);
+    pointer-events: none;
+  }
+  .edvanto-qb-banner-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+  .edvanto-qb-banner-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--edvanto-cyan);
+    flex-shrink: 0;
+  }
+  .edvanto-qb-banner-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.2rem;
+  }
+  .edvanto-qb-banner-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.35rem;
+    color: var(--edvanto-white);
+  }
+  .edvanto-qb-banner-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .edvanto-qb-banner-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .edvanto-qb-banner-meta i {
+    color: var(--edvanto-cyan);
+    font-size: 0.88rem;
+  }
+  .edvanto-qb-banner-stats {
+    display: flex;
+    align-items: center;
+  }
+  .edvanto-qb-banner-stat {
+    text-align: center;
+    padding: 0.35rem 1.1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .edvanto-qb-banner-stat:first-child { border-left: none; }
+  .edvanto-qb-banner-stat .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--edvanto-white);
+  }
+  .edvanto-qb-banner-stat .lbl {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .edvanto-qb-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: 0.9rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .edvanto-qb-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* ---------- Reorder hint ---------- */
+  .edvanto-reorder-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.74rem;
+    color: var(--edvanto-gray-500);
+    font-weight: 500;
+    padding: 0.55rem 0.9rem;
+    border-radius: var(--edvanto-radius-xs);
+    background: var(--edvanto-gray-100);
+    margin-bottom: 1rem;
+  }
+  .edvanto-reorder-hint i {
+    color: var(--edvanto-violet);
+    font-size: 0.9rem;
+  }
+
+  /* ============================================================
+     QUESTION CARDS (accordion-style)
+     ============================================================ */
+  .edvanto-q-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    margin-bottom: 0.85rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  .edvanto-q-card:hover {
+    box-shadow: var(--edvanto-shadow-hover);
+  }
+  .edvanto-q-card.dragging {
+    opacity: 0.45;
+    box-shadow: 0 12px 32px rgba(69, 28, 238, 0.18);
+  }
+  .edvanto-q-card.drop-target {
+    outline: 2px dashed var(--edvanto-violet);
+    outline-offset: -2px;
+    background: rgba(69, 28, 238, 0.015);
+  }
+
+  /* Card header (clickable to expand) */
+  .edvanto-q-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    background: var(--edvanto-white);
+  }
+  .edvanto-q-header:hover {
+    background: var(--edvanto-gray-50);
+  }
+  .edvanto-q-header[aria-expanded="true"] {
+    border-bottom: 1px solid var(--edvanto-gray-100);
+    background: var(--edvanto-gray-50);
+  }
+
+  /* Drag handle */
+  .edvanto-q-drag {
+    color: var(--edvanto-gray-400);
+    font-size: 1.1rem;
+    cursor: grab;
+    padding: 0.25rem 0.35rem;
+    border-radius: var(--edvanto-radius-xs);
+    transition: color 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  .edvanto-q-drag:hover {
+    color: var(--edvanto-violet);
+    background: rgba(69, 28, 238, 0.06);
+  }
+  .edvanto-q-drag:active { cursor: grabbing; }
+
+  /* Question number badge */
+  .edvanto-q-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
+    color: var(--edvanto-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(69, 28, 238, 0.2);
+  }
+  .edvanto-q-num.text {
+    background: linear-gradient(135deg, #00B8D4 0%, var(--edvanto-cyan) 100%);
+    color: #003B47;
+    box-shadow: 0 4px 12px rgba(1, 223, 254, 0.25);
+  }
+  .edvanto-q-num.file {
+    background: linear-gradient(135deg, #E09400 0%, var(--edvanto-gold) 100%);
+    color: #4A3300;
+    box-shadow: 0 4px 12px rgba(255, 179, 3, 0.25);
+  }
+
+  /* Question info */
+  .edvanto-q-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .edvanto-q-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.2rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .edvanto-q-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 500;
+  }
+
+  /* Type badge */
+  .edvanto-q-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .edvanto-q-type.mcq  { background: rgba(69, 28, 238, 0.08); color: var(--edvanto-violet); }
+  .edvanto-q-type.text { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
+  .edvanto-q-type.file { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+
+  /* Marks chip */
+  .edvanto-q-marks {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: rgba(15, 157, 88, 0.08);
+    color: #0F6B3E;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* Card actions */
+  .edvanto-q-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    flex-shrink: 0;
+  }
+  .edvanto-q-chevron {
+    color: var(--edvanto-gray-400);
+    font-size: 1rem;
+    margin-left: 0.35rem;
+    transition: transform 0.25s ease, color 0.15s ease;
+  }
+  .edvanto-q-header[aria-expanded="true"] .edvanto-q-chevron {
+    transform: rotate(180deg);
+    color: var(--edvanto-violet);
+  }
+
+  /* Action buttons */
+  .edvanto-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-600);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .edvanto-action-btn:hover {
+    background: rgba(69, 28, 238, 0.06);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-action-btn.danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+
+  /* ---------- Question body ---------- */
+  .edvanto-q-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+    background: var(--edvanto-gray-50);
+  }
+
+  .form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .form-label .req { color: #DC3545; }
+  .form-control, .form-select {
+    border-radius: var(--edvanto-radius-sm);
+    border: var(--edvanto-border-medium);
+    font-size: 0.88rem;
+    padding: 0.55rem 0.85rem;
+    color: var(--edvanto-navy);
+    background-color: var(--edvanto-white);
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+  }
+  textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+  }
+  .form-text {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-500);
+  }
+
+  /* ============================================================
+     MCQ OPTIONS
+     ============================================================ */
+  .edvanto-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .edvanto-option-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--edvanto-white);
+    border: 1.5px solid var(--edvanto-gray-200);
+    border-radius: var(--edvanto-radius-sm);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .edvanto-option-row:hover {
+    border-color: rgba(69, 28, 238, 0.3);
+  }
+  .edvanto-option-row.correct {
+    border-color: #0F9D58;
+    background: rgba(15, 157, 88, 0.04);
+  }
+
+  /* Correct answer toggle */
+  .edvanto-option-toggle {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1.5px solid var(--edvanto-gray-300);
+    background: var(--edvanto-white);
+    color: var(--edvanto-gray-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    font-size: 0.85rem;
+  }
+  .edvanto-option-toggle:hover {
+    border-color: #0F9D58;
+    color: #0F9D58;
+  }
+  .edvanto-option-toggle.checked {
+    background: #0F9D58;
+    border-color: #0F9D58;
+    color: var(--edvanto-white);
+    box-shadow: 0 2px 8px rgba(15, 157, 88, 0.25);
+  }
+
+  /* Option letter */
+  .edvanto-option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--edvanto-gray-100);
+    color: var(--edvanto-gray-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .edvanto-option-row.correct .edvanto-option-letter {
+    background: #0F9D58;
+    color: var(--edvanto-white);
+  }
+
+  .edvanto-option-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.88rem;
+    color: var(--edvanto-navy);
+    font-weight: 500;
+    outline: none;
+    padding: 0.25rem 0;
+    font-family: inherit;
+    min-width: 0;
+  }
+  .edvanto-option-input::placeholder {
+    color: var(--edvanto-gray-400);
+    font-style: italic;
+  }
+
+  .edvanto-option-remove {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--edvanto-gray-400);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    font-size: 0.85rem;
+  }
+  .edvanto-option-remove:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #DC3545;
+  }
+
+  /* Add option button */
+  .edvanto-add-option-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--edvanto-violet);
+    background: transparent;
+    border: 1px dashed rgba(69, 28, 238, 0.35);
+    border-radius: var(--edvanto-radius-sm);
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .edvanto-add-option-btn:hover {
+    background: rgba(69, 28, 238, 0.04);
+    border-color: var(--edvanto-violet);
+  }
+
+  /* ============================================================
+     ADD QUESTION DROPDOWN / CARD
+     ============================================================ */
+  .edvanto-add-question-card {
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: 1.5px dashed var(--edvanto-gray-300);
+    padding: 1.5rem 1.75rem;
+    margin-top: 1rem;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .edvanto-add-question-card:hover {
+    border-color: rgba(69, 28, 238, 0.4);
+    background: rgba(69, 28, 238, 0.01);
+  }
+  .edvanto-add-question-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .edvanto-add-question-title i {
+    color: var(--edvanto-violet);
+    font-size: 1rem;
+  }
+  .edvanto-add-question-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .edvanto-add-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+    background: var(--edvanto-white);
+    border: 1.5px solid var(--edvanto-gray-200);
+    border-radius: var(--edvanto-radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    color: inherit;
+  }
+  .edvanto-add-type-btn:hover {
+    border-color: var(--edvanto-violet);
+    background: rgba(69, 28, 238, 0.03);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(69, 28, 238, 0.08);
+  }
+  .edvanto-add-type-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    background: rgba(69, 28, 238, 0.08);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-add-type-btn.mcq .edvanto-add-type-icon {
+    background: rgba(69, 28, 238, 0.08);
+    color: var(--edvanto-violet);
+  }
+  .edvanto-add-type-btn.text .edvanto-add-type-icon {
+    background: rgba(1, 223, 254, 0.13);
+    color: #007A8F;
+  }
+  .edvanto-add-type-btn.file .edvanto-add-type-icon {
+    background: rgba(255, 179, 3, 0.14);
+    color: #9A6D00;
+  }
+  .edvanto-add-type-info {
+    min-width: 0;
+  }
+  .edvanto-add-type-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin: 0 0 0.15rem;
+  }
+  .edvanto-add-type-desc {
+    font-size: 0.72rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  /* ============================================================
+     STICKY ACTIONS BAR
+     ============================================================ */
+  .edvanto-actions-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-card);
+    box-shadow: 0 -4px 20px rgba(3, 42, 90, 0.06);
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .edvanto-actions-bar .btn {
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: var(--edvanto-radius-sm);
+    padding: 0.5rem 1.15rem;
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-actions-bar .btn { flex: 1; }
+  }
+  .edvanto-actions-bar .total-marks {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .edvanto-actions-bar .total-marks .value {
+    color: var(--edvanto-violet);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Empty state ---------- */
+  .edvanto-empty {
+    text-align: center;
+    padding: 2.5rem 1.25rem;
+    background: var(--edvanto-white);
+    border-radius: var(--edvanto-radius-card);
+    border: 1.5px dashed var(--edvanto-gray-300);
+    margin-bottom: 1rem;
+  }
+  .edvanto-empty i {
+    font-size: 2.25rem;
+    color: var(--edvanto-gray-400);
+    margin-bottom: 0.85rem;
+    display: block;
+  }
+  .edvanto-empty h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--edvanto-navy);
+    margin-bottom: 0.35rem;
+  }
+  .edvanto-empty p {
+    font-size: 0.82rem;
+    color: var(--edvanto-gray-600);
+    margin: 0;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 767.98px) {
+    .edvanto-q-header {
+      padding: 0.85rem 1rem;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .edvanto-q-info { order: 3; width: 100%; }
+    .edvanto-q-num { order: 1; }
+    .edvanto-q-actions { order: 2; margin-left: auto; }
+    .edvanto-q-drag { display: none; }
+    .edvanto-q-body { padding: 1rem; }
+    .edvanto-qb-banner-stats { width: 100%; }
+    .edvanto-qb-banner-stat:first-child { padding-left: 0; }
+  }
+  @media (max-width: 575.98px) {
+    .edvanto-qb-banner { padding: 1.1rem 1.25rem; }
+    .edvanto-qb-banner-title { font-size: 1.1rem; }
+    .edvanto-add-question-card { padding: 1.15rem 1.25rem; }
+    .edvanto-option-row { padding: 0.6rem 0.7rem; gap: 0.55rem; }
+  }
+</style>
+
+<!-- ============================================================
+     BREADCRUMB
+     ============================================================ -->
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="#assessments' %}">Assessments</a></li>
+      <li class="breadcrumb-item"><a href="#">HTML5 Fundamentals Quiz</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Questions</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ============================================================
+     ASSESSMENT HEADER BANNER
+     ============================================================ -->
+<div class="edvanto-qb-banner">
+  <div class="edvanto-qb-banner-inner">
+    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+      <div class="edvanto-qb-banner-icon">
+        <i class="bi bi-list-check"></i>
+      </div>
+      <div style="min-width: 0;">
+        <div class="edvanto-qb-banner-label">Question Builder · ASM-1024</div>
+        <h1 class="edvanto-qb-banner-title">HTML5 Fundamentals Quiz</h1>
+        <div class="edvanto-qb-banner-meta">
+          <span><i class="bi bi-journal-bookmark-fill"></i> Full Stack Web Development</span>
+          <span><i class="bi bi-collection-fill"></i> Module 1: Introduction to Web Dev</span>
+        </div>
+      </div>
+    </div>
+    <div class="edvanto-qb-banner-stats">
+      <div class="edvanto-qb-banner-stat">
+        <div class="num" id="bannerTotalQuestions">5</div>
+        <div class="lbl">Questions</div>
+      </div>
+      <div class="edvanto-qb-banner-stat">
+        <div class="num" id="bannerTotalMarks">50</div>
+        <div class="lbl">Total Marks</div>
+      </div>
+      <div class="edvanto-qb-banner-stat">
+        <div class="num">60%</div>
+        <div class="lbl">Pass Mark</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOOLBAR
+     ============================================================ -->
+<div class="edvanto-qb-toolbar">
+  <div class="edvanto-qb-toolbar-left">
+    <i class="bi bi-list-ol" style="color: var(--edvanto-violet);"></i>
+    <span id="toolbarCountLabel">5 questions · 50 marks</span>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" onclick="collapseAll()">
+      <i class="bi bi-arrows-collapse me-1"></i> Collapse All
+    </button>
+    <button class="btn btn-edvanto-outline btn-sm px-3" onclick="expandAll()">
+      <i class="bi bi-arrows-expand me-1"></i> Expand All
+    </button>
+    <button class="btn btn-edvanto-primary btn-sm px-3" onclick="scrollToAddQuestion()">
+      <i class="bi bi-plus-lg me-1"></i> Add Question
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     REORDER HINT
+     ============================================================ -->
+<div class="edvanto-reorder-hint">
+  <i class="bi bi-hand-index-thumb"></i>
+  Drag the <i class="bi bi-grip-vertical" style="margin: 0 0.2rem;"></i> handle to reorder questions. Click a card to expand and edit.
+</div>
+
+<!-- ============================================================
+     QUESTIONS LIST
+     ============================================================ -->
+<div id="questionsContainer">
+
+  <!-- ============================================================
+       QUESTION 1 – MCQ
+       ============================================================ -->
+  <div class="edvanto-q-card" draggable="true" data-question-id="1" data-type="mcq">
+    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody1"
+         aria-expanded="true" aria-controls="qBody1">
+      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
+        <i class="bi bi-grip-vertical"></i>
+      </span>
+      <div class="edvanto-q-num">1</div>
+      <div class="edvanto-q-info">
+        <h3 class="edvanto-q-title">Which HTML5 tag is used to define an independent, self-contained content block?</h3>
+        <div class="edvanto-q-meta">
+          <span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>
+          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
+          <span><i class="bi bi-check-circle-fill" style="color: #0F9D58;"></i> 4 options · 1 correct</span>
+        </div>
+      </div>
+      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
+        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
+          <i class="bi bi-files"></i>
+        </button>
+        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Which HTML5 tag is used to define an independent block?')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
+    </div>
+
+    <div id="qBody1" class="collapse show" data-bs-parent="#questionsContainer">
+      <div class="edvanto-q-body">
+
+        <!-- Question -->
+        <div class="mb-3">
+          <label class="form-label">Question <span class="req">*</span></label>
+          <textarea class="form-control" rows="2">Which HTML5 tag is used to define an independent, self-contained content block?</textarea>
+        </div>
+
+        <!-- Options -->
+        <div class="mb-2">
+          <label class="form-label">Options <span class="req">*</span></label>
+          <div class="edvanto-options-list" data-options-for="1">
+
+            <div class="edvanto-option-row correct">
+              <button type="button" class="edvanto-option-toggle checked" title="Mark as correct answer"
+                      onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">A</span>
+              <input type="text" class="edvanto-option-input" value="&lt;article&gt;" placeholder="Option text…">
+              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" title="Mark as correct answer"
+                      onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">B</span>
+              <input type="text" class="edvanto-option-input" value="&lt;section&gt;" placeholder="Option text…">
+              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" title="Mark as correct answer"
+                      onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">C</span>
+              <input type="text" class="edvanto-option-input" value="&lt;div&gt;" placeholder="Option text…">
+              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" title="Mark as correct answer"
+                      onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">D</span>
+              <input type="text" class="edvanto-option-input" value="&lt;span&gt;" placeholder="Option text…">
+              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+          </div>
+          <button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">
+            <i class="bi bi-plus-lg"></i> Add Option
+          </button>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-12 col-sm-4">
+            <label class="form-label">Marks <span class="req">*</span></label>
+            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
+                   oninput="recalculateMarks()">
+          </div>
+          <div class="col-12 col-sm-8">
+            <label class="form-label">Explanation</label>
+            <input type="text" class="form-control"
+                   value="The &lt;article&gt; tag represents a self-contained composition in a document.">
+            <div class="form-text mt-1">Shown to students after they answer.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       QUESTION 2 – MCQ
+       ============================================================ -->
+  <div class="edvanto-q-card" draggable="true" data-question-id="2" data-type="mcq">
+    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody2"
+         aria-expanded="false" aria-controls="qBody2">
+      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
+        <i class="bi bi-grip-vertical"></i>
+      </span>
+      <div class="edvanto-q-num">2</div>
+      <div class="edvanto-q-info">
+        <h3 class="edvanto-q-title">Which attribute is required to associate a &lt;label&gt; with an input field?</h3>
+        <div class="edvanto-q-meta">
+          <span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>
+          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
+          <span><i class="bi bi-check-circle-fill" style="color: #0F9D58;"></i> 4 options · 1 correct</span>
+        </div>
+      </div>
+      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
+        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
+          <i class="bi bi-files"></i>
+        </button>
+        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Which attribute is required to associate a label with an input?')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
+    </div>
+
+    <div id="qBody2" class="collapse" data-bs-parent="#questionsContainer">
+      <div class="edvanto-q-body">
+
+        <div class="mb-3">
+          <label class="form-label">Question <span class="req">*</span></label>
+          <textarea class="form-control" rows="2">Which attribute is required to associate a &lt;label&gt; with an input field?</textarea>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">Options <span class="req">*</span></label>
+          <div class="edvanto-options-list" data-options-for="2">
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">A</span>
+              <input type="text" class="edvanto-option-input" value="name">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row correct">
+              <button type="button" class="edvanto-option-toggle checked" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">B</span>
+              <input type="text" class="edvanto-option-input" value="for">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">C</span>
+              <input type="text" class="edvanto-option-input" value="id">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">D</span>
+              <input type="text" class="edvanto-option-input" value="class">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+          </div>
+          <button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">
+            <i class="bi bi-plus-lg"></i> Add Option
+          </button>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-12 col-sm-4">
+            <label class="form-label">Marks <span class="req">*</span></label>
+            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
+                   oninput="recalculateMarks()">
+          </div>
+          <div class="col-12 col-sm-8">
+            <label class="form-label">Explanation</label>
+            <input type="text" class="form-control"
+                   value="The 'for' attribute matches the id of the input it describes.">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       QUESTION 3 – TEXT
+       ============================================================ -->
+  <div class="edvanto-q-card" draggable="true" data-question-id="3" data-type="text">
+    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody3"
+         aria-expanded="false" aria-controls="qBody3">
+      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
+        <i class="bi bi-grip-vertical"></i>
+      </span>
+      <div class="edvanto-q-num text">3</div>
+      <div class="edvanto-q-info">
+        <h3 class="edvanto-q-title">Explain the difference between semantic and non-semantic HTML elements with an example.</h3>
+        <div class="edvanto-q-meta">
+          <span class="edvanto-q-type text"><i class="bi bi-textarea-t"></i> Text</span>
+          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
+          <span><i class="bi bi-pencil-square" style="color: #007A8F;"></i> Manual grading</span>
+        </div>
+      </div>
+      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
+        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
+          <i class="bi bi-files"></i>
+        </button>
+        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Explain the difference between semantic and non-semantic HTML elements')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
+    </div>
+
+    <div id="qBody3" class="collapse" data-bs-parent="#questionsContainer">
+      <div class="edvanto-q-body">
+
+        <div class="mb-3">
+          <label class="form-label">Question <span class="req">*</span></label>
+          <textarea class="form-control" rows="2">Explain the difference between semantic and non-semantic HTML elements with an example.</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Expected Answer / Grading Guidance</label>
+          <textarea class="form-control" rows="4"
+                    placeholder="Describe what a good answer should contain…">A strong answer should mention that semantic elements clearly describe their meaning to both the browser and the developer (e.g. &lt;article&gt;, &lt;header&gt;, &lt;footer&gt;), while non-semantic elements tell nothing about their content (e.g. &lt;div&gt;, &lt;span&gt;). Award full marks for a correct example of each.</textarea>
+          <div class="form-text mt-1">Visible to instructors during grading.</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-sm-4">
+            <label class="form-label">Marks <span class="req">*</span></label>
+            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
+                   oninput="recalculateMarks()">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       QUESTION 4 – FILE UPLOAD
+       ============================================================ -->
+  <div class="edvanto-q-card" draggable="true" data-question-id="4" data-type="file">
+    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody4"
+         aria-expanded="false" aria-controls="qBody4">
+      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
+        <i class="bi bi-grip-vertical"></i>
+      </span>
+      <div class="edvanto-q-num file">4</div>
+      <div class="edvanto-q-info">
+        <h3 class="edvanto-q-title">Submit your completed HTML page for the "About Me" project.</h3>
+        <div class="edvanto-q-meta">
+          <span class="edvanto-q-type file"><i class="bi bi-file-earmark-arrow-up"></i> File Upload</span>
+          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
+          <span><i class="bi bi-filetype-html" style="color: #9A6D00;"></i> .html, .zip · Max 10 MB</span>
+        </div>
+      </div>
+      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
+        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
+          <i class="bi bi-files"></i>
+        </button>
+        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Submit your completed HTML page')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
+    </div>
+
+    <div id="qBody4" class="collapse" data-bs-parent="#questionsContainer">
+      <div class="edvanto-q-body">
+
+        <div class="mb-3">
+          <label class="form-label">Question <span class="req">*</span></label>
+          <textarea class="form-control" rows="2">Submit your completed HTML page for the "About Me" project.</textarea>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-sm-6">
+            <label class="form-label">Allowed File Types <span class="req">*</span></label>
+            <input type="text" class="form-control" value=".html, .htm, .zip"
+                   placeholder="e.g. .pdf, .docx, .zip">
+            <div class="form-text mt-1">Comma-separated list of extensions.</div>
+          </div>
+
+          <div class="col-12 col-sm-3">
+            <label class="form-label">Max File Size <span class="req">*</span></label>
+            <div class="input-group">
+              <input type="number" class="form-control" value="10" min="1" step="1">
+              <span class="input-group-text" style="font-size: 0.82rem; font-weight: 600; color: var(--edvanto-gray-600); background: var(--edvanto-gray-50);">MB</span>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-3">
+            <label class="form-label">Marks <span class="req">*</span></label>
+            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
+                   oninput="recalculateMarks()">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       QUESTION 5 – MCQ
+       ============================================================ -->
+  <div class="edvanto-q-card" draggable="true" data-question-id="5" data-type="mcq">
+    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody5"
+         aria-expanded="false" aria-controls="qBody5">
+      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
+        <i class="bi bi-grip-vertical"></i>
+      </span>
+      <div class="edvanto-q-num">5</div>
+      <div class="edvanto-q-info">
+        <h3 class="edvanto-q-title">Which of the following is a valid HTML5 doctype declaration?</h3>
+        <div class="edvanto-q-meta">
+          <span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>
+          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
+          <span><i class="bi bi-check-circle-fill" style="color: #0F9D58;"></i> 4 options · 1 correct</span>
+        </div>
+      </div>
+      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
+        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
+          <i class="bi bi-files"></i>
+        </button>
+        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Which is a valid HTML5 doctype declaration?')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
+    </div>
+
+    <div id="qBody5" class="collapse" data-bs-parent="#questionsContainer">
+      <div class="edvanto-q-body">
+
+        <div class="mb-3">
+          <label class="form-label">Question <span class="req">*</span></label>
+          <textarea class="form-control" rows="2">Which of the following is a valid HTML5 doctype declaration?</textarea>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">Options <span class="req">*</span></label>
+          <div class="edvanto-options-list" data-options-for="5">
+
+            <div class="edvanto-option-row correct">
+              <button type="button" class="edvanto-option-toggle checked" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">A</span>
+              <input type="text" class="edvanto-option-input" value="&lt;!DOCTYPE html&gt;">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">B</span>
+              <input type="text" class="edvanto-option-input" value="&lt;!DOCTYPE HTML5&gt;">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">C</span>
+              <input type="text" class="edvanto-option-input" value="&lt;DOCTYPE html&gt;">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="edvanto-option-row">
+              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <span class="edvanto-option-letter">D</span>
+              <input type="text" class="edvanto-option-input" value="&lt;!html&gt;">
+              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+          </div>
+          <button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">
+            <i class="bi bi-plus-lg"></i> Add Option
+          </button>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-12 col-sm-4">
+            <label class="form-label">Marks <span class="req">*</span></label>
+            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
+                   oninput="recalculateMarks()">
+          </div>
+          <div class="col-12 col-sm-8">
+            <label class="form-label">Explanation</label>
+            <input type="text" class="form-control"
+                   value="HTML5 uses the simplified doctype &lt;!DOCTYPE html&gt;.">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#questionsContainer -->
+
+<!-- ============================================================
+     ADD QUESTION CARD
+     ============================================================ -->
+<div class="edvanto-add-question-card" id="addQuestionCard">
+  <div class="edvanto-add-question-title">
+    <i class="bi bi-plus-circle-fill"></i> Add a New Question
+  </div>
+  <div class="edvanto-add-question-grid">
+
+    <button type="button" class="edvanto-add-type-btn mcq" onclick="addQuestion('mcq')">
+      <span class="edvanto-add-type-icon"><i class="bi bi-ui-radios"></i></span>
+      <span class="edvanto-add-type-info">
+        <span class="edvanto-add-type-label">Multiple Choice</span>
+        <span class="edvanto-add-type-desc">Auto-graded with one or more correct options.</span>
+      </span>
+    </button>
+
+    <button type="button" class="edvanto-add-type-btn text" onclick="addQuestion('text')">
+      <span class="edvanto-add-type-icon"><i class="bi bi-textarea-t"></i></span>
+      <span class="edvanto-add-type-info">
+        <span class="edvanto-add-type-label">Text Answer</span>
+        <span class="edvanto-add-type-desc">Manually graded, with expected answer guidance.</span>
+      </span>
+    </button>
+
+    <button type="button" class="edvanto-add-type-btn file" onclick="addQuestion('file')">
+      <span class="edvanto-add-type-icon"><i class="bi bi-file-earmark-arrow-up"></i></span>
+      <span class="edvanto-add-type-info">
+        <span class="edvanto-add-type-label">File Upload</span>
+        <span class="edvanto-add-type-desc">Students submit files for manual review.</span>
+      </span>
+    </button>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     STICKY ACTIONS BAR
+     ============================================================ -->
+<div class="edvanto-actions-bar">
+  <div class="total-marks">
+    <i class="bi bi-trophy" style="color: var(--edvanto-violet);"></i>
+    Total marks: <span class="value" id="totalMarksValue">50</span>
+    <span style="color: var(--edvanto-gray-400);">·</span>
+    <span id="questionCountLabel">5 questions</span>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="#assessments' %}" class="btn btn-edvanto-outline">
+      <i class="bi bi-x-lg me-1"></i> Cancel
+    </a>
+    <button type="button" class="btn btn-edvanto-outline" onclick="saveDraft()">
+      <i class="bi bi-file-earmark me-1"></i> Save Draft
+    </button>
+    <button type="button" class="btn btn-edvanto-primary" onclick="saveQuestions()">
+      <i class="bi bi-check-lg me-1"></i> Save Questions
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     CONFIRM DELETE MODAL
+     ============================================================ -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="deleteModalLabel" style="font-weight: 700; color: var(--edvanto-navy); font-size: 1rem;">
+          <i class="bi bi-exclamation-triangle-fill me-2" style="color: #DC3545;"></i>
+          Delete Question
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2" style="font-size: 0.88rem; color: var(--edvanto-gray-600);">
+        <span id="deleteModalMessage">Are you sure?</span>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
+                onclick="performDelete()">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE JAVASCRIPT
+     ============================================================ -->
+<script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       MCQ: TOGGLE CORRECT ANSWER
+       ============================================================ */
+    window.toggleCorrect = function (btn) {
+      /* Single correct answer per question (radio behaviour) */
+      var optionRow = btn.closest('.edvanto-option-row');
+      var optionsList = btn.closest('.edvanto-options-list');
+      if (!optionsList) return;
+
+      /* Remove correct from all */
+      optionsList.querySelectorAll('.edvanto-option-row').forEach(function (row) {
+        row.classList.remove('correct');
+        var t = row.querySelector('.edvanto-option-toggle');
+        if (t) t.classList.remove('checked');
+      });
+
+      /* Add correct to this one */
+      optionRow.classList.add('correct');
+      btn.classList.add('checked');
+    };
+
+    /* ============================================================
+       MCQ: ADD / REMOVE OPTIONS
+       ============================================================ */
+    window.addOption = function (btn) {
+      var list = btn.previousElementSibling;
+      if (!list || !list.classList.contains('edvanto-options-list')) return;
+
+      var count = list.querySelectorAll('.edvanto-option-row').length;
+      if (count >= 8) {
+        edvantoToast('Maximum 8 options per question.', 'warning');
+        return;
+      }
+
+      var letters = 'ABCDEFGH';
+      var letter = letters[count] || String(count + 1);
+
+      var row = document.createElement('div');
+      row.className = 'edvanto-option-row';
+      row.innerHTML =
+        '<button type="button" class="edvanto-option-toggle" title="Mark as correct answer" onclick="toggleCorrect(this)">' +
+          '<i class="bi bi-check-lg"></i>' +
+        '</button>' +
+        '<span class="edvanto-option-letter">' + letter + '</span>' +
+        '<input type="text" class="edvanto-option-input" placeholder="Option text…">' +
+        '<button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">' +
+          '<i class="bi bi-x-lg"></i>' +
+        '</button>';
+
+      list.appendChild(row);
+      row.querySelector('.edvanto-option-input').focus();
+    };
+
+    window.removeOption = function (btn) {
+      var row = btn.closest('.edvanto-option-row');
+      var list = row.parentElement;
+      if (!list) return;
+
+      if (list.querySelectorAll('.edvanto-option-row').length <= 2) {
+        edvantoToast('At least 2 options required.', 'warning');
+        return;
+      }
+
+      row.remove();
+      relabelOptions(list);
+    };
+
+    function relabelOptions(list) {
+      var letters = 'ABCDEFGH';
+      list.querySelectorAll('.edvanto-option-row').forEach(function (row, i) {
+        var letterEl = row.querySelector('.edvanto-option-letter');
+        if (letterEl) letterEl.textContent = letters[i] || (i + 1);
+      });
+    }
+
+    /* ============================================================
+       MARKS RECALCULATION
+       ============================================================ */
+    function recalcAll() {
+      var total = 0;
+      document.querySelectorAll('#questionsContainer .edvanto-q-card').forEach(function (card) {
+        var marksInput = card.querySelector('.marks-input');
+        if (marksInput) {
+          var val = parseFloat(marksInput.value) || 0;
+          total += val;
+        }
+      });
+
+      var count = document.querySelectorAll('#questionsContainer .edvanto-q-card').length;
+
+      document.getElementById('totalMarksValue').textContent = total;
+      document.getElementById('questionCountLabel').textContent =
+        count + (count === 1 ? ' question' : ' questions');
+      document.getElementById('bannerTotalQuestions').textContent = count;
+      document.getElementById('bannerTotalMarks').textContent = total;
+
+      var toolbarLabel = document.getElementById('toolbarCountLabel');
+      if (toolbarLabel) {
+        toolbarLabel.textContent = count + (count === 1 ? ' question' : ' questions') +
+                                    ' · ' + total + ' marks';
+      }
+    }
+
+    window.recalculateMarks = recalcAll;
+
+    /* ============================================================
+       COLLAPSE / EXPAND ALL
+       ============================================================ */
+    window.collapseAll = function () {
+      document.querySelectorAll('#questionsContainer .collapse').forEach(function (el) {
+        var c = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+        c.hide();
+      });
+    };
+
+    window.expandAll = function () {
+      document.querySelectorAll('#questionsContainer .collapse').forEach(function (el) {
+        var c = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+        c.show();
+      });
+    };
+
+    /* ============================================================
+       DUPLICATE QUESTION
+       ============================================================ */
+    window.duplicateQuestion = function (btn) {
+      var card = btn.closest('.edvanto-q-card');
+      if (!card) return;
+
+      var clone = card.cloneNode(true);
+      /* Remove ids to avoid duplicates */
+      clone.querySelectorAll('[id]').forEach(function (el) { el.removeAttribute('id'); });
+      clone.querySelectorAll('[data-bs-target]').forEach(function (el) { el.removeAttribute('data-bs-target'); });
+      clone.querySelectorAll('[aria-controls]').forEach(function (el) { el.removeAttribute('aria-controls'); });
+      clone.querySelectorAll('.collapse').forEach(function (el) {
+        el.classList.remove('show');
+        el.classList.add('show'); /* keep open for editing */
+      });
+      clone.classList.remove('dragging', 'drop-target');
+
+      card.parentNode.insertBefore(clone, card.nextSibling);
+      renumberQuestions();
+      recalcAll();
+      initDrag();
+
+      edvantoToast('Question duplicated.', 'success');
+    };
+
+    /* ============================================================
+       DELETE QUESTION
+       ============================================================ */
+    var pendingDeleteCard = null;
+
+    window.confirmDeleteQuestion = function (btn, title) {
+      pendingDeleteCard = btn.closest('.edvanto-q-card');
+      document.getElementById('deleteModalMessage').innerHTML =
+        'Delete question <strong class="text-edvanto-navy">' +
+        (title.length > 60 ? title.substring(0, 60) + '…' : title) +
+        '</strong>? This cannot be undone.';
+      new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    };
+
+    window.performDelete = function () {
+      var modalEl = document.getElementById('deleteModal');
+      var modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (pendingDeleteCard) {
+        pendingDeleteCard.remove();
+        pendingDeleteCard = null;
+        renumberQuestions();
+        recalcAll();
+        edvantoToast('Question deleted.', 'warning');
+      }
+    };
+
+    /* ============================================================
+       RENUMBER QUESTIONS
+       ============================================================ */
+    function renumberQuestions() {
+      var cards = document.querySelectorAll('#questionsContainer .edvanto-q-card');
+      cards.forEach(function (card, i) {
+        var numEl = card.querySelector('.edvanto-q-num');
+        if (numEl) numEl.textContent = i + 1;
+
+        var type = card.dataset.type || 'mcq';
+        numEl.classList.remove('text', 'file');
+        if (type === 'text') numEl.classList.add('text');
+        if (type === 'file') numEl.classList.add('file');
+      });
+    }
+
+    /* ============================================================
+       ADD QUESTION (dynamic)
+       ============================================================ */
+    window.addQuestion = function (type) {
+      var container = document.getElementById('questionsContainer');
+      var count = container.querySelectorAll('.edvanto-q-card').length + 1;
+
+      var card = document.createElement('div');
+      card.className = 'edvanto-q-card';
+      card.setAttribute('draggable', 'true');
+      card.dataset.questionId = 'new_' + Date.now();
+      card.dataset.type = type;
+
+      var headerClass = type === 'text' ? 'text' : (type === 'file' ? 'file' : '');
+      var typeBadge = type === 'mcq'
+        ? '<span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>'
+        : (type === 'text'
+          ? '<span class="edvanto-q-type text"><i class="bi bi-textarea-t"></i> Text</span>'
+          : '<span class="edvanto-q-type file"><i class="bi bi-file-earmark-arrow-up"></i> File Upload</span>');
+
+      var defaultTitle = type === 'mcq'
+        ? 'New multiple choice question'
+        : (type === 'text' ? 'New text answer question' : 'New file upload question');
+
+      card.innerHTML =
+        '<div class="edvanto-q-header" data-bs-toggle="collapse" aria-expanded="true">' +
+          '<span class="edvanto-q-drag" title="Drag to reorder">' +
+            '<i class="bi bi-grip-vertical"></i>' +
+          '</span>' +
+          '<div class="edvanto-q-num ' + headerClass + '">' + count + '</div>' +
+          '<div class="edvanto-q-info">' +
+            '<h3 class="edvanto-q-title">' + defaultTitle + '</h3>' +
+            '<div class="edvanto-q-meta">' +
+              typeBadge +
+              '<span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="edvanto-q-actions">' +
+            '<button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">' +
+              '<i class="bi bi-files"></i>' +
+            '</button>' +
+            '<button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, \'' + defaultTitle + '\')">' +
+              '<i class="bi bi-trash"></i>' +
+            '</button>' +
+          '</div>' +
+          '<i class="bi bi-chevron-down edvanto-q-chevron"></i>' +
+        '</div>' +
+        '<div class="collapse show">' +
+          '<div class="edvanto-q-body">' + buildBodyForType(type) + '</div>' +
+        '</div>';
+
+      container.appendChild(card);
+      renumberQuestions();
+      recalcAll();
+      initDrag();
+
+      /* Expand newly added card */
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      edvantoToast('New ' + type + ' question added.', 'success');
+    };
+
+    function buildBodyForType(type) {
+      if (type === 'mcq') {
+        return '' +
+          '<div class="mb-3">' +
+            '<label class="form-label">Question <span class="req">*</span></label>' +
+            '<textarea class="form-control" rows="2" placeholder="Enter your question…"></textarea>' +
+          '</div>' +
+          '<div class="mb-2">' +
+            '<label class="form-label">Options <span class="req">*</span></label>' +
+            '<div class="edvanto-options-list">' +
+              buildOptionRow('A', '', true) +
+              buildOptionRow('B', '', false) +
+              buildOptionRow('C', '', false) +
+              buildOptionRow('D', '', false) +
+            '</div>' +
+            '<button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">' +
+              '<i class="bi bi-plus-lg"></i> Add Option' +
+            '</button>' +
+          '</div>' +
+          '<div class="row g-3 mt-2">' +
+            '<div class="col-12 col-sm-4">' +
+              '<label class="form-label">Marks <span class="req">*</span></label>' +
+              '<input type="number" class="form-control marks-input" value="10" min="0" step="1" oninput="recalculateMarks()">' +
+            '</div>' +
+            '<div class="col-12 col-sm-8">' +
+              '<label class="form-label">Explanation</label>' +
+              '<input type="text" class="form-control" placeholder="Shown to students after they answer…">' +
+            '</div>' +
+          '</div>';
+      }
+      if (type === 'text') {
+        return '' +
+          '<div class="mb-3">' +
+            '<label class="form-label">Question <span class="req">*</span></label>' +
+            '<textarea class="form-control" rows="2" placeholder="Enter your question…"></textarea>' +
+          '</div>' +
+          '<div class="mb-3">' +
+            '<label class="form-label">Expected Answer / Grading Guidance</label>' +
+            '<textarea class="form-control" rows="4" placeholder="Describe what a good answer should contain…"></textarea>' +
+            '<div class="form-text mt-1">Visible to instructors during grading.</div>' +
+          '</div>' +
+          '<div class="row g-3">' +
+            '<div class="col-12 col-sm-4">' +
+              '<label class="form-label">Marks <span class="req">*</span></label>' +
+              '<input type="number" class="form-control marks-input" value="10" min="0" step="1" oninput="recalculateMarks()">' +
+            '</div>' +
+          '</div>';
+      }
+      /* file */
+      return '' +
+        '<div class="mb-3">' +
+          '<label class="form-label">Question <span class="req">*</span></label>' +
+          '<textarea class="form-control" rows="2" placeholder="Describe what students should upload…"></textarea>' +
+        '</div>' +
+        '<div class="row g-3">' +
+          '<div class="col-12 col-sm-6">' +
+            '<label class="form-label">Allowed File Types <span class="req">*</span></label>' +
+            '<input type="text" class="form-control" placeholder="e.g. .pdf, .docx, .zip" value=".pdf">' +
+            '<div class="form-text mt-1">Comma-separated list of extensions.</div>' +
+          '</div>' +
+          '<div class="col-12 col-sm-3">' +
+            '<label class="form-label">Max File Size <span class="req">*</span></label>' +
+            '<div class="input-group">' +
+              '<input type="number" class="form-control" value="10" min="1" step="1">' +
+              '<span class="input-group-text" style="font-size: 0.82rem; font-weight: 600; color: var(--edvanto-gray-600); background: var(--edvanto-gray-50);">MB</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="col-12 col-sm-3">' +
+            '<label class="form-label">Marks <span class="req">*</span></label>' +
+            '<input type="number" class="form-control marks-input" value="10" min="0" step="1" oninput="recalculateMarks()">' +
+          '</div>' +
+        '</div>';
+    }
+
+    function buildOptionRow(letter, value, isCorrect) {
+      return '' +
+        '<div class="edvanto-option-row' + (isCorrect ? ' correct' : '') + '">' +
+          '<button type="button" class="edvanto-option-toggle' + (isCorrect ? ' checked' : '') + '" onclick="toggleCorrect(this)">' +
+            '<i class="bi bi-check-lg"></i>' +
+          '</button>' +
+          '<span class="edvanto-option-letter">' + letter + '</span>' +
+          '<input type="text" class="edvanto-option-input" placeholder="Option text…" value="' + value + '">' +
+          '<button type="button" class="edvanto-option-remove" onclick="removeOption(this)">' +
+            '<i class="bi bi-x-lg"></i>' +
+          '</button>' +
+        '</div>';
+    }
+
+    /* ============================================================
+       DRAG & DROP REORDERING
+       ============================================================ */
+    var dragEl = null;
+
+    function initDrag() {
+      var container = document.getElementById('questionsContainer');
+      if (!container) return;
+
+      container.querySelectorAll('.edvanto-q-card').forEach(function (card) {
+        /* prevent duplicate listeners */
+        if (card.dataset.dragBound === '1') return;
+        card.dataset.dragBound = '1';
+
+        card.addEventListener('dragstart', function (e) {
+          dragEl = card;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', card.dataset.questionId || '');
+        });
+
+        card.addEventListener('dragend', function () {
+          card.classList.remove('dragging');
+          container.querySelectorAll('.edvanto-q-card.drop-target').forEach(function (el) {
+            el.classList.remove('drop-target');
+          });
+          dragEl = null;
+          renumberQuestions();
+          persistOrder();
+        });
+
+        card.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          if (!dragEl || dragEl === card) return;
+          e.dataTransfer.dropEffect = 'move';
+          card.classList.add('drop-target');
+        });
+
+        card.addEventListener('dragleave', function () {
+          card.classList.remove('drop-target');
+        });
+
+        card.addEventListener('drop', function (e) {
+          e.preventDefault();
+          card.classList.remove('drop-target');
+          if (!dragEl || dragEl === card) return;
+
+          var cards = Array.from(container.querySelectorAll('.edvanto-q-card'));
+          var fromIdx = cards.indexOf(dragEl);
+          var toIdx = cards.indexOf(card);
+
+          if (fromIdx < toIdx) {
+            container.insertBefore(dragEl, card.nextSibling);
+          } else {
+            container.insertBefore(dragEl, card);
+          }
+          renumberQuestions();
+          edvantoToast('Question reordered.');
+        });
+      });
+    }
+
+    /* ============================================================
+       PERSIST ORDER (replace with fetch to Django)
+       ============================================================ */
+    function persistOrder() {
+      var order = [];
+      document.querySelectorAll('#questionsContainer .edvanto-q-card').forEach(function (card) {
+        order.push(card.dataset.questionId);
+      });
+      console.log('[Edvanto] Question order:', order);
+      /* Example:
+         fetch('#}', {
+           method: 'POST',
+           headers: {
+             'X-CSRFToken': '{{ csrf_token }}',
+             'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({ order: order })
+         });
+      */
+    }
+
+    /* ============================================================
+       SAVE
+       ============================================================ */
+    window.saveDraft = function () {
+      edvantoToast('Questions saved as draft.', 'info');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    window.saveQuestions = function () {
+      /* Validate each MCQ has at least one correct answer */
+      var invalid = false;
+      document.querySelectorAll('#questionsContainer .edvanto-q-card[data-type="mcq"]').forEach(function (card) {
+        var correct = card.querySelector('.edvanto-option-row.correct');
+        if (!correct) {
+          invalid = true;
+          card.classList.add('drop-target');
+          setTimeout(function () { card.classList.remove('drop-target'); }, 1500);
+        }
+      });
+
+      if (invalid) {
+        edvantoToast('Some MCQ questions have no correct answer selected.', 'error');
+        return;
+      }
+
+      edvantoToast('All questions saved successfully.', 'success');
+      /* Replace with a real fetch() to your Django endpoint */
+    };
+
+    /* ============================================================
+       SCROLL TO ADD QUESTION
+       ============================================================ */
+    window.scrollToAddQuestion = function () {
+      var el = document.getElementById('addQuestionCard');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    document.addEventListener('DOMContentLoaded', function () {
+      initDrag();
+      renumberQuestions();
+      recalcAll();
+
+      /* Prevent collapse toggle when clicking option rows or inputs */
+      document.querySelectorAll('.edvanto-q-body').forEach(function (body) {
+        body.addEventListener('click', function (e) {
+          e.stopPropagation();
+        });
+      });
+    });
+
+  })();
+</script>
+
+{% endblock %}

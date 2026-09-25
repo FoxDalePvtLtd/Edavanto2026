@@ -1,0 +1,738 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+
+{% block dashboard_title %}
+    Dashboard
+{% endblock %}
+
+
+{% block dashboard_breadcrumb %}
+    <div class="student-dashboard__breadcrumb">
+        <span>Student Area</span>
+    </div>
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="student-dashboard-home">
+
+    <!-- =========================================================
+         WELCOME SECTION
+         ========================================================= -->
+    <section class="student-dashboard-home__welcome tj-fade-anim">
+
+        <div class="row align-items-end g-4">
+
+            <div class="col-lg-8">
+
+                <div class="student-dashboard-home__welcome-content">
+
+                    <span class="student-dashboard-home__eyebrow">
+                        Welcome back
+                    </span>
+
+                    <h2 class="student-dashboard-home__welcome-title">
+                        {% block student_welcome_heading %}
+                            Continue your learning journey.
+                        {% endblock %}
+                    </h2>
+
+                    <p class="student-dashboard-home__welcome-text">
+                        {% block student_welcome_text %}
+                        {% endblock %}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ENROLLED COURSE / COURSES
+         ========================================================= -->
+    <section class="student-dashboard-home__courses section-gap">
+
+        <div class="student-dashboard-section-heading">
+
+            <div>
+                <span class="student-dashboard-section-heading__eyebrow">
+                    Learning
+                </span>
+
+                <h3>
+                    My Course
+                </h3>
+            </div>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            {#
+                IMPORTANT:
+                Do NOT invent a courses/enrollments context variable.
+
+                Replace the integration block below with the actual
+                iterable already supplied by the existing student view.
+
+                If the existing project exposes a single enrollment,
+                render the same card once.
+
+                If it exposes multiple enrollments, iterate over that
+                existing collection.
+            #}
+
+            {% block enrolled_courses %}
+
+                <!--
+                    EXISTING BACKEND COURSE/ENROLLMENT CONTEXT
+                    INTEGRATION POINT
+
+                    The course card below defines the approved UI
+                    structure. Connect its values only to fields that
+                    already exist in the project.
+                -->
+
+            {% endblock %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ONLINE LEARNING JOURNEY
+         Render only when actual backend enrollment context indicates
+         that online learning functionality is available.
+         ========================================================= -->
+    {% block online_learning_section %}
+
+        <section class="student-dashboard-home__online-learning section-gap">
+
+            <div class="student-dashboard-section-heading">
+
+                <div>
+                    <span class="student-dashboard-section-heading__eyebrow">
+                        Current Learning
+                    </span>
+
+                    <h3>
+                        Continue Learning
+                    </h3>
+                </div>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                <!-- =================================================
+                     CURRENT LESSON
+                     ================================================= -->
+                <div class="col-xl-8">
+
+                    <article class="student-dashboard-card student-dashboard-card--current-lesson tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Current Lesson
+                                </span>
+
+                                <h4>
+                                    {% block current_lesson_title %}
+                                        Current lesson
+                                    {% endblock %}
+                                </h4>
+
+                            </div>
+
+                            <span class="student-dashboard-status student-dashboard-status--current">
+                                {% block current_lesson_status %}
+                                    Unlocked
+                                {% endblock %}
+                            </span>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            <p class="student-dashboard-card__meta">
+                                {% block current_lesson_meta %}
+                                {% endblock %}
+                            </p>
+
+
+                            <!-- Progress -->
+                            <div class="student-dashboard-progress">
+
+                                <div class="student-dashboard-progress__top">
+
+                                    <span>
+                                        Course Progress
+                                    </span>
+
+                                    <strong>
+                                        {% block course_progress_percentage %}
+                                            0%
+                                        {% endblock %}
+                                    </strong>
+
+                                </div>
+
+
+                                <div
+                                    class="progress student-dashboard-progress__track"
+                                    role="progressbar"
+                                    aria-label="Course progress"
+                                >
+
+                                    <div
+                                        class="progress-bar student-dashboard-progress__bar"
+                                        {% block course_progress_width %}
+                                        style="width: 0%;"
+                                        {% endblock %}
+                                    ></div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="student-dashboard-card__action">
+
+                                {% block current_lesson_action %}
+
+                                    <!--
+                                        Use the actual existing lesson URL.
+                                        Do not invent a URL name.
+                                    -->
+
+                                {% endblock %}
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- =================================================
+                     NEXT ACTION
+                     ================================================= -->
+                <div class="col-xl-4">
+
+                    <article class="student-dashboard-card student-dashboard-card--next-action tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Next Action
+                                </span>
+
+                                <h4>
+                                    Continue
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            {% block online_next_action %}
+
+                                <!-- Actual backend-controlled action -->
+
+                            {% endblock %}
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 ONLINE STATUS CARDS
+                 ===================================================== -->
+            <div class="row g-4 mt-1">
+
+                <!-- Assessment -->
+                <div class="col-lg-6">
+
+                    <article class="student-dashboard-card student-dashboard-card--status tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Assessment
+                                </span>
+
+                                <h4>
+                                    Assessment Status
+                                </h4>
+
+                            </div>
+
+                            <span class="student-dashboard-status">
+                                {% block assessment_status %}
+                                {% endblock %}
+                            </span>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            {% block assessment_summary %}
+                            {% endblock %}
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- Doubt Clearance -->
+                <div class="col-lg-6">
+
+                    <article class="student-dashboard-card student-dashboard-card--status tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Support
+                                </span>
+
+                                <h4>
+                                    Doubt Clearance
+                                </h4>
+
+                            </div>
+
+                            <span class="student-dashboard-status">
+                                {% block doubt_status %}
+                                {% endblock %}
+                            </span>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            {% block doubt_summary %}
+                            {% endblock %}
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 ONLINE LESSON PROGRESS
+                 Completed → Current → Locked
+                 ===================================================== -->
+            <div class="row mt-1">
+
+                <div class="col-12">
+
+                    <article class="student-dashboard-card student-dashboard-card--lesson-progress tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Course Journey
+                                </span>
+
+                                <h4>
+                                    Lesson Progress
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            <div class="student-dashboard-lessons">
+
+                                {% block lesson_progress %}
+
+                                    {#
+                                        Backend must provide the actual
+                                        lesson sequence/unlock state.
+
+                                        Approved visual states:
+
+                                        COMPLETED
+                                        CURRENT / UNLOCKED
+                                        LOCKED
+
+                                        Locked lessons MUST NOT contain a
+                                        clickable link.
+
+                                        Do not infer unlock state in JS.
+                                        Do not calculate it in template.
+                                    #}
+
+                                {% endblock %}
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    {% endblock %}
+
+
+
+    <!-- =========================================================
+         OFFLINE LEARNING STATUS
+         Same dashboard page, simpler learning information.
+         ========================================================= -->
+    {% block offline_learning_section %}
+
+        <section class="student-dashboard-home__offline-learning section-gap">
+
+            <div class="student-dashboard-section-heading">
+
+                <div>
+
+                    <span class="student-dashboard-section-heading__eyebrow">
+                        Learning Status
+                    </span>
+
+                    <h3>
+                        My Learning
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                <!-- Active Course -->
+                <div class="col-lg-8">
+
+                    <article class="student-dashboard-card tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Active Course
+                                </span>
+
+                                <h4>
+                                    {% block offline_course_title %}
+                                    {% endblock %}
+                                </h4>
+
+                            </div>
+
+                            <span class="student-dashboard-status">
+                                {% block offline_course_status %}
+                                {% endblock %}
+                            </span>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            {% block offline_learning_summary %}
+                            {% endblock %}
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- Materials -->
+                <div class="col-lg-4">
+
+                    <article class="student-dashboard-card tj-fade-anim">
+
+                        <div class="student-dashboard-card__header">
+
+                            <div>
+
+                                <span class="student-dashboard-card__eyebrow">
+                                    Materials
+                                </span>
+
+                                <h4>
+                                    Learning Materials
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-dashboard-card__body">
+
+                            {% block offline_material_summary %}
+                            {% endblock %}
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    {% endblock %}
+
+
+
+    <!-- =========================================================
+         COMMON PAYMENT + CERTIFICATE STATUS
+         ========================================================= -->
+    <section class="student-dashboard-home__account section-gap">
+
+        <div class="row g-4">
+
+            <!-- Payment -->
+            <div class="col-lg-6">
+
+                <article class="student-dashboard-card student-dashboard-card--account tj-fade-anim">
+
+                    <div class="student-dashboard-card__header">
+
+                        <div>
+
+                            <span class="student-dashboard-card__eyebrow">
+                                Account
+                            </span>
+
+                            <h4>
+                                Payment Status
+                            </h4>
+
+                        </div>
+
+                        <span class="student-dashboard-status">
+                            {% block payment_status %}
+                            {% endblock %}
+                        </span>
+
+                    </div>
+
+
+                    <div class="student-dashboard-card__body">
+
+                        {% block payment_summary %}
+                        {% endblock %}
+
+
+                        {% block payment_quick_link %}
+                            <!-- Existing Payments URL only -->
+                        {% endblock %}
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <!-- Certificate -->
+            <div class="col-lg-6">
+
+                <article class="student-dashboard-card student-dashboard-card--account tj-fade-anim">
+
+                    <div class="student-dashboard-card__header">
+
+                        <div>
+
+                            <span class="student-dashboard-card__eyebrow">
+                                Achievement
+                            </span>
+
+                            <h4>
+                                Certificate
+                            </h4>
+
+                        </div>
+
+                        <span class="student-dashboard-status">
+                            {% block certificate_status %}
+                            {% endblock %}
+                        </span>
+
+                    </div>
+
+
+                    <div class="student-dashboard-card__body">
+
+                        {% block certificate_summary %}
+                        {% endblock %}
+
+
+                        {% block certificate_quick_link %}
+                            <!-- Existing Certificates URL only -->
+                        {% endblock %}
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================================
+         RECENT NOTIFICATIONS
+         ========================================================= -->
+    {% block recent_notifications_section %}
+
+        <section class="student-dashboard-home__notifications section-gap">
+
+            <div class="student-dashboard-section-heading">
+
+                <div>
+
+                    <span class="student-dashboard-section-heading__eyebrow">
+                        Updates
+                    </span>
+
+                    <h3>
+                        Recent Notifications
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="student-dashboard-card tj-fade-anim">
+
+                <div class="student-dashboard-card__body">
+
+                    {% block recent_notifications %}
+
+                        {#
+                            Render this section only if the existing
+                            backend already provides notification data.
+
+                            If no notification context exists, this entire
+                            section should be omitted rather than creating
+                            fake notification data.
+                        #}
+
+                    {% endblock %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+    {% endblock %}
+
+
+
+    <!-- =========================================================
+         QUICK LINKS
+         ========================================================= -->
+    <section class="student-dashboard-home__quick-links section-gap">
+
+        <div class="student-dashboard-section-heading">
+
+            <div>
+
+                <span class="student-dashboard-section-heading__eyebrow">
+                    Quick Access
+                </span>
+
+                <h3>
+                    Quick Links
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="row g-3">
+
+            {% block quick_links %}
+
+                {#
+                    IMPORTANT:
+
+                    Add only links whose URL names already exist in the
+                    project.
+
+                    Do NOT invent URL names.
+
+                    Online links may include:
+                    - current lesson
+                    - assessment
+                    - doubts
+
+                    Common links may include:
+                    - materials
+                    - payments
+                    - certificates
+                    - profile
+                #}
+
+            {% endblock %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="student-dashboard">
+
+    <!-- =========================================================
+         DASHBOARD SIDEBAR
+         Shared by ONLINE + OFFLINE students
+         ========================================================= -->
+    <aside
+        class="student-dashboard__sidebar offcanvas-lg offcanvas-start"
+        tabindex="-1"
+        id="studentDashboardSidebar"
+        aria-labelledby="studentDashboardSidebarLabel"
+    >
+
+        <!-- Sidebar Header -->
+        <div class="student-dashboard__sidebar-header">
+
+            <div class="student-dashboard__brand">
+                <a href="#" aria-label="Edvanto Dashboard">
+                    <!--
+                        IMPORTANT:
+                        Replace the following logo reference only after
+                        inspecting the existing project's logo asset/path.
+                        Do NOT invent a static path.
+                    -->
+                    <span class="student-dashboard__brand-text">
+                        EDVANTO
+                    </span>
+                </a>
+            </div>
+
+            <!-- Mobile close button.
+                 Bootstrap handles this; NO custom JS required. -->
+            <button
+                type="button"
+                class="btn-close d-lg-none"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close dashboard navigation"
+            ></button>
+
+        </div>
+
+
+        <!-- Sidebar Navigation -->
+        <nav
+            class="student-dashboard__navigation"
+            aria-label="Student dashboard navigation"
+        >
+
+            <div class="student-dashboard__nav-section">
+
+                <!-- Dashboard -->
+                <a
+                    href="#"
+                    class="student-dashboard__nav-item"
+                    data-dashboard-nav="dashboard"
+                >
+                    <span class="student-dashboard__nav-icon">
+                        <i class="tji-home"></i>
+                    </span>
+
+                    <span class="student-dashboard__nav-label">
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <!-- =====================================================
+                     ONLINE-ONLY NAVIGATION
+
+                     IMPORTANT:
+                     Do NOT invent a context variable here.
+
+                     During integration, replace the integration condition
+                     below with the ACTUAL enrollment/mode context already
+                     available in the project.
+
+                     Example concept only:
+                         existing enrollment mode == online
+
+                     Do NOT literally introduce `student_mode`,
+                     `enrollment_mode`, etc. unless those already exist.
+                     ===================================================== -->
+
+                {% if ONLINE_ENROLLMENT_CONTEXT_EXISTS %}
+
+                    <!-- Current Lesson / My Course -->
+                    <a
+                        href="#"
+                        class="student-dashboard__nav-item"
+                        data-dashboard-nav="lesson"
+                    >
+                        <span class="student-dashboard__nav-icon">
+                            <i class="tji-play"></i>
+                        </span>
+
+                        <span class="student-dashboard__nav-label">
+                            My Course
+                        </span>
+                    </a>
+
+
+                    <!-- Assessments -->
+                    <a
+                        href="#"
+                        class="student-dashboard__nav-item"
+                        data-dashboard-nav="assessment"
+                    >
+                        <span class="student-dashboard__nav-icon">
+                            <i class="tji-file"></i>
+                        </span>
+
+                        <span class="student-dashboard__nav-label">
+                            Assessments
+                        </span>
+                    </a>
+
+
+                    <!-- Doubt Clearance -->
+                    <a
+                        href="#"
+                        class="student-dashboard__nav-item"
+                        data-dashboard-nav="doubts"
+                    >
+                        <span class="student-dashboard__nav-icon">
+                            <i class="tji-chat"></i>
+                        </span>
+
+                        <span class="student-dashboard__nav-label">
+                            Doubt Clearance
+                        </span>
+                    </a>
+
+                {% endif %}
+
+
+                <!-- =====================================================
+                     COMMON NAVIGATION
+                     Online + Offline
+                     ===================================================== -->
+
+                <!-- Materials -->
+                <a
+                    href="#"
+                    class="student-dashboard__nav-item"
+                    data-dashboard-nav="materials"
+                >
+                    <span class="student-dashboard__nav-icon">
+                        <i class="tji-folder"></i>
+                    </span>
+
+                    <span class="student-dashboard__nav-label">
+                        Materials
+                    </span>
+                </a>
+
+
+                <!-- Payments -->
+                <a
+                    href="#"
+                    class="student-dashboard__nav-item"
+                    data-dashboard-nav="payments"
+                >
+                    <span class="student-dashboard__nav-icon">
+                        <i class="tji-wallet"></i>
+                    </span>
+
+                    <span class="student-dashboard__nav-label">
+                        Payments
+                    </span>
+                </a>
+
+
+                <!-- Certificates -->
+                <a
+                    href="#"
+                    class="student-dashboard__nav-item"
+                    data-dashboard-nav="certificates"
+                >
+                    <span class="student-dashboard__nav-icon">
+                        <i class="tji-certificate"></i>
+                    </span>
+
+                    <span class="student-dashboard__nav-label">
+                        Certificates
+                    </span>
+                </a>
+
+
+                <!-- Profile -->
+                <a
+                    href="#"
+                    class="student-dashboard__nav-item"
+                    data-dashboard-nav="profile"
+                >
+                    <span class="student-dashboard__nav-icon">
+                        <i class="tji-user"></i>
+                    </span>
+
+                    <span class="student-dashboard__nav-label">
+                        Profile
+                    </span>
+                </a>
+
+            </div>
+
+
+            <!-- Logout -->
+            <div class="student-dashboard__nav-footer">
+
+                <a
+                    href="#"
+                    class="student-dashboard__nav-item student-dashboard__nav-item--logout"
+                >
+                    <span class="student-dashboard__nav-icon">
+                        <i class="tji-logout"></i>
+                    </span>
+
+                    <span class="student-dashboard__nav-label">
+                        Logout
+                    </span>
+                </a>
+
+            </div>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- =============================================================
+         DASHBOARD MAIN AREA
+         ============================================================= -->
+    <div class="student-dashboard__main">
+
+        <!-- =========================================================
+             TOP BAR
+             ========================================================= -->
+        <header class="student-dashboard__topbar">
+
+            <div class="student-dashboard__topbar-left">
+
+                <!-- Mobile Sidebar Trigger -->
+                <button
+                    class="student-dashboard__menu-trigger d-lg-none"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#studentDashboardSidebar"
+                    aria-controls="studentDashboardSidebar"
+                    aria-label="Open dashboard navigation"
+                >
+                    <i class="tji-menu"></i>
+                </button>
+
+
+                <div class="student-dashboard__page-context">
+
+                    {% block dashboard_breadcrumb %}
+                    {% endblock %}
+
+                    <h1
+                        class="student-dashboard__page-title"
+                        id="studentDashboardSidebarLabel"
+                    >
+                        {% block dashboard_title %}
+                            Dashboard
+                        {% endblock %}
+                    </h1>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 TOP BAR ACTIONS
+                 ===================================================== -->
+            <div class="student-dashboard__topbar-actions">
+
+                <!-- Notification trigger -->
+                <div class="dropdown">
+
+                    <button
+                        class="student-dashboard__notification-trigger"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        aria-label="Notifications"
+                    >
+
+                        <i class="tji-notification"></i>
+
+                        <!--
+                            Only render unread count when the existing
+                            backend provides it.
+
+                            Do NOT invent notification context.
+                        -->
+                        {% if UNREAD_NOTIFICATION_COUNT_EXISTS %}
+                            <span class="student-dashboard__notification-count">
+                                {{ ACTUAL_UNREAD_NOTIFICATION_COUNT }}
+                            </span>
+                        {% endif %}
+
+                    </button>
+
+
+                    <!-- Notification UI
+                         NOT a separate page -->
+                    <div
+                        class="dropdown-menu dropdown-menu-end student-dashboard__notification-panel"
+                    >
+
+                        <div class="student-dashboard__notification-header">
+
+                            <h6>
+                                Notifications
+                            </h6>
+
+                        </div>
+
+
+                        <div class="student-dashboard__notification-list">
+
+                            <!--
+                                Render actual backend notifications here.
+
+                                Do NOT invent:
+                                - notification model
+                                - context variable
+                                - URL
+                                - notification fields
+                            -->
+
+                            {% block dashboard_notifications %}
+
+                            <div class="student-dashboard__notification-empty">
+
+                                <span>
+                                    No new notifications
+                                </span>
+
+                            </div>
+
+                            {% endblock %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Profile / Student identity -->
+                <div class="student-dashboard__profile">
+
+                    <!--
+                        Use existing authenticated-student context.
+                        Do not invent profile fields.
+                    -->
+
+                    {% block dashboard_profile_summary %}
+                    {% endblock %}
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =========================================================
+             DASHBOARD CONTENT
+             ========================================================= -->
+        <main class="student-dashboard__content">
+
+            <div class="container-fluid">
+
+                {% block dashboard_content %}
+                {% endblock %}
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+{% endblock %}
