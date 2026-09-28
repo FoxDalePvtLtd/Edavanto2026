@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Verify Email | Edvanto{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+
+<div class="space-for-header"></div>
+
+<!-- start: Page Header Section -->
+<section class="tj-page-header">
+
+  <div class="container">
+
+    <div class="row">
+
+      <div class="col-12">
+
+        <div class="tj-page-header-content">
+
+          <div class="tj-page-link">
+
+            <span>
+              <i class="tji-home"></i>
+            </span>
+
+            <span>
+              <a href="{% url 'core:home' %}">
+                Home
+              </a>
+            </span>
+
+            <span>
+              <i class="tji-arrow-right-4"></i>
+            </span>
+
+            <span>
+              <span>Verify Email</span>
+            </span>
+
+          </div>
+
+          <div class="shape">
+
+            <img
+              src="{% static 'images/shapes/stars.png' %}"
+              alt=""
+            >
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+<!-- end: Page Header Section -->
+
+
+<!-- start: OTP Verification Section -->
+<section class="tj-login-section section-gap-bottom fix">
+
+  <div class="container">
+
+    <div class="row justify-content-center">
+
+      <div class="col-12">
+
+        <div class="tj-login-form-wrapper tj-fade-anim">
+
+          <div class="login-form-header">
+
+            <h2 class="form-title">
+              Verify your email.
+            </h2>
+
+            <p class="desc">
+              Enter the verification code sent to your email.
+            </p>
+
+          </div>
+
+
+          {% if messages %}
+
+            <div class="mb-4">
+
+              {% for message in messages %}
+
+                <div
+                  class="alert alert-{{ message.tags|default:'info' }}"
+                  role="alert"
+                >
+                  {{ message }}
+                </div>
+
+              {% endfor %}
+
+            </div>
+
+          {% endif %}
+
+
+          <div class="login-divider">
+            <span>{{ email }}</span>
+          </div>
+
+
+          <form
+            class="tj-login-form"
+            action="{% url 'core:verify_otp' %}"
+            method="post"
+          >
+
+            {% csrf_token %}
+
+            <div class="form-input">
+
+              <label
+                class="cf-label"
+                for="verification-otp"
+              >
+                Verification code
+              </label>
+
+              <div class="input-icon-wrap">
+
+                <span class="input-icon">
+                  <i class="tji-lock"></i>
+                </span>
+
+                <input
+                  type="text"
+                  id="verification-otp"
+                  name="otp"
+                  placeholder="Enter 6-digit code"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  maxlength="6"
+                  pattern="[0-9]{6}"
+                  required
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="form-submit">
+
+              <button
+                class="tj-btn-primary flip-text-wrap"
+                type="submit"
+              >
+
+                <span class="btn-text">
+                  Verify email
+                </span>
+
+                <span class="btn-icon">
+                  <i class="tji-arrow-right-2"></i>
+                </span>
+
+              </button>
+
+            </div>
+
+          </form>
+
+
+          <p class="login-form-footer">
+
+            Didn't receive the code?
+
+            <a href="{% url 'core:sign_in' %}">
+              Register again
+            </a>
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+<!-- end: OTP Verification Section -->
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'js/range-slider.js' %}"></script>
+{% endblock %}

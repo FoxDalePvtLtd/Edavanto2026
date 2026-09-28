@@ -1,393 +1,977 @@
-{% extends "base.html" %}
-
-{% block content %}
-
-<div class="student-dashboard">
-
-    <!-- =========================================================
-         DASHBOARD SIDEBAR
-         Shared by ONLINE + OFFLINE students
-         ========================================================= -->
-    <aside
-        class="student-dashboard__sidebar offcanvas-lg offcanvas-start"
-        tabindex="-1"
-        id="studentDashboardSidebar"
-        aria-labelledby="studentDashboardSidebarLabel"
-    >
-
-        <!-- Sidebar Header -->
-        <div class="student-dashboard__sidebar-header">
-
-            <div class="student-dashboard__brand">
-                <a href="#" aria-label="Edvanto Dashboard">
-                    <!--
-                        IMPORTANT:
-                        Replace the following logo reference only after
-                        inspecting the existing project's logo asset/path.
-                        Do NOT invent a static path.
-                    -->
-                    <span class="student-dashboard__brand-text">
-                        EDVANTO
-                    </span>
-                </a>
-            </div>
-
-            <!-- Mobile close button.
-                 Bootstrap handles this; NO custom JS required. -->
-            <button
-                type="button"
-                class="btn-close d-lg-none"
-                data-bs-dismiss="offcanvas"
-                aria-label="Close dashboard navigation"
-            ></button>
-
-        </div>
-
-
-        <!-- Sidebar Navigation -->
-        <nav
-            class="student-dashboard__navigation"
-            aria-label="Student dashboard navigation"
-        >
-
-            <div class="student-dashboard__nav-section">
-
-                <!-- Dashboard -->
-                <a
-                    href="#"
-                    class="student-dashboard__nav-item"
-                    data-dashboard-nav="dashboard"
-                >
-                    <span class="student-dashboard__nav-icon">
-                        <i class="tji-home"></i>
-                    </span>
-
-                    <span class="student-dashboard__nav-label">
-                        Dashboard
-                    </span>
-                </a>
-
-
-                <!-- =====================================================
-                     ONLINE-ONLY NAVIGATION
-
-                     IMPORTANT:
-                     Do NOT invent a context variable here.
-
-                     During integration, replace the integration condition
-                     below with the ACTUAL enrollment/mode context already
-                     available in the project.
-
-                     Example concept only:
-                         existing enrollment mode == online
-
-                     Do NOT literally introduce `student_mode`,
-                     `enrollment_mode`, etc. unless those already exist.
-                     ===================================================== -->
-
-                {% if ONLINE_ENROLLMENT_CONTEXT_EXISTS %}
-
-                    <!-- Current Lesson / My Course -->
-                    <a
-                        href="#"
-                        class="student-dashboard__nav-item"
-                        data-dashboard-nav="lesson"
-                    >
-                        <span class="student-dashboard__nav-icon">
-                            <i class="tji-play"></i>
-                        </span>
-
-                        <span class="student-dashboard__nav-label">
-                            My Course
-                        </span>
-                    </a>
-
-
-                    <!-- Assessments -->
-                    <a
-                        href="#"
-                        class="student-dashboard__nav-item"
-                        data-dashboard-nav="assessment"
-                    >
-                        <span class="student-dashboard__nav-icon">
-                            <i class="tji-file"></i>
-                        </span>
-
-                        <span class="student-dashboard__nav-label">
-                            Assessments
-                        </span>
-                    </a>
-
-
-                    <!-- Doubt Clearance -->
-                    <a
-                        href="#"
-                        class="student-dashboard__nav-item"
-                        data-dashboard-nav="doubts"
-                    >
-                        <span class="student-dashboard__nav-icon">
-                            <i class="tji-chat"></i>
-                        </span>
-
-                        <span class="student-dashboard__nav-label">
-                            Doubt Clearance
-                        </span>
-                    </a>
-
-                {% endif %}
-
-
-                <!-- =====================================================
-                     COMMON NAVIGATION
-                     Online + Offline
-                     ===================================================== -->
-
-                <!-- Materials -->
-                <a
-                    href="#"
-                    class="student-dashboard__nav-item"
-                    data-dashboard-nav="materials"
-                >
-                    <span class="student-dashboard__nav-icon">
-                        <i class="tji-folder"></i>
-                    </span>
-
-                    <span class="student-dashboard__nav-label">
-                        Materials
-                    </span>
-                </a>
-
-
-                <!-- Payments -->
-                <a
-                    href="#"
-                    class="student-dashboard__nav-item"
-                    data-dashboard-nav="payments"
-                >
-                    <span class="student-dashboard__nav-icon">
-                        <i class="tji-wallet"></i>
-                    </span>
-
-                    <span class="student-dashboard__nav-label">
-                        Payments
-                    </span>
-                </a>
-
-
-                <!-- Certificates -->
-                <a
-                    href="#"
-                    class="student-dashboard__nav-item"
-                    data-dashboard-nav="certificates"
-                >
-                    <span class="student-dashboard__nav-icon">
-                        <i class="tji-certificate"></i>
-                    </span>
-
-                    <span class="student-dashboard__nav-label">
-                        Certificates
-                    </span>
-                </a>
-
-
-                <!-- Profile -->
-                <a
-                    href="#"
-                    class="student-dashboard__nav-item"
-                    data-dashboard-nav="profile"
-                >
-                    <span class="student-dashboard__nav-icon">
-                        <i class="tji-user"></i>
-                    </span>
-
-                    <span class="student-dashboard__nav-label">
-                        Profile
-                    </span>
-                </a>
-
-            </div>
-
-
-            <!-- Logout -->
-            <div class="student-dashboard__nav-footer">
-
-                <a
-                    href="#"
-                    class="student-dashboard__nav-item student-dashboard__nav-item--logout"
-                >
-                    <span class="student-dashboard__nav-icon">
-                        <i class="tji-logout"></i>
-                    </span>
-
-                    <span class="student-dashboard__nav-label">
-                        Logout
-                    </span>
-                </a>
-
-            </div>
-
-        </nav>
-
-    </aside>
-
-
-    <!-- =============================================================
-         DASHBOARD MAIN AREA
-         ============================================================= -->
-    <div class="student-dashboard__main">
-
-        <!-- =========================================================
-             TOP BAR
-             ========================================================= -->
-        <header class="student-dashboard__topbar">
-
-            <div class="student-dashboard__topbar-left">
-
-                <!-- Mobile Sidebar Trigger -->
-                <button
-                    class="student-dashboard__menu-trigger d-lg-none"
-                    type="button"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#studentDashboardSidebar"
-                    aria-controls="studentDashboardSidebar"
-                    aria-label="Open dashboard navigation"
-                >
-                    <i class="tji-menu"></i>
-                </button>
-
-
-                <div class="student-dashboard__page-context">
-
-                    {% block dashboard_breadcrumb %}
-                    {% endblock %}
-
-                    <h1
-                        class="student-dashboard__page-title"
-                        id="studentDashboardSidebarLabel"
-                    >
-                        {% block dashboard_title %}
-                            Dashboard
-                        {% endblock %}
-                    </h1>
-
-                </div>
-
-            </div>
-
-
-            <!-- =====================================================
-                 TOP BAR ACTIONS
-                 ===================================================== -->
-            <div class="student-dashboard__topbar-actions">
-
-                <!-- Notification trigger -->
-                <div class="dropdown">
-
-                    <button
-                        class="student-dashboard__notification-trigger"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                        aria-label="Notifications"
-                    >
-
-                        <i class="tji-notification"></i>
-
-                        <!--
-                            Only render unread count when the existing
-                            backend provides it.
-
-                            Do NOT invent notification context.
-                        -->
-                        {% if UNREAD_NOTIFICATION_COUNT_EXISTS %}
-                            <span class="student-dashboard__notification-count">
-                                {{ ACTUAL_UNREAD_NOTIFICATION_COUNT }}
-                            </span>
-                        {% endif %}
-
-                    </button>
-
-
-                    <!-- Notification UI
-                         NOT a separate page -->
-                    <div
-                        class="dropdown-menu dropdown-menu-end student-dashboard__notification-panel"
-                    >
-
-                        <div class="student-dashboard__notification-header">
-
-                            <h6>
-                                Notifications
-                            </h6>
-
-                        </div>
-
-
-                        <div class="student-dashboard__notification-list">
-
-                            <!--
-                                Render actual backend notifications here.
-
-                                Do NOT invent:
-                                - notification model
-                                - context variable
-                                - URL
-                                - notification fields
-                            -->
-
-                            {% block dashboard_notifications %}
-
-                            <div class="student-dashboard__notification-empty">
-
-                                <span>
-                                    No new notifications
-                                </span>
-
-                            </div>
-
-                            {% endblock %}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Profile / Student identity -->
-                <div class="student-dashboard__profile">
-
-                    <!--
-                        Use existing authenticated-student context.
-                        Do not invent profile fields.
-                    -->
-
-                    {% block dashboard_profile_summary %}
-                    {% endblock %}
-
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- =========================================================
-             DASHBOARD CONTENT
-             ========================================================= -->
-        <main class="student-dashboard__content">
-
-            <div class="container-fluid">
-
-                {% block dashboard_content %}
-                {% endblock %}
-
-            </div>
-
-        </main>
-
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <meta name="description" content="Edvanto Student Dashboard — Learning portal">
+
+  <title>{% block dashboard_title %}Student Dashboard{% endblock %} | Edvanto</title>
+
+  {# ======= #}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  {# Edunex theme CSS — INTEGRATION: point to the real main.css path #}
+  <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+
+  <style>
+    /* ============================================================
+       EDVANTO STUDENT DASHBOARD SHELL — local scoped styles
+       All values derive from the documented Edunex palette.
+       ============================================================ */
+    :root {
+      --tj-ff-body: "Manrope", sans-serif;
+      --tj-ff-heading: "Urbanist", sans-serif;
+      --tj-ff-fonticon: "edunex-icons", "bootstrap-icons";
+
+      --tj-color-common-white: #ffffff;
+      --tj-color-heading-primary: #171717;
+      --tj-color-text-body: #4A4A4A;
+      --tj-color-text-body-2: #555555;
+      --tj-color-text-body-3: #777777;
+
+      --tj-color-theme-primary: #D4A62A;
+      --tj-color-theme-primary-hover: rgba(212, 166, 42, 0.82);
+
+      --tj-color-theme-bg: #FFFDF7;
+      --tj-color-theme-bg-2: #F7F3E8;
+      --tj-color-theme-bg-3: #F5F1E6;
+      --tj-color-theme-bg-4: #F3EFE2;
+      --tj-color-theme-bg-5: #FAF4E5;
+      --tj-color-theme-bg-8: #F7EBD0;
+      --tj-color-theme-bg-9: rgba(212, 166, 42, 0.15);
+    }
+
+    html, body { height: 100%; }
+    body.edvanto-dashboard-body {
+      margin: 0;
+      background-color: var(--tj-color-theme-bg);
+      font-family: var(--tj-ff-body);
+      color: var(--tj-color-text-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Fallback for edunex-icons if the font is not yet loaded */
+    [class^="tji-"], [class*=" tji-"] {
+      font-family: var(--tj-ff-fonticon);
+      font-style: normal;
+      line-height: 1;
+      display: inline-block;
+    }
+    /* Minimal visual stand-ins so the shell remains usable
+       before the real edunex-icons font is present. */
+    .tji-home::before   { content: "\2302"; }
+    .tji-play::before   { content: "\25B6"; }
+    .tji-clipboard::before { content: "\1F4CB"; }
+    .tji-chat::before   { content: "\1F4AC"; }
+    .tji-folder::before { content: "\1F4C1"; }
+    .tji-wallet::before { content: "\1F4B3"; }
+    .tji-award::before  { content: "\1F3C6"; }
+    .tji-user::before   { content: "\1F464"; }
+    .tji-logout::before { content: "\21A9"; }
+    .tji-bell::before   { content: "\1F514"; }
+    .tji-menu::before   { content: "\2261"; }
+    .tji-check::before  { content: "\2713"; }
+    .tji-lock::before   { content: "\1F512"; }
+    .tji-clock::before  { content: "\23F1"; }
+    .tji-wifi::before   { content: "\1F4F6"; }
+    .tji-location::before { content: "\1F4CD"; }
+    .tji-sparkles::before { content: "\2728"; }
+    .tji-list::before   { content: "\2263"; }
+    .tji-book::before   { content: "\1F4D6"; }
+    .tji-download::before { content: "\2B07"; }
+    .tji-arrow-right-2::before { content: "\2192"; }
+
+    /* ============================================================
+       SHELL GRID
+       ============================================================ */
+    .edvanto-dash {
+      display: grid;
+      grid-template-columns: 264px minmax(0, 1fr);
+      align-items: stretch;
+      min-height: calc(100vh - 80px);
+      background-color: var(--tj-color-theme-bg);
+    }
+    @media (max-width: 1199.98px) {
+      .edvanto-dash { grid-template-columns: 232px minmax(0, 1fr); }
+    }
+    @media (max-width: 991.98px) {
+      .edvanto-dash { grid-template-columns: 1fr; }
+    }
+
+    /* ============================================================
+       SIDEBAR
+       ============================================================ */
+    .edvanto-dash-sidebar {
+      background: var(--tj-color-common-white);
+      border-right: 1px solid var(--tj-color-theme-bg-4);
+      padding: 24px 16px 32px;
+      position: sticky;
+      top: 0;
+      align-self: start;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+    @media (max-width: 991.98px) {
+      .edvanto-dash-sidebar {
+        position: static;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--tj-color-theme-bg-4);
+        padding: 20px 16px;
+      }
+    }
+
+    .edvanto-dash-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 8px 20px;
+      border-bottom: 1px solid var(--tj-color-theme-bg-4);
+      margin-bottom: 20px;
+      text-decoration: none;
+    }
+    .edvanto-dash-brand img { max-height: 34px; width: auto; display: block; }
+    .edvanto-dash-brand-text {
+      font-family: var(--tj-ff-heading);
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--tj-color-heading-primary);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .edvanto-dash-brand-text small {
+      display: block;
+      font-family: var(--tj-ff-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--tj-color-theme-primary);
+      margin-top: 2px;
+    }
+
+    .edvanto-dash-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--tj-ff-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--tj-color-heading-primary);
+      background: var(--tj-color-theme-bg-9);
+      border: 1px solid var(--tj-color-theme-bg-8);
+      border-radius: 999px;
+      padding: 5px 11px;
+      margin: 0 8px 16px;
+    }
+    .edvanto-dash-mode i {
+      font-size: 12px;
+      color: var(--tj-color-theme-primary);
+    }
+
+    .edvanto-dash-nav-section {
+      font-family: var(--tj-ff-body);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--tj-color-text-body-3);
+      padding: 14px 12px 6px;
+      margin: 0;
+    }
+    .edvanto-dash-nav {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .edvanto-dash-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-family: var(--tj-ff-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--tj-color-heading-primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+      line-height: 1.35;
+    }
+    .edvanto-dash-nav-link i {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+      color: var(--tj-color-text-body-2);
+      transition: color 0.2s ease;
+    }
+    .edvanto-dash-nav-link:hover {
+      background: var(--tj-color-theme-bg-2);
+      color: var(--tj-color-heading-primary);
+    }
+    .edvanto-dash-nav-link:hover i { color: var(--tj-color-theme-primary); }
+    .edvanto-dash-nav-link.is-active {
+      background: var(--tj-color-theme-bg-9);
+      color: var(--tj-color-heading-primary);
+      font-weight: 600;
+    }
+    .edvanto-dash-nav-link.is-active i { color: var(--tj-color-theme-primary); }
+    .edvanto-dash-nav-link .edvanto-nav-badge {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--tj-color-theme-primary);
+      color: #ffffff;
+      line-height: 1.5;
+    }
+    .edvanto-dash-nav-link.is-active .edvanto-nav-badge {
+      background: var(--tj-color-heading-primary);
+    }
+
+    .edvanto-dash-nav-divider {
+      height: 1px;
+      background: var(--tj-color-theme-bg-4);
+      margin: 14px 8px;
+    }
+
+    .edvanto-dash-logout {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-family: var(--tj-ff-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--tj-color-text-body);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .edvanto-dash-logout i {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      color: var(--tj-color-text-body-3);
+    }
+    .edvanto-dash-logout:hover {
+      background: var(--tj-color-theme-bg-2);
+      color: var(--tj-color-heading-primary);
+    }
+
+    /* ============================================================
+       MAIN AREA
+       ============================================================ */
+    .edvanto-dash-main {
+      min-width: 0;
+      padding: 28px 32px 48px;
+      background-color: var(--tj-color-theme-bg);
+    }
+    @media (max-width: 1199.98px) {
+      .edvanto-dash-main { padding: 24px 24px 40px; }
+    }
+    @media (max-width: 767.98px) {
+      .edvanto-dash-main { padding: 20px 16px 36px; }
+    }
+
+    .edvanto-dash-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      background: var(--tj-color-common-white);
+      border: 1px solid var(--tj-color-theme-bg-4);
+      border-radius: 14px;
+      flex-wrap: wrap;
+    }
+    .edvanto-dash-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      flex: 1;
+    }
+    .edvanto-dash-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--tj-color-theme-bg-4);
+      background: var(--tj-color-theme-bg-2);
+      color: var(--tj-color-heading-primary);
+      font-size: 16px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .edvanto-dash-toggle:hover { background: var(--tj-color-theme-bg-5); }
+    @media (max-width: 991.98px) {
+      .edvanto-dash-toggle { display: inline-flex; }
+    }
+
+    .edvanto-dash-topbar-text { min-width: 0; }
+    .edvanto-dash-topbar-title {
+      font-family: var(--tj-ff-heading);
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.015em;
+      color: var(--tj-color-heading-primary);
+      margin: 0 0 2px;
+      line-height: 1.2;
+    }
+    .edvanto-dash-topbar-context {
+      font-family: var(--tj-ff-body);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--tj-color-text-body-3);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .edvanto-dash-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .edvanto-dash-icon-btn {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      border: 1px solid var(--tj-color-theme-bg-4);
+      background: var(--tj-color-theme-bg-2);
+      color: var(--tj-color-heading-primary);
+      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .edvanto-dash-icon-btn:hover {
+      background: var(--tj-color-theme-bg-5);
+      border-color: var(--tj-color-theme-bg-8);
+      color: var(--tj-color-heading-primary);
+    }
+    .edvanto-dash-icon-btn .edvanto-badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: var(--tj-color-theme-primary);
+      color: #ffffff;
+      font-family: var(--tj-ff-body);
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      border: 2px solid var(--tj-color-common-white);
+    }
+
+    .edvanto-dash-profile {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px 6px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--tj-color-theme-bg-4);
+      background: var(--tj-color-common-white);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .edvanto-dash-profile:hover {
+      border-color: var(--tj-color-theme-bg-8);
+      background: var(--tj-color-theme-bg-2);
+    }
+    .edvanto-dash-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--tj-color-theme-primary);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--tj-ff-heading);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .edvanto-dash-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .edvanto-dash-profile-name {
+      font-family: var(--tj-ff-heading);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--tj-color-heading-primary);
+      line-height: 1.1;
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    @media (max-width: 575.98px) {
+      .edvanto-dash-profile-name { display: none; }
+    }
+
+    /* ---------- Notification dropdown ---------- */
+    .edvanto-notif-menu {
+      width: 340px;
+      max-width: calc(100vw - 32px);
+      padding: 0;
+      border-radius: 14px;
+      border: 1px solid var(--tj-color-theme-bg-4);
+      box-shadow: 0 12px 40px rgba(23, 23, 23, 0.06);
+      overflow: hidden;
+    }
+    .edvanto-notif-menu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--tj-color-theme-bg-4);
+      background: var(--tj-color-theme-bg-2);
+    }
+    .edvanto-notif-menu-header h6 {
+      font-family: var(--tj-ff-heading);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--tj-color-heading-primary);
+      margin: 0;
+    }
+    .edvanto-notif-menu-header span {
+      font-family: var(--tj-ff-body);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--tj-color-theme-primary);
+    }
+    .edvanto-notif-list {
+      list-style: none;
+      margin: 0;
+      padding: 6px;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+    .edvanto-notif-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: background-color 0.2s ease;
+    }
+    .edvanto-notif-item:hover { background: var(--tj-color-theme-bg-2); }
+    .edvanto-notif-item.is-unread { background: var(--tj-color-theme-bg-9); }
+    .edvanto-notif-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--tj-color-common-white);
+      border: 1px solid var(--tj-color-theme-bg-4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--tj-color-theme-primary);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .edvanto-notif-body { min-width: 0; flex: 1; }
+    .edvanto-notif-title {
+      font-family: var(--tj-ff-heading);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--tj-color-heading-primary);
+      margin: 0 0 2px;
+      line-height: 1.3;
+    }
+    .edvanto-notif-text {
+      font-family: var(--tj-ff-body);
+      font-size: 12px;
+      color: var(--tj-color-text-body-2);
+      margin: 0 0 4px;
+      line-height: 1.4;
+    }
+    .edvanto-notif-time {
+      font-family: var(--tj-ff-body);
+      font-size: 11px;
+      color: var(--tj-color-text-body-3);
+      font-weight: 500;
+    }
+    .edvanto-notif-empty {
+      padding: 32px 20px;
+      text-align: center;
+      font-family: var(--tj-ff-body);
+      font-size: 13px;
+      color: var(--tj-color-text-body-3);
+    }
+    .edvanto-notif-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--tj-color-theme-bg-4);
+      text-align: center;
+      background: var(--tj-color-theme-bg-2);
+    }
+    .edvanto-notif-footer a {
+      font-family: var(--tj-ff-body);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--tj-color-theme-primary);
+      text-decoration: none;
+    }
+
+    /* ---------- Offcanvas sidebar (mobile) ---------- */
+    .edvanto-dash-offcanvas {
+      background: var(--tj-color-common-white);
+      border-right: 1px solid var(--tj-color-theme-bg-4);
+    }
+    .edvanto-dash-offcanvas .offcanvas-header {
+      border-bottom: 1px solid var(--tj-color-theme-bg-4);
+      padding: 18px 20px;
+    }
+    .edvanto-dash-offcanvas .offcanvas-body { padding: 16px 12px 24px; }
+    .edvanto-dash-offcanvas .btn-close { opacity: 0.5; }
+
+    .edvanto-dash-content { animation: none; }
+    .edvanto-dash-content > * + * { margin-top: 20px; }
+
+    /* Edunex primary button fallback (in case main.css isn't loaded) */
+    .tj-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: var(--tj-color-theme-primary);
+      color: #ffffff;
+      font-family: var(--tj-ff-body);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      transition: background-color 0.2s ease;
+      white-space: nowrap;
+    }
+    .tj-btn-primary:hover {
+      background: var(--tj-color-theme-primary-hover);
+      color: #ffffff;
+    }
+    .tj-btn-primary-light {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: var(--tj-color-theme-bg-2);
+      color: var(--tj-color-heading-primary);
+      font-family: var(--tj-ff-body);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--tj-color-theme-bg-4);
+      transition: background-color 0.2s ease;
+      white-space: nowrap;
+    }
+    .tj-btn-primary-light:hover {
+      background: var(--tj-color-theme-bg-5);
+      color: var(--tj-color-heading-primary);
+    }
+  </style>
+</head>
+
+<body class="edvanto-dashboard-body">
+
+
+{% with mode=enrollment_mode|default:"online" %}
+
+<div class="edvanto-dash">
+
+  <aside class="edvanto-dash-sidebar d-none d-lg-block" aria-label="Student dashboard navigation">
+
+    <a href="#" class="edvanto-dash-brand">
+      <img src="{% static 'assets/img/logo/logo.png' %}" alt="Edvanto"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <span class="edvanto-dash-brand-text" style="display:none;">
+        Edvanto
+        <small>Student Area</small>
+      </span>
+    </a>
+
+    <div class="edvanto-dash-mode">
+      <i class="tji-{% if mode == 'offline' %}location{% else %}wifi{% endif %}"></i>
+      {% if mode == 'offline' %}
+        Offline Learning
+      {% elif mode == 'both' %}
+        Online &amp; Offline
+      {% else %}
+        Online Learning
+      {% endif %}
     </div>
 
+    {% if mode == 'online' or mode == 'both' %}
+      <p class="edvanto-dash-nav-section">Learning</p>
+      <ul class="edvanto-dash-nav">
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'dashboard' %}is-active{% endif %}">
+            <i class="tji-home"></i><span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
+            <i class="tji-play"></i><span>My Course</span>
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
+            <i class="tji-clipboard"></i><span>Assessments</span>
+            {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
+            <i class="tji-chat"></i><span>Doubt Clearance</span>
+            {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
+          </a>
+        </li>
+      </ul>
+    {% endif %}
+
+    <p class="edvanto-dash-nav-section">Resources</p>
+    <ul class="edvanto-dash-nav">
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'materials' %}is-active{% endif %}">
+          <i class="tji-folder"></i><span>Materials</span>
+        </a>
+      </li>
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'payments' %}is-active{% endif %}">
+          <i class="tji-wallet"></i><span>Payments</span>
+          {% if pending_payments %}<span class="edvanto-nav-badge">{{ pending_payments }}</span>{% endif %}
+        </a>
+      </li>
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'certificates' %}is-active{% endif %}">
+          <i class="tji-award"></i><span>Certificates</span>
+        </a>
+      </li>
+    </ul>
+
+    <p class="edvanto-dash-nav-section">Account</p>
+    <ul class="edvanto-dash-nav">
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'profile' %}is-active{% endif %}">
+          <i class="tji-user"></i><span>Profile</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="edvanto-dash-nav-divider"></div>
+
+    <a href="#" class="edvanto-dash-logout">
+      <i class="tji-logout"></i><span>Logout</span>
+    </a>
+
+  </aside>
+
+  
+  <main class="edvanto-dash-main">
+
+    <div class="edvanto-dash-topbar">
+
+      <div class="edvanto-dash-topbar-left">
+
+        <button class="edvanto-dash-toggle"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#edvantoDashSidebarOffcanvas"
+                aria-controls="edvantoDashSidebarOffcanvas"
+                aria-label="Open navigation">
+          <i class="tji-menu"></i>
+        </button>
+
+        <div class="edvanto-dash-topbar-text">
+          <h1 class="edvanto-dash-topbar-title">
+            {% block page_title %}Dashboard{% endblock %}
+          </h1>
+          <p class="edvanto-dash-topbar-context">
+            {% block page_context %}
+              Welcome back{% if student_name %}, {{ student_name }}{% endif %}
+            {% endblock %}
+          </p>
+        </div>
+      </div>
+
+      <div class="edvanto-dash-topbar-actions">
+
+        <div class="dropdown">
+          <button class="edvanto-dash-icon-btn"
+                  type="button"
+                  id="edvantoNotifTrigger"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                  aria-label="Notifications">
+            <i class="tji-bell"></i>
+            {% if unread_notifications %}
+              <span class="edvanto-badge-dot">{{ unread_notifications }}</span>
+            {% endif %}
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end edvanto-notif-menu"
+               aria-labelledby="edvantoNotifTrigger">
+            <div class="edvanto-notif-menu-header">
+              <h6>Notifications</h6>
+              {% if unread_notifications %}
+                <span>{{ unread_notifications }} unread</span>
+              {% endif %}
+            </div>
+
+            {% if notifications %}
+              <ul class="edvanto-notif-list">
+                {% for n in notifications %}
+                  <li>
+                    <a href="{{ n.url|default:'#' }}"
+                       class="edvanto-notif-item {% if not n.is_read %}is-unread{% endif %}">
+                      <span class="edvanto-notif-icon">
+                        <i class="tji-{% if n.icon %}{{ n.icon }}{% else %}bell{% endif %}"></i>
+                      </span>
+                      <div class="edvanto-notif-body">
+                        <p class="edvanto-notif-title">{{ n.title }}</p>
+                        <p class="edvanto-notif-text">{{ n.message }}</p>
+                        <span class="edvanto-notif-time">{{ n.time_ago }}</span>
+                      </div>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <div class="edvanto-notif-empty">
+                <i class="tji-bell" style="font-size:22px;display:block;margin-bottom:8px;color:#D4A62A;"></i>
+                You're all caught up.
+              </div>
+            {% endif %}
+
+            <div class="edvanto-notif-footer">
+              <a href="#">View all notifications</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <a href="#"
+             class="edvanto-dash-profile"
+             data-bs-toggle="dropdown"
+             aria-expanded="false"
+             role="button">
+            <span class="edvanto-dash-avatar">
+              {% if student_avatar %}
+                <img src="{{ student_avatar }}" alt="{{ student_name }}">
+              {% else %}
+                {{ student_initials|default:"S" }}
+              {% endif %}
+            </span>
+            <span class="edvanto-dash-profile-name">
+              {{ student_name|default:"Student" }}
+            </span>
+          </a>
+
+          <ul class="dropdown-menu dropdown-menu-end"
+              style="border-radius:12px;border:1px solid #F3EFE2;box-shadow:0 12px 40px rgba(23,23,23,0.06);padding:6px;">
+            <li>
+              <a class="dropdown-item" href="#"
+                 style="font-family:'Manrope',sans-serif;font-size:13px;font-weight:500;border-radius:8px;padding:8px 12px;">
+                <i class="tji-user" style="margin-right:8px;color:#D4A62A;"></i>
+                My Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#"
+                 style="font-family:'Manrope',sans-serif;font-size:13px;font-weight:500;border-radius:8px;padding:8px 12px;">
+                <i class="tji-wallet" style="margin-right:8px;color:#D4A62A;"></i>
+                Payments
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#"
+                 style="font-family:'Manrope',sans-serif;font-size:13px;font-weight:500;border-radius:8px;padding:8px 12px;">
+                <i class="tji-award" style="margin-right:8px;color:#D4A62A;"></i>
+                Certificates
+              </a>
+            </li>
+            <li><hr class="dropdown-divider" style="margin:6px 0;border-color:#F3EFE2;"></li>
+            <li>
+              <a class="dropdown-item" href="#"
+                 style="font-family:'Manrope',sans-serif;font-size:13px;font-weight:500;border-radius:8px;padding:8px 12px;color:#4A4A4A;">
+                <i class="tji-logout" style="margin-right:8px;"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="edvanto-dash-content">
+      {% block dashboard_content %}{% endblock %}
+    </div>
+
+  </main>
 </div>
 
-{% endblock %}
+
+<div class="offcanvas offcanvas-start edvanto-dash-offcanvas"
+     tabindex="-1"
+     id="edvantoDashSidebarOffcanvas"
+     aria-labelledby="edvantoDashSidebarOffcanvasLabel">
+
+  <div class="offcanvas-header">
+    <a href="#" class="edvanto-dash-brand"
+       style="border-bottom:none;padding:0;margin:0;">
+      <img src="{% static 'assets/img/logo/logo.png' %}" alt="Edvanto"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <span class="edvanto-dash-brand-text" style="display:none;">
+        Edvanto
+        <small>Student Area</small>
+      </span>
+    </a>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body">
+
+    <div class="edvanto-dash-mode">
+      <i class="tji-{% if mode == 'offline' %}location{% else %}wifi{% endif %}"></i>
+      {% if mode == 'offline' %}
+        Offline Learning
+      {% elif mode == 'both' %}
+        Online &amp; Offline
+      {% else %}
+        Online Learning
+      {% endif %}
+    </div>
+
+    {% if mode == 'online' or mode == 'both' %}
+      <p class="edvanto-dash-nav-section">Learning</p>
+      <ul class="edvanto-dash-nav">
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'dashboard' %}is-active{% endif %}">
+            <i class="tji-home"></i><span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
+            <i class="tji-play"></i><span>My Course</span>
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
+            <i class="tji-clipboard"></i><span>Assessments</span>
+            {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
+            <i class="tji-chat"></i><span>Doubt Clearance</span>
+            {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
+          </a>
+        </li>
+      </ul>
+    {% endif %}
+
+    <p class="edvanto-dash-nav-section">Resources</p>
+    <ul class="edvanto-dash-nav">
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'materials' %}is-active{% endif %}">
+          <i class="tji-folder"></i><span>Materials</span>
+        </a>
+      </li>
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'payments' %}is-active{% endif %}">
+          <i class="tji-wallet"></i><span>Payments</span>
+          {% if pending_payments %}<span class="edvanto-nav-badge">{{ pending_payments }}</span>{% endif %}
+        </a>
+      </li>
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'certificates' %}is-active{% endif %}">
+          <i class="tji-award"></i><span>Certificates</span>
+        </a>
+      </li>
+    </ul>
+
+    <p class="edvanto-dash-nav-section">Account</p>
+    <ul class="edvanto-dash-nav">
+      <li>
+        <a href="#"
+           class="edvanto-dash-nav-link {% if dash_section == 'profile' %}is-active{% endif %}">
+          <i class="tji-user"></i><span>Profile</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="edvanto-dash-nav-divider"></div>
+
+    <a href="#" class="edvanto-dash-logout">
+      <i class="tji-logout"></i><span>Logout</span>
+    </a>
+
+  </div>
+</div>
+
+{% endwith %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

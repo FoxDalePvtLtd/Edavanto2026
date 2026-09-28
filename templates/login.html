@@ -55,7 +55,8 @@
 
                   <div class="login-divider"><span>or log in with email</span></div>
 
-                  <form class="tj-login-form" action="#" method="post">
+                  <form class="tj-login-form" action="{% url 'core:login' %}" method="post">
+                    {% csrf_token %}
                     <div class="form-input">
                       <label class="cf-label" for="login-email">Email</label>
                       <div class="input-icon-wrap">

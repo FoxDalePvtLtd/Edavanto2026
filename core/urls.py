@@ -14,6 +14,8 @@ urlpatterns = [
     path("course_details/", views.course_detail, name="course_detail"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("register/",views.student_register, name="student_register",),
-
+    path("verify-otp/", views.verify_otp_view, name="verify_otp"),
+    # path("auth/google/",views.google_login,name="google_login",),
+    # path("auth/google/callback/",views.google_callback,name="google_callback",),
     
 ]

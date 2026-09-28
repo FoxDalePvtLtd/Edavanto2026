@@ -2,11 +2,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 
-from .auth_services import (
-    normalize_email,
-    create_otp,
-)
-from .models import User
+from .auth_services import normalize_email
+from .models import *
 
 
 def validate_student_registration(
