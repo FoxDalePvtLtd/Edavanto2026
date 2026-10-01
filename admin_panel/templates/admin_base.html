@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
   <meta name="description" content="Edvanto Admin Control Panel – Premium LMS administration dashboard.">
-  <meta name="theme-color" content="#032A5A">
+  <meta name="theme-color" content="#121212">
 
   <title>{% block title %}Edvanto Admin{% endblock %} | Edvanto</title>
 
@@ -13,7 +13,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <!-- Inter font (matches premium SaaS typography) -->
+  <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,49 +21,35 @@
   <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.png' %}">
 
   <!-- CSS here -->
-  
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
-
 
   <style>
     /* ============================================================
        EDVANTO ADMIN – GLOBAL DESIGN SYSTEM
-       Shared across all admin panel pages.
-       Brand: #032A5A · #451CEE · #01DFFE · #FFB303 · #FFFFFF
+       Allowed palette ONLY:
+       #121212 · #1B1B1B · #D4A62A · #E0B83F · #FFFDF7 · #F7F3E8 · #4a4a4a · #ffffff
        ============================================================ */
 
     :root {
-
-       --edvanto-color-gradient-2: linear-gradient(66deg, rgba(255, 244, 201, 0.5) 5%, rgba(243, 229, 184, 0.5) 60%);
-
-       
-      --edvanto-navy: #000000;
-      --edvanto-violet: rgba(212, 166, 42, 0.82);
-      --edvanto-cyan: #01DFFE;
-      --edvanto-gold: #FFB303;
-      --edvanto-white: #FFFFFF;
-
-      --edvanto-gray-50: #F8FAFC;
-      --edvanto-gray-100: #F1F5F9;
-      --edvanto-gray-200: #E9EFF6;
-      --edvanto-gray-300: #DCE5EF;
-      --edvanto-gray-400: #B7C4D6;
-      --edvanto-gray-500: #777777;
-      --edvanto-gray-600: #5A6E8A;
-      --edvanto-gray-700: #3D4F6A;
-      --edvanto-gray-800: #1F2E45;
-      --edvanto-gray-900: #0F1B2D;
+      --edvanto-dark:        #121212;
+      --edvanto-dark-2:      #1B1B1B;
+      --edvanto-gold:        #D4A62A;
+      --edvanto-gold-light:  #E0B83F;
+      --edvanto-cream:       #FFFDF7;
+      --edvanto-cream-2:     #F7F3E8;
+      --edvanto-gray:        #4a4a4a;
+      --edvanto-white:       #ffffff;
 
       --edvanto-radius-card: 1rem;
-      --edvanto-radius-sm: 0.6rem;
-      --edvanto-radius-xs: 0.4rem;
+      --edvanto-radius-sm:   0.6rem;
+      --edvanto-radius-xs:   0.4rem;
 
-      --edvanto-shadow-card: 0 4px 16px rgba(3, 42, 90, 0.04), 0 1px 4px rgba(3, 42, 90, 0.02);
-      --edvanto-shadow-hover: 0 8px 28px rgba(3, 42, 90, 0.08);
-      --edvanto-shadow-sidebar: 2px 0 20px rgba(3, 42, 90, 0.04);
+      --edvanto-shadow-card:  0 4px 16px rgba(18, 18, 18, 0.06), 0 1px 4px rgba(18, 18, 18, 0.03);
+      --edvanto-shadow-hover: 0 8px 28px rgba(18, 18, 18, 0.10);
+      --edvanto-shadow-sidebar: 2px 0 20px rgba(18, 18, 18, 0.15);
 
-      --edvanto-border-light: 1px solid rgba(3, 42, 90, 0.06);
-      --edvanto-border-medium: 1px solid rgba(3, 42, 90, 0.1);
+      --edvanto-border-light:  1px solid rgba(18, 18, 18, 0.06);
+      --edvanto-border-medium: 1px solid rgba(18, 18, 18, 0.12);
 
       --edvanto-sidebar-width: 264px;
       --edvanto-sidebar-width-compact: 76px;
@@ -80,9 +66,9 @@
 
     body {
       margin: 0;
-      background-color: var(--edvanto-gray-50);
+      background-color: var(--edvanto-cream-2);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      color: var(--edvanto-gray-800);
+      color: var(--edvanto-dark);
       font-size: 0.95rem;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
@@ -90,7 +76,7 @@
       overflow-x: hidden;
     }
 
-    /* ---------- SCROLLBAR (subtle) ---------- */
+    /* ---------- SCROLLBAR ---------- */
     ::-webkit-scrollbar {
       width: 8px;
       height: 8px;
@@ -99,11 +85,12 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: var(--edvanto-gray-300);
+      background: var(--edvanto-gold);
       border-radius: 999px;
+      opacity: 0.5;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: var(--edvanto-gray-400);
+      background: var(--edvanto-gold-light);
     }
 
     /* ============================================================
@@ -122,8 +109,8 @@
       left: 0;
       bottom: 0;
       width: var(--edvanto-sidebar-width);
-      background: #191D24;
-      border-right: var(--edvanto-border-light);
+      background: var(--edvanto-dark-2);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
       box-shadow: var(--edvanto-shadow-sidebar);
       display: flex;
       flex-direction: column;
@@ -138,7 +125,7 @@
       align-items: center;
       gap: 0.75rem;
       padding: 1.25rem 1.5rem 1.1rem;
-      border-bottom: var(--edvanto-border-light);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       min-height: var(--edvanto-header-height);
       text-decoration: none;
       flex-shrink: 0;
@@ -147,16 +134,16 @@
       width: 38px;
       height: 38px;
       border-radius: 11px;
-      background: linear-gradient(135deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
+      background: var(--edvanto-gold);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--edvanto-white);
+      color: var(--edvanto-dark);
       font-weight: 800;
       font-size: 1.15rem;
       letter-spacing: -0.04em;
       flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(69, 28, 238, 0.22);
+      box-shadow: 0 4px 12px rgba(212, 166, 42, 0.25);
     }
     .edvanto-logo-text {
       display: flex;
@@ -167,7 +154,7 @@
     .edvanto-logo-text strong {
       font-size: 1.1rem;
       font-weight: 800;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-cream);
       letter-spacing: -0.035em;
     }
     .edvanto-logo-text span {
@@ -175,7 +162,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--edvanto-violet);
+      color: var(--edvanto-gold);
     }
 
     /* ---- Sidebar nav scroll area ---- */
@@ -192,9 +179,10 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--edvanto-gray-500);
+      color: var(--edvanto-gold);
       white-space: nowrap;
       user-select: none;
+      opacity: 0.8;
     }
 
     .edvanto-nav {
@@ -212,7 +200,7 @@
       gap: 0.85rem;
       padding: 0.65rem 0.85rem;
       border-radius: var(--edvanto-radius-sm);
-      color: var(--edvanto-white);
+      color: var(--edvanto-cream-2);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -229,22 +217,22 @@
       transition: color 0.15s ease;
     }
     .edvanto-nav-link:hover {
-      background: rgba(69, 28, 238, 0.05);
-      color: var(--edvanto-violet);
+      background: rgba(212, 166, 42, 0.08);
+      color: var(--edvanto-gold-light);
     }
     .edvanto-nav-link:hover i {
-      color: var(--edvanto-violet);
+      color: var(--edvanto-gold-light);
     }
 
-    /* ---- ACTIVE STATE: violet bg, white text, cyan indicator ---- */
+    /* ---- ACTIVE STATE ---- */
     .edvanto-nav-link.active {
-      background: var(--edvanto-violet);
-      color: var(--edvanto-white);
+      background: var(--edvanto-gold);
+      color: var(--edvanto-dark);
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(69, 28, 238, 0.22);
+      box-shadow: 0 4px 12px rgba(212, 166, 42, 0.25);
     }
     .edvanto-nav-link.active i {
-      color: var(--edvanto-white);
+      color: var(--edvanto-dark);
     }
     .edvanto-nav-link.active::before {
       content: '';
@@ -255,32 +243,32 @@
       width: 4px;
       height: 22px;
       border-radius: 0 4px 4px 0;
-      background: var(--edvanto-cyan);
-      box-shadow: 0 0 10px rgba(1, 223, 254, 0.6);
+      background: var(--edvanto-white);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
-    /* nav badge (e.g., counts) */
+    /* nav badge */
     .edvanto-nav-badge {
       margin-left: auto;
       font-size: 0.65rem;
       font-weight: 700;
       padding: 0.15rem 0.5rem;
       border-radius: 999px;
-      background: rgba(255, 179, 3, 0.14);
-      color: #9A6D00;
+      background: rgba(212, 166, 42, 0.18);
+      color: var(--edvanto-gold-light);
       flex-shrink: 0;
     }
     .edvanto-nav-link.active .edvanto-nav-badge {
-      background: rgba(255, 255, 255, 0.22);
-      color: var(--edvanto-white);
+      background: rgba(18, 18, 18, 0.15);
+      color: var(--edvanto-dark);
     }
 
     /* ---- Sidebar footer ---- */
     .edvanto-sidebar-footer {
       flex-shrink: 0;
       padding: 0.9rem 1rem 1.1rem;
-      border-top: var(--edvanto-border-light);
-      background: var(--edvanto-white);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--edvanto-dark);
     }
     .edvanto-sidebar-user {
       display: flex;
@@ -292,14 +280,14 @@
       cursor: pointer;
     }
     .edvanto-sidebar-user:hover {
-      background: var(--edvanto-gray-100);
+      background: rgba(255, 255, 255, 0.05);
     }
     .edvanto-avatar {
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: linear-gradient(135deg, var(--edvanto-navy) 0%, #0A4A8F 100%);
-      color: var(--edvanto-white);
+      background: var(--edvanto-gold);
+      color: var(--edvanto-dark);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -317,19 +305,19 @@
     .edvanto-sidebar-user-info strong {
       font-size: 0.8rem;
       font-weight: 700;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-cream);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .edvanto-sidebar-user-info span {
       font-size: 0.68rem;
-      color: var(--edvanto-gray-600);
+      color: var(--edvanto-gold);
       font-weight: 500;
     }
 
     /* ============================================================
-       MAIN AREA (header + content)
+       MAIN AREA
        ============================================================ */
     .edvanto-main {
       flex: 1 1 auto;
@@ -347,11 +335,8 @@
       top: 0;
       z-index: 1030;
       height: var(--edvanto-header-height);
-      background:#191D24;
-;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: var(--edvanto-border-light);
+      background: var(--edvanto-dark-2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -363,7 +348,7 @@
       display: none;
       background: transparent;
       border: none;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-gold);
       font-size: 1.5rem;
       padding: 0.25rem 0.4rem;
       border-radius: var(--edvanto-radius-xs);
@@ -371,7 +356,7 @@
       transition: background 0.15s ease;
     }
     .edvanto-header-toggle:hover {
-      background: var(--edvanto-gray-100);
+      background: rgba(212, 166, 42, 0.1);
     }
 
     /* header search */
@@ -385,7 +370,7 @@
       left: 0.9rem;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--edvanto-gray-500);
+      color: var(--edvanto-gray);
       font-size: 0.95rem;
       pointer-events: none;
     }
@@ -393,21 +378,21 @@
       width: 100%;
       height: 40px;
       border-radius: 999px;
-      border: var(--edvanto-border-medium);
-      background: var(--edvanto-gray-50);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--edvanto-dark);
       padding: 0 1rem 0 2.5rem;
       font-size: 0.85rem;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-cream);
       transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
     }
     .edvanto-header-search input::placeholder {
-      color: var(--edvanto-gray-500);
+      color: var(--edvanto-gray);
     }
     .edvanto-header-search input:focus {
       outline: none;
-      border-color: var(--edvanto-violet);
-      background: var(--edvanto-white);
-      box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+      border-color: var(--edvanto-gold);
+      background: var(--edvanto-dark-2);
+      box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.15);
     }
 
     .edvanto-header-spacer {
@@ -427,7 +412,7 @@
       border-radius: 11px;
       border: none;
       background: transparent;
-      color: var(--edvanto-violet);
+      color: var(--edvanto-gold);
       font-size: 1.15rem;
       display: flex;
       align-items: center;
@@ -436,8 +421,8 @@
       text-decoration: none;
     }
     .edvanto-icon-btn:hover {
-      background: var(--edvanto-gray-100);
-      color: var(--edvanto-violet);
+      background: rgba(212, 166, 42, 0.12);
+      color: var(--edvanto-gold-light);
     }
     .edvanto-icon-btn .edvanto-dot {
       position: absolute;
@@ -447,7 +432,7 @@
       height: 8px;
       border-radius: 50%;
       background: var(--edvanto-gold);
-      border: 2px solid var(--edvanto-white);
+      border: 2px solid var(--edvanto-dark-2);
     }
 
     /* header user chip */
@@ -457,16 +442,16 @@
       gap: 0.6rem;
       padding: 0.3rem 0.7rem 0.3rem 0.4rem;
       border-radius: 999px;
-      border: var(--edvanto-border-light);
-      background: var(--edvanto-white);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--edvanto-dark);
       cursor: pointer;
       transition: box-shadow 0.15s ease, border-color 0.15s ease;
       text-decoration: none;
       color: inherit;
     }
     .edvanto-header-user:hover {
-      box-shadow: var(--edvanto-shadow-card);
-      border-color: rgba(69, 28, 238, 0.2);
+      box-shadow: 0 4px 16px rgba(212, 166, 42, 0.12);
+      border-color: var(--edvanto-gold);
       color: inherit;
     }
     .edvanto-header-user .edvanto-avatar {
@@ -483,12 +468,12 @@
     .edvanto-header-user-info strong {
       font-size: 0.78rem;
       font-weight: 700;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-cream);
       white-space: nowrap;
     }
     .edvanto-header-user-info span {
       font-size: 0.65rem;
-      color: var(--edvanto-gray-600);
+      color: var(--edvanto-gold);
       font-weight: 500;
     }
 
@@ -499,14 +484,13 @@
       width: 100%;
       max-width: 1600px;
       margin: 0 auto;
-      /* background-color: linear-gradient(66deg, rgba(255, 244, 201, 0.5) 5%, rgba(243, 229, 184, 0.5) 60%); */
-      background: var(--edvanto-color-gradient-2);
+      background: var(--edvanto-cream-2);
     }
 
     /* ---------- FOOTER ---------- */
     .edvanto-footer {
       padding: 1rem 1.75rem;
-      border-top: var(--edvanto-border-light);
+      border-top: 1px solid rgba(18, 18, 18, 0.06);
       background: var(--edvanto-white);
       display: flex;
       flex-wrap: wrap;
@@ -514,19 +498,20 @@
       justify-content: space-between;
       gap: 0.5rem;
       font-size: 0.78rem;
-      color: var(--edvanto-gray-600);
+      color: var(--edvanto-gray);
     }
     .edvanto-footer a {
-      color: var(--edvanto-violet);
+      color: var(--edvanto-dark);
       text-decoration: none;
       font-weight: 500;
     }
     .edvanto-footer a:hover {
+      color: var(--edvanto-gold);
       text-decoration: underline;
     }
 
     /* ============================================================
-       SHARED COMPONENTS (available to all child templates)
+       SHARED COMPONENTS
        ============================================================ */
 
     /* --- Cards --- */
@@ -548,16 +533,16 @@
     .edvanto-card-title {
       font-size: 1.05rem;
       font-weight: 700;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
       letter-spacing: -0.02em;
       margin: 0;
     }
 
     /* --- Buttons --- */
     .btn-edvanto-primary {
-      background: var(--edvanto-violet);
-      border: 1px solid var(--edvanto-violet);
-      color: var(--edvanto-white);
+      background: var(--edvanto-gold);
+      border: 1px solid var(--edvanto-gold);
+      color: var(--edvanto-dark);
       font-weight: 600;
       font-size: 0.85rem;
       border-radius: var(--edvanto-radius-sm);
@@ -565,14 +550,14 @@
       transition: all 0.15s ease;
     }
     .btn-edvanto-primary:hover {
-      background: rgba(198, 151, 24, 0.82);
-      color: var(--edvanto-white);
-  
+      background: var(--edvanto-gold-light);
+      border-color: var(--edvanto-gold-light);
+      color: var(--edvanto-dark);
     }
     .btn-edvanto-outline {
-      background: #ffffff;
-      border: 2px solid black;
-      color: var(--edvanto-navy);
+      background: var(--edvanto-white);
+      border: 2px solid var(--edvanto-dark);
+      color: var(--edvanto-dark);
       font-weight: 600;
       font-size: 0.85rem;
       border-radius: var(--edvanto-radius-sm);
@@ -580,9 +565,9 @@
       transition: all 0.15s ease;
     }
     .btn-edvanto-outline:hover {
-      border-color: var(--edvanto-violet);
-      color: var(--edvanto-violet);
-      background: rgba(69, 28, 238, 0.03);
+      border-color: var(--edvanto-gold);
+      color: var(--edvanto-gold);
+      background: var(--edvanto-cream);
     }
 
     /* --- Badges --- */
@@ -594,10 +579,9 @@
       letter-spacing: 0.01em;
       display: inline-block;
     }
-    .badge-soft-violet { background: rgba(69, 28, 238, 0.08); color: var(--edvanto-violet); }
-    .badge-soft-cyan   { background: rgba(1, 223, 254, 0.12); color: #007A8F; }
-    .badge-soft-gold   { background: rgba(255, 179, 3, 0.12); color: #9A6D00; }
-    .badge-soft-navy   { background: rgba(3, 42, 90, 0.07); color: var(--edvanto-navy); }
+    .badge-soft-gold   { background: rgba(212, 166, 42, 0.12); color: #8B6D0F; }
+    .badge-soft-dark   { background: rgba(18, 18, 18, 0.07); color: var(--edvanto-dark); }
+    .badge-soft-gray   { background: rgba(74, 74, 74, 0.08); color: var(--edvanto-gray); }
     .badge-soft-green  { background: rgba(15, 157, 88, 0.09); color: #0F6B3E; }
     .badge-soft-red    { background: rgba(220, 53, 69, 0.09); color: #B02A37; }
 
@@ -614,24 +598,24 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--edvanto-gray-600);
-      background: var(--edvanto-gray-50);
+      color: var(--edvanto-gray);
+      background: var(--edvanto-cream);
       padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--edvanto-gray-200);
+      border-bottom: 1px solid rgba(18, 18, 18, 0.06);
       white-space: nowrap;
     }
     .edvanto-table tbody td {
       padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--edvanto-gray-100);
+      border-bottom: 1px solid rgba(18, 18, 18, 0.04);
       vertical-align: middle;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
       font-weight: 500;
     }
     .edvanto-table tbody tr:last-child td {
       border-bottom: none;
     }
     .edvanto-table tbody tr:hover {
-      background: rgba(69, 28, 238, 0.015);
+      background: rgba(212, 166, 42, 0.04);
     }
     .table-responsive-edvanto {
       overflow-x: auto;
@@ -642,8 +626,8 @@
 
     /* --- Breadcrumbs --- */
     .edvanto-breadcrumb .breadcrumb {
-      --bs-breadcrumb-divider-color: var(--edvanto-gray-500);
-      --bs-breadcrumb-item-active-color: var(--edvanto-navy);
+      --bs-breadcrumb-divider-color: var(--edvanto-gray);
+      --bs-breadcrumb-item-active-color: var(--edvanto-dark);
       font-size: 0.85rem;
       font-weight: 500;
       letter-spacing: -0.01em;
@@ -652,12 +636,12 @@
       background: transparent;
     }
     .edvanto-breadcrumb .breadcrumb-item a {
-      color: var(--edvanto-violet);
+      color: var(--edvanto-gold);
       text-decoration: none;
       font-weight: 500;
     }
     .edvanto-breadcrumb .breadcrumb-item a:hover {
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
     }
 
     /* --- Page title --- */
@@ -665,20 +649,20 @@
       font-weight: 700;
       font-size: 2rem;
       letter-spacing: -0.03em;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
       line-height: 1.2;
     }
     .edvanto-page-subtitle {
       font-size: 0.95rem;
-      color: var(--edvanto-gray-600);
+      color: var(--edvanto-gray);
       font-weight: 400;
       margin-bottom: 0;
     }
 
     /* --- Pagination --- */
     .pagination .page-link {
-      color: var(--edvanto-navy);
-      border-color: var(--edvanto-gray-200);
+      color: var(--edvanto-dark);
+      border-color: rgba(18, 18, 18, 0.08);
       font-size: 0.82rem;
       font-weight: 600;
       border-radius: var(--edvanto-radius-xs) !important;
@@ -688,25 +672,25 @@
       transition: all 0.15s ease;
     }
     .pagination .page-link:hover {
-      background: rgba(69, 28, 238, 0.05);
-      color: var(--edvanto-violet);
-      border-color: rgba(69, 28, 238, 0.2);
+      background: rgba(212, 166, 42, 0.08);
+      color: var(--edvanto-gold);
+      border-color: rgba(212, 166, 42, 0.2);
     }
     .pagination .page-item.active .page-link {
-      background: var(--edvanto-violet);
-      border-color: var(--edvanto-violet);
-      color: var(--edvanto-white);
+      background: var(--edvanto-gold);
+      border-color: var(--edvanto-gold);
+      color: var(--edvanto-dark);
     }
     .pagination .page-item.disabled .page-link {
-      color: var(--edvanto-gray-400);
-      background: var(--edvanto-gray-50);
+      color: var(--edvanto-gray);
+      background: var(--edvanto-cream);
     }
 
     /* --- Modals --- */
     .modal-content {
       border-radius: var(--edvanto-radius-card);
       border: none;
-      box-shadow: 0 24px 60px rgba(3, 42, 90, 0.18);
+      box-shadow: 0 24px 60px rgba(18, 18, 18, 0.18);
     }
     .modal-header {
       border-bottom: var(--edvanto-border-light);
@@ -718,7 +702,7 @@
     }
     .modal-title {
       font-weight: 700;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
       font-size: 1.05rem;
     }
 
@@ -729,7 +713,7 @@
     .toast-container-edvanto .toast {
       border-radius: var(--edvanto-radius-sm);
       background: var(--edvanto-white);
-      border-left: 4px solid var(--edvanto-violet) !important;
+      border-left: 4px solid var(--edvanto-gold) !important;
     }
 
     /* --- Forms --- */
@@ -738,16 +722,16 @@
       border: var(--edvanto-border-medium);
       font-size: 0.875rem;
       padding: 0.55rem 0.85rem;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
     }
     .form-control:focus, .form-select:focus {
-      border-color: var(--edvanto-violet);
-      box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+      border-color: var(--edvanto-gold);
+      box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.12);
     }
     .form-label {
       font-size: 0.8rem;
       font-weight: 600;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-dark);
       margin-bottom: 0.35rem;
     }
 
@@ -800,7 +784,7 @@
       .edvanto-sidebar {
         width: var(--edvanto-sidebar-width);
         transform: translateX(-100%);
-        box-shadow: 4px 0 30px rgba(3, 42, 90, 0.12);
+        box-shadow: 4px 0 30px rgba(18, 18, 18, 0.25);
         z-index: 1050;
       }
       .edvanto-sidebar.show {
@@ -877,7 +861,7 @@
     .edvanto-sidebar-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(3, 42, 90, 0.45);
+      background: rgba(18, 18, 18, 0.55);
       backdrop-filter: blur(2px);
       -webkit-backdrop-filter: blur(2px);
       z-index: 1045;
@@ -891,14 +875,14 @@
     }
 
     /* ---- Utility ---- */
-    .text-edvanto-navy { color: var(--edvanto-navy) !important; }
-    .text-edvanto-violet { color: var(--edvanto-violet) !important; }
-    .text-edvanto-cyan { color: var(--edvanto-cyan) !important; }
+    .text-edvanto-dark { color: var(--edvanto-dark) !important; }
     .text-edvanto-gold { color: var(--edvanto-gold) !important; }
-    .bg-edvanto-navy { background-color: var(--edvanto-navy) !important; }
-    .bg-edvanto-violet { background-color: var(--edvanto-violet) !important; }
-    .bg-edvanto-cyan { background-color: var(--edvanto-cyan) !important; }
+    .text-edvanto-gray { color: var(--edvanto-gray) !important; }
+    .text-edvanto-cream { color: var(--edvanto-cream) !important; }
+    .bg-edvanto-dark { background-color: var(--edvanto-dark) !important; }
     .bg-edvanto-gold { background-color: var(--edvanto-gold) !important; }
+    .bg-edvanto-cream { background-color: var(--edvanto-cream) !important; }
+    .bg-edvanto-white { background-color: var(--edvanto-white) !important; }
 
     /* Reduce motion preference */
     @media (prefers-reduced-motion: reduce) {
@@ -908,22 +892,21 @@
       }
     }
 
-
     .site_logo {
-  padding: 18px 0;
-}
+      padding: 18px 0;
+    }
 
-.site_logo .logo {
-  display: inline-block;
-  max-width: 170px;
-  width: 100%;
-}
+    .site_logo .logo {
+      display: inline-block;
+      max-width: 170px;
+      width: 100%;
+    }
 
-@media only screen and (min-width: 768px) and (max-width: 991px), only screen and (min-width: 576px) and (max-width: 767px), (max-width: 575px) {
-  .site_logo .logo {
-    max-width: 150px;
-  }
-}
+    @media only screen and (min-width: 768px) and (max-width: 991px), only screen and (min-width: 576px) and (max-width: 767px), (max-width: 575px) {
+      .site_logo .logo {
+        max-width: 150px;
+      }
+    }
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -938,25 +921,11 @@
     <aside class="edvanto-sidebar" id="edvantoSidebar" aria-label="Edvanto admin navigation">
 
       <!-- Brand / Logo -->
-      <!-- <a href="{% url 'admin_panel:dashboard' %}" class="edvanto-sidebar-brand">
-        -->
-        <div class="site_logo">
-
-                <a
-                  class="logo"
-                  href="{% url 'core:home' %}">
-
-                  <img
-                    src="{% static 'images/logos/logo.png' %}"
-                    alt="Edvanto Logo">
-
-                </a>
-        <!-- <span class="edvanto-logo-mark">E</span>
-        <span class="edvanto-logo-text">
-          <strong>Edvanto</strong>
-          <span>Admin Panel</span>
-        </span> -->
-      </a>
+      <div class="site_logo" style="padding: 18px 0; text-align: center;">
+        <a class="logo" href="{% url 'core:home' %}" style="display: inline-block; max-width: 170px; width: 100%;">
+          <img src="{% static 'images/logos/logo.png' %}" alt="Edvanto Logo" style="max-width: 100%; height: auto;">
+        </a>
+      </div>
 
       <!-- Navigation -->
       <nav class="edvanto-sidebar-nav">
@@ -976,7 +945,7 @@
         <ul class="edvanto-nav">
           <li>
             <a href="{% url 'admin_panel:user_list' %}"
-               class="edvanto-nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+               class="edvanto-nav-link {% if request.resolver_match.url_name in 'user_list user_create user_edit user_detail' %}active{% endif %}">
               <i class="bi bi-people-fill"></i>
               <span>Users</span>
             </a>
@@ -997,7 +966,7 @@
           </li>
           <li>
             <a href="{% url 'admin_panel:syllabus_curriculum' %}"
-               class="edvanto-nav-link {% if 'learning' in request.resolver_match.url_name %}active{% endif %}">
+               class="edvanto-nav-link {% if 'learning' in request.resolver_match.url_name or 'curriculum' in request.resolver_match.url_name %}active{% endif %}">
               <i class="bi bi-mortarboard-fill"></i>
               <span>Learning</span>
             </a>
@@ -1094,7 +1063,6 @@
 
       </nav>
 
-      
     </aside>
 
     <!-- Mobile backdrop -->
@@ -1169,14 +1137,14 @@
   </div><!-- /.edvanto-app -->
 
   <!-- ============================================================
-       GLOBAL TOAST CONTAINER (available to all pages)
+       GLOBAL TOAST CONTAINER
        ============================================================ -->
   <div class="toast-container-edvanto position-fixed bottom-0 end-0 p-3">
     <div id="edvantoGlobalToast" class="toast align-items-center border-0 shadow-sm" role="alert"
          aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
-        <div class="toast-body d-flex align-items-center gap-2" style="font-size: 0.85rem; color: var(--edvanto-navy);">
-          <i class="bi bi-check-circle-fill" style="color: var(--edvanto-violet);"></i>
+        <div class="toast-body d-flex align-items-center gap-2" style="font-size: 0.85rem; color: var(--edvanto-dark);">
+          <i class="bi bi-check-circle-fill" style="color: var(--edvanto-gold);"></i>
           <span id="edvantoGlobalToastMessage">Action completed successfully.</span>
         </div>
         <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -1192,7 +1160,6 @@
   <script>
     /* ============================================================
        EDVANTO ADMIN – GLOBAL JAVASCRIPT
-       Vanilla JS only. No frameworks.
        ============================================================ */
     (function () {
       'use strict';
@@ -1232,14 +1199,12 @@
         backdrop.addEventListener('click', closeSidebar);
       }
 
-      /* Close sidebar on Escape */
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) {
           closeSidebar();
         }
       });
 
-      /* Close sidebar when a nav link is clicked on mobile */
       if (sidebar) {
         sidebar.querySelectorAll('.edvanto-nav-link').forEach(function (link) {
           link.addEventListener('click', function () {
@@ -1250,7 +1215,6 @@
         });
       }
 
-      /* Reset sidebar state on resize to desktop */
       var resizeTimer;
       window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
@@ -1261,7 +1225,7 @@
         }, 150);
       });
 
-      /* ---------- Global toast helper (exposed) ---------- */
+      /* ---------- Global toast helper ---------- */
       window.edvantoToast = function (message, type) {
         var toastEl = document.getElementById('edvantoGlobalToast');
         var msgEl = document.getElementById('edvantoGlobalToastMessage');
@@ -1269,25 +1233,24 @@
 
         msgEl.textContent = message || 'Action completed successfully.';
 
-        /* Optional: change icon/accent based on type */
         var icon = toastEl.querySelector('.toast-body i');
         if (icon) {
           if (type === 'warning') {
             icon.className = 'bi bi-exclamation-triangle-fill';
-            icon.style.color = 'var(--edvanto-gold)';
-            toastEl.style.borderLeftColor = 'var(--edvanto-gold)';
+            icon.style.color = 'var(--edvanto-gold-light)';
+            toastEl.style.borderLeftColor = 'var(--edvanto-gold-light)';
           } else if (type === 'error') {
             icon.className = 'bi bi-x-circle-fill';
-            icon.style.color = '#DC3545';
-            toastEl.style.borderLeftColor = '#DC3545';
+            icon.style.color = '#B02A37';
+            toastEl.style.borderLeftColor = '#B02A37';
           } else if (type === 'info') {
             icon.className = 'bi bi-info-circle-fill';
-            icon.style.color = 'var(--edvanto-cyan)';
-            toastEl.style.borderLeftColor = 'var(--edvanto-cyan)';
+            icon.style.color = 'var(--edvanto-gray)';
+            toastEl.style.borderLeftColor = 'var(--edvanto-gray)';
           } else {
             icon.className = 'bi bi-check-circle-fill';
-            icon.style.color = 'var(--edvanto-violet)';
-            toastEl.style.borderLeftColor = 'var(--edvanto-violet)';
+            icon.style.color = 'var(--edvanto-gold)';
+            toastEl.style.borderLeftColor = 'var(--edvanto-gold)';
           }
         }
 
@@ -1295,7 +1258,7 @@
         toast.show();
       };
 
-      /* ---------- Auto-dismiss Django messages (if any rendered) ---------- */
+      /* ---------- Auto-dismiss Django messages ---------- */
       {% if messages %}
         {% for message in messages %}
           window.edvantoToast("{{ message|escapejs }}", "{{ message.tags|default:'success' }}");

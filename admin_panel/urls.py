@@ -64,7 +64,7 @@ urlpatterns = [
     # ==================================================
 
     path(
-        "syllabus/courses/",
+        "syllabus/",
         views.syllabus_course_list,
         name="syllabus_course_list",
     ),
