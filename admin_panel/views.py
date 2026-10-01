@@ -1,9 +1,11 @@
 from django.shortcuts import render
 
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 
-# ==================================================
-# DASHBOARD
-# ==================================================
+from core.models import Course
+from .forms import *
+
 
 def dashboard(request):
     return render(
@@ -35,16 +37,101 @@ def user_form(request):
 # ==================================================
 
 def course_dashboard(request):
+    courses = Course.objects.all().order_by("-created_at")
+
     return render(
         request,
         "courses/dashboard.html",
+        {
+            "courses": courses,
+        },
     )
 
 
-def course_form(request):
+def course_form(request, course_id=None):
+
+    course = None
+
+    if course_id is not None:
+        course = get_object_or_404(
+            Course,
+            pk=course_id,
+        )
+
+    if request.method == "POST":
+
+        form = CourseAdminForm(
+            request.POST,
+            request.FILES,
+            instance=course,
+        )
+
+        if form.is_valid():
+
+            course = form.save()
+
+            action = request.POST.get(
+                "action",
+                "save_draft",
+            )
+
+            if action == "publish":
+                course.status = Course.Status.PUBLISHED
+                course.save(
+                    update_fields=[
+                        "status",
+                        "updated_at",
+                    ]
+                )
+
+                messages.success(
+                    request,
+                    "Course published successfully.",
+                )
+
+            elif action == "save_draft":
+                course.status = Course.Status.DRAFT
+                course.save(
+                    update_fields=[
+                        "status",
+                        "updated_at",
+                    ]
+                )
+
+                messages.success(
+                    request,
+                    "Course saved as draft.",
+                )
+
+            else:
+                messages.success(
+                    request,
+                    "Course saved successfully.",
+                )
+
+            if action == "save_continue":
+                return redirect(
+                    "admin_panel:course_form",
+                    course_id=course.id,
+                )
+
+            return redirect(
+                "admin_panel:course_dashboard"
+            )
+
+    else:
+
+        form = CourseAdminForm(
+            instance=course,
+        )
+
     return render(
         request,
         "courses/form.html",
+        {
+            "form": form,
+            "course": course,
+        },
     )
 
 

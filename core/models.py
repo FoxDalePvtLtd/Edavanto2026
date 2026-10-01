@@ -232,9 +232,11 @@ class Course(models.Model):
 
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name="courses_taught",
         limit_choices_to={"role": User.Role.INSTRUCTOR},
+        null=True,
+        blank=True,
     )
 
     center = models.ForeignKey(
@@ -754,6 +756,11 @@ class Order(models.Model):
         REFUNDED = "refunded", "Refunded"
         CANCELLED = "cancelled", "Cancelled"
 
+    class PaymentMethod(models.TextChoices):
+        TEST = "test", "Test Payment"
+        OFFLINE = "offline", "Offline Payment"
+        RAZORPAY = "razorpay", "Razorpay"
+
     class PaymentPlan(models.TextChoices):
         FULL = "full", "Full"
         INSTALLMENT = "installment", "Installment"
@@ -785,6 +792,12 @@ class Order(models.Model):
         max_length=20,
         choices=PaymentPlan.choices,
         default=PaymentPlan.FULL,
+    )
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.TEST,
     )
 
     status = models.CharField(
@@ -1684,3 +1697,91 @@ class AuditLog(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+
+# ============================================================
+# INVOICE
+# ============================================================
+
+class Invoice(models.Model):
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        ISSUED = "issued", "Issued"
+        PAID = "paid", "Paid"
+        CANCELLED = "cancelled", "Cancelled"
+
+    invoice_number = models.CharField(
+        max_length=50,
+        unique=True,
+    )
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.PROTECT,
+        related_name="invoice",
+    )
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="invoices",
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT,
+        related_name="invoices",
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+
+    tax_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+    )
+
+    total_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
+
+    issued_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return self.invoice_number

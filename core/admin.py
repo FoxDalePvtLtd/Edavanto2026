@@ -1,36 +1,9 @@
 from django.contrib import admin
-from .models import (
-    User,
-    Center,
-    Course,
-    Syllabus,
-    SyllabusTopic,
-    Module,
-    Lesson,
-    Resource,
-    VideoAsset,
-    Enrollment,
-    LearningProgress,
-    LearningEvent,
-    Order,
-    PaymentTransaction,
-    InstallmentPlan,
-    Installment,
-    Assessment,
-    Question,
-    Submission,
-    DoubtThread,
-    DoubtMessage,
-    Batch,
-    BatchSession,
-    Attendance,
-    Notification,
-    NotificationDelivery,
-    ConsultationBooking,
-    Certificate,
-    SecurityEvent,
-    AuditLog,
-)
+from .models import *
+from django.contrib import admin
+from django.contrib import messages
+
+from .services.payments import *
 
 
 @admin.register(User)
@@ -161,6 +134,7 @@ class VideoAssetAdmin(admin.ModelAdmin):
 
 @admin.register(Enrollment)
 class EnrollmentAdmin(admin.ModelAdmin):
+
     list_display = (
         "student",
         "course",
@@ -169,17 +143,24 @@ class EnrollmentAdmin(admin.ModelAdmin):
         "progress_percent",
         "enrolled_at",
     )
+
     list_filter = (
         "payment_status",
         "approval_status",
         "access_paused",
     )
+
     search_fields = (
         "student__username",
         "student__email",
         "course__title",
     )
 
+    readonly_fields = (
+        "enrolled_at",
+        "accepted_at",
+        "progress_percent",
+    )
 
 @admin.register(LearningProgress)
 class LearningProgressAdmin(admin.ModelAdmin):
@@ -216,16 +197,24 @@ class LearningEventAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+
     list_display = (
         "order_number",
         "student",
         "course",
         "total_amount",
         "payment_plan",
+        "payment_method",
         "status",
         "created_at",
     )
-    list_filter = ("payment_plan", "status")
+
+    list_filter = (
+        "payment_method",
+        "payment_plan",
+        "status",
+    )
+
     search_fields = (
         "order_number",
         "student__username",
@@ -233,21 +222,185 @@ class OrderAdmin(admin.ModelAdmin):
         "course__title",
     )
 
+    readonly_fields = (
+        "order_number",
+        "student",
+        "course",
+        "total_amount",
+        "payment_plan",
+        "payment_method",
+        "created_at",
+        "updated_at",
+    )
+
+    actions = (
+        "approve_offline_requests",
+        "reject_offline_requests",
+    )
+
+    @admin.action(
+        description="Approve selected offline payment requests"
+    )
+    def approve_offline_requests(
+        self,
+        request,
+        queryset,
+    ):
+
+        approved_count = 0
+        skipped_count = 0
+
+        for order in queryset:
+
+            if (
+                order.payment_method
+                != Order.PaymentMethod.OFFLINE
+            ):
+                skipped_count += 1
+                continue
+
+            if order.status == Order.Status.PAID:
+                skipped_count += 1
+                continue
+
+            try:
+                approve_offline_payment(
+                    order=order,
+                    approved_by=request.user,
+                )
+                approved_count += 1
+
+            except ValueError as exc:
+                skipped_count += 1
+
+                self.message_user(
+                    request,
+                    (
+                        f"{order.order_number}: "
+                        f"{exc}"
+                    ),
+                    level=messages.ERROR,
+                )
+
+        if approved_count:
+            self.message_user(
+                request,
+                (
+                    f"{approved_count} offline "
+                    f"payment request(s) approved."
+                ),
+                level=messages.SUCCESS,
+            )
+
+        if skipped_count:
+            self.message_user(
+                request,
+                (
+                    f"{skipped_count} request(s) "
+                    f"were skipped."
+                ),
+                level=messages.WARNING,
+            )
+
+    @admin.action(
+        description="Reject selected offline payment requests"
+    )
+    def reject_offline_requests(
+        self,
+        request,
+        queryset,
+    ):
+
+        rejected_count = 0
+        skipped_count = 0
+
+        for order in queryset:
+
+            if (
+                order.payment_method
+                != Order.PaymentMethod.OFFLINE
+            ):
+                skipped_count += 1
+                continue
+
+            if order.status == Order.Status.PAID:
+                skipped_count += 1
+                continue
+
+            try:
+                reject_offline_payment(
+                    order=order,
+                    rejected_by=request.user,
+                )
+                rejected_count += 1
+
+            except ValueError as exc:
+                skipped_count += 1
+
+                self.message_user(
+                    request,
+                    (
+                        f"{order.order_number}: "
+                        f"{exc}"
+                    ),
+                    level=messages.ERROR,
+                )
+
+        if rejected_count:
+            self.message_user(
+                request,
+                (
+                    f"{rejected_count} offline "
+                    f"payment request(s) rejected."
+                ),
+                level=messages.SUCCESS,
+            )
+
+        if skipped_count:
+            self.message_user(
+                request,
+                (
+                    f"{skipped_count} request(s) "
+                    f"were skipped."
+                ),
+                level=messages.WARNING,
+            )
+
 
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
+
     list_display = (
+        "order",
+        "amount",
+        "status",
+        "paid_at",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+    )
+
+    search_fields = (
+        "order__order_number",
+        "order__student__username",
+        "order__student__email",
+        "razorpay_order_id",
+        "razorpay_payment_id",
+    )
+
+    readonly_fields = (
         "order",
         "amount",
         "razorpay_order_id",
         "razorpay_payment_id",
+        "razorpay_signature",
         "status",
+        "failure_reason",
+        "paid_at",
+        "metadata",
         "created_at",
-    )
-    list_filter = ("status",)
-    search_fields = (
-        "razorpay_order_id",
-        "razorpay_payment_id",
     )
 
 

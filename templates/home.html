@@ -71,7 +71,8 @@
             </div>
             <div class="tj-course-item banner-feature-course d-xl-block d-none tj-fade-anim" data-delay=".6">
               <div class="tj-course-img">
-                <a href="{% url 'core:course_detail' %}"><img src="{% static 'images/hero/hero-course-img.webp' %}\" alt=""></a>
+                {% comment %} <!-- OLD: {% url 'core:course_detail' %} requires a slug --> {% endcomment %}
+                <a href="{% url 'core:courses' %}"><img src="{% static 'images/hero/hero-course-img.webp' %}\" alt=""></a>
                 <div class="tj-product-badge">
                   <span>Popular</span>
                 </div>

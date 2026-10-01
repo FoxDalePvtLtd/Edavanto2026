@@ -1,11 +1,18 @@
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime, timedelta 
-
+from .services.learning import *
+from .services.enrollment import *
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .services.payments import *
 from .auth_services import (
     OTP_EXPIRY_MINUTES,
     create_otp,
@@ -33,7 +40,25 @@ def home(request):
 
 
 def courses(request):
-    return render(request, "courses.html")
+    courses_queryset = (
+        Course.objects
+        .filter(
+            status=Course.Status.PUBLISHED
+        )
+        .select_related(
+            "instructor",
+            "center",
+        )
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "courses.html",
+        {
+            "courses": courses_queryset,
+        },
+    )
 
 
 def about(request):
@@ -57,7 +82,11 @@ def student_register(request):
 
     if request.method == "GET":
         print("[EDVANTO REGISTER] GET request -> rendering sign-in.html")
-        return render(request, "sign-in.html")
+        return render(
+            request,
+            "sign-in.html",
+            {"registration_data": {}},
+        )
 
     if request.method != "POST":
         print(
@@ -107,12 +136,21 @@ def student_register(request):
     if not terms:
         print("[EDVANTO REGISTER] STOP -> terms not accepted")
 
-        messages.error(
+        return render(
             request,
-            "Please accept the terms and privacy policy."
+            "sign-in.html",
+            {
+                "registration_data": {
+                    "full_name": full_name,
+                    "email": email,
+                    "phone": phone,
+                },
+                "registration_errors": {
+                    "terms": "Please accept the terms and privacy policy.",
+                },
+            },
+            status=400,
         )
-
-        return redirect("core:sign_in")
 
     print("[EDVANTO REGISTER] Terms accepted")
 
@@ -139,11 +177,37 @@ def student_register(request):
 
         print("[EDVANTO REGISTER] STOP -> validation failed")
 
+        field_errors = {}
         for error in result["errors"]:
             print(f"  ERROR: {error}")
-            messages.error(request, error)
+            lowered = error.lower()
 
-        return redirect("core:sign_in")
+            if "email" in lowered:
+                field_errors["email"] = error
+            elif "password" in lowered or "passwords" in lowered:
+                field_errors["password"] = error
+                if "match" in lowered:
+                    field_errors["confirm_password"] = error
+            elif "phone" in lowered:
+                field_errors["phone"] = error
+            elif "name" in lowered:
+                field_errors["full_name"] = error
+            else:
+                field_errors.setdefault("form", error)
+
+        return render(
+            request,
+            "sign-in.html",
+            {
+                "registration_data": {
+                    "full_name": full_name,
+                    "email": email,
+                    "phone": phone,
+                },
+                "registration_errors": field_errors,
+            },
+            status=400,
+        )
 
     print("[EDVANTO REGISTER] Validation PASSED")
 
@@ -539,8 +603,14 @@ def verify_otp_view(request):
 
 def login_view(request):
 
+    next_url = request.POST.get("next") or request.GET.get("next") or ""
+
     if request.method == "GET":
-        return render(request, "login.html")
+        return render(
+            request,
+            "login.html",
+            {"next": next_url},
+        )
 
     if request.method != "POST":
         return redirect("core:login")
@@ -549,12 +619,28 @@ def login_view(request):
     password = request.POST.get("password", "")
 
     if not email:
-        messages.error(request, "Email address is required.")
-        return redirect("core:login")
+        return render(
+            request,
+            "login.html",
+            {
+                "next": next_url,
+                "login_errors": {"email": "Email address is required."},
+                "login_data": {"email": email},
+            },
+            status=400,
+        )
 
     if not password:
-        messages.error(request, "Password is required.")
-        return redirect("core:login")
+        return render(
+            request,
+            "login.html",
+            {
+                "next": next_url,
+                "login_errors": {"password": "Password is required."},
+                "login_data": {"email": email},
+            },
+            status=400,
+        )
 
     user = authenticate(
         request,
@@ -563,76 +649,103 @@ def login_view(request):
     )
 
     if user is None:
-        messages.error(
+        return render(
             request,
-            "Invalid email or password."
+            "login.html",
+            {
+                "next": next_url,
+                "login_errors": {
+                    "password": "Invalid email or password."
+                },
+                "login_data": {"email": email},
+            },
+            status=401,
         )
-        return redirect("core:login")
 
     if not user.is_active:
-        messages.error(
+        return render(
             request,
-            "Your account is inactive."
+            "login.html",
+            {
+                "next": next_url,
+                "login_errors": {
+                    "email": "Your account is inactive."
+                },
+                "login_data": {"email": email},
+            },
+            status=403,
         )
-        return redirect("core:login")
 
     login(request, user)
 
-    # ---------------------------------------------------------
-    # STUDENT ACCESS CHECK
-    # ---------------------------------------------------------
-
     if user.role == User.Role.STUDENT:
 
-        enrollment = (
+        active_enrollment = (
             Enrollment.objects
             .select_related("course")
-            .filter(student=user)
+            .filter(
+                student=user,
+                approval_status=Enrollment.ApprovalStatus.ACCEPTED,
+                payment_status__in=[
+                    Enrollment.PaymentStatus.PAID,
+                    Enrollment.PaymentStatus.PARTIALLY_PAID,
+                ],
+                access_paused=False,
+            )
             .order_by("-enrolled_at")
             .first()
         )
 
-        # No course enrollment
-        if enrollment is None:
-            return redirect("core:courses")
+        if active_enrollment is not None:
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+            ):
+                return redirect(next_url)
+            return redirect("core:dashboard")
 
-        # Enrollment rejected
-        if enrollment.approval_status == "rejected":
+        pending_enrollment = (
+            Enrollment.objects
+            .select_related("course")
+            .filter(
+                student=user,
+                approval_status=Enrollment.ApprovalStatus.PENDING,
+            )
+            .order_by("-enrolled_at")
+            .first()
+        )
+
+        if pending_enrollment:
             messages.warning(
                 request,
-                "Your enrollment has not been approved."
+                f"Your enrollment for "
+                f"“{pending_enrollment.course.title}” is awaiting approval.",
             )
-            return redirect("core:courses")
-
-        # Enrollment waiting for approval
-        if enrollment.approval_status == "pending":
-            messages.info(
-                request,
-                "Your enrollment is waiting for approval."
+            return redirect(
+                "core:course_detail",
+                slug=pending_enrollment.course.slug,
             )
-            return redirect("core:courses")
 
-        # Enrollment accepted
-        if enrollment.approval_status == "accepted":
-
-            if enrollment.course.mode == "online":
-                return redirect("core:dashboard")
-
-            if enrollment.course.mode == "offline":
-                return redirect("core:dashboard")
-
-        # Safety fallback
-        messages.error(
-            request,
-            "We could not determine your course access."
-        )
         return redirect("core:courses")
 
-    # ---------------------------------------------------------
-    # NON-STUDENT USERS
-    # ---------------------------------------------------------
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+    ):
+        return redirect(next_url)
 
     return redirect("core:dashboard")
+
+
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    messages.success(
+        request,
+        "You have been logged out successfully.",
+    )
+    return redirect("core:home")
 
 
 def sign_in(request):
@@ -642,10 +755,572 @@ def sign_in(request):
 def forgot_password(request):
     return render(request, "forgot-password.html")
 
+@login_required
+def course_detail(request, slug):
+    course = get_object_or_404(
+        Course.objects
+        .select_related(
+            "instructor",
+            "center",
+        ),
+        slug=slug,
+        status=Course.Status.PUBLISHED,
+    )
 
-def course_detail(request):
-    return render(request, "course_details.html")
+    related_courses = (
+        Course.objects
+        .filter(
+            status=Course.Status.PUBLISHED,
+            category=course.category,
+        )
+        .exclude(pk=course.pk)
+        .order_by("-created_at")[:3]
+    )
+
+    enrollment = None
+
+    if request.user.is_authenticated:
+        enrollment = (
+            Enrollment.objects
+            .filter(
+                student=request.user,
+                course=course,
+            )
+            .first()
+        )
+
+    return render(
+        request,
+        "course_details.html",
+        {
+            "course": course,
+            "related_courses": related_courses,
+            "enrollment": enrollment,
+        },
+    )
 
 
+
+
+# ============================================================
+# PAYMENT
+# ============================================================
+
+@login_required
+@require_POST
+def test_payment(request, slug):
+
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can purchase courses.",
+        )
+        return redirect("core:courses")
+
+    course = get_object_or_404(
+        Course.objects.filter(
+            status=Course.Status.PUBLISHED
+        ),
+        slug=slug,
+    )
+
+    try:
+        order, payment_transaction, enrollment = (
+            create_test_payment(
+                student=request.user,
+                course=course,
+            )
+        )
+
+    except ValueError as exc:
+        messages.error(
+            request,
+            str(exc),
+        )
+        return redirect(
+            "core:course_detail",
+            slug=course.slug,
+        )
+
+    if (
+        enrollment.approval_status
+        == Enrollment.ApprovalStatus.ACCEPTED
+    ):
+        messages.success(
+            request,
+            "Test payment successful. "
+            "Your course access is now active.",
+        )
+        return redirect("core:dashboard")
+
+    messages.warning(
+        request,
+        "Payment recorded successfully. Your enrollment is awaiting approval. "
+        "Course access will remain locked until approval.",
+    )
+
+    return redirect(
+        "core:course_detail",
+        slug=course.slug,
+    )
+
+
+@login_required
+@require_POST
+def offline_payment_request(request, slug):
+
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can request course enrollment.",
+        )
+        return redirect("core:courses")
+
+    course = get_object_or_404(
+        Course.objects.filter(
+            status=Course.Status.PUBLISHED
+        ),
+        slug=slug,
+    )
+
+    try:
+        order, payment_transaction, enrollment = (
+            create_offline_payment_request(
+                student=request.user,
+                course=course,
+            )
+        )
+
+    except ValueError as exc:
+        messages.error(
+            request,
+            str(exc),
+        )
+        return redirect(
+            "core:course_detail",
+            slug=course.slug,
+        )
+
+    messages.warning(
+        request,
+        "Offline payment request submitted. "
+        "Course access will remain locked until admin approval.",
+    )
+
+    return redirect(
+        "core:course_detail",
+        slug=course.slug,
+    )
+
+
+@login_required
+def payment(request, slug):
+
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can enroll in courses."
+        )
+        return redirect("core:courses")
+
+    course = get_object_or_404(
+        Course.objects.filter(
+            status=Course.Status.PUBLISHED
+        ),
+        slug=slug,
+    )
+
+    enrollment = (
+        Enrollment.objects
+        .filter(
+            student=request.user,
+            course=course,
+        )
+        .first()
+    )
+
+    if enrollment is not None:
+        messages.info(
+            request,
+            "You already have an enrollment for this course."
+        )
+        return redirect("core:dashboard")
+
+    return render(
+        request,
+        "payment.html",
+        {
+            "course": course,
+        },
+    )
+
+@login_required
 def dashboard(request):
-    return render(request, "dashboard/student/dashboard.html")
+
+    user = request.user
+
+    if user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "The student dashboard is available only to student accounts.",
+        )
+        return redirect("core:home")
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=user)
+        .select_related(
+            "course",
+            "course__instructor",
+            "course__center",
+        )
+        .order_by("-enrolled_at")
+    )
+
+    active_enrollment = None
+    current_lesson = None
+    learning_progress = []
+
+    for enrollment in enrollments:
+
+        if not enrollment_has_access(enrollment):
+            continue
+
+        active_enrollment = enrollment
+
+        if enrollment.course.mode == Course.Mode.ONLINE:
+
+            current_lesson = get_current_unlocked_lesson(
+                enrollment
+            )
+
+            learning_progress = list(
+                enrollment.lesson_progress
+                .select_related(
+                    "lesson",
+                    "lesson__module",
+                )
+                .order_by(
+                    "lesson__module__unlock_order",
+                    "lesson__module__order",
+                    "lesson__unlock_order",
+                    "lesson__order",
+                    "lesson__pk",
+                )
+            )
+
+        break
+
+    # Never render the dashboard for a student who has no accepted,
+    # paid/partially-paid and unpaused enrollment.
+    if active_enrollment is None:
+
+        pending_enrollment = next(
+            (
+                enrollment
+                for enrollment in enrollments
+                if enrollment.approval_status
+                == Enrollment.ApprovalStatus.PENDING
+            ),
+            None,
+        )
+
+        if pending_enrollment is not None:
+            messages.warning(
+                request,
+                f"Your enrollment for "
+                f"“{pending_enrollment.course.title}” "
+                f"is awaiting approval.",
+            )
+            return redirect(
+                "core:course_detail",
+                slug=pending_enrollment.course.slug,
+            )
+
+        rejected_enrollment = next(
+            (
+                enrollment
+                for enrollment in enrollments
+                if enrollment.approval_status
+                == Enrollment.ApprovalStatus.REJECTED
+            ),
+            None,
+        )
+
+        if rejected_enrollment is not None:
+            messages.error(
+                request,
+                f"Your enrollment for "
+                f"“{rejected_enrollment.course.title}” "
+                f"is not currently approved.",
+            )
+            return redirect(
+                "core:course_detail",
+                slug=rejected_enrollment.course.slug,
+            )
+
+        return redirect("core:courses")
+
+    return render(
+        request,
+        "dashboard/student/dashboard.html",
+        {
+            "enrollments": enrollments,
+            "active_enrollment": active_enrollment,
+            "current_lesson": current_lesson,
+            "learning_progress": learning_progress,
+            "is_student": True,
+            "student_name": user.get_full_name() or user.username,
+            "student_initials": (
+                (user.first_name[:1] if user.first_name else "") +
+                (user.last_name[:1] if user.last_name else "")
+            ).upper() or "S",
+            "dashboard_welcome": True,
+        },
+    )
+
+
+@login_required
+def lesson_view(request, lesson_id):
+
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can access lessons."
+        )
+        return redirect("core:dashboard")
+
+    lesson = get_object_or_404(
+        Lesson.objects
+        .select_related(
+            "module",
+            "module__course",
+        ),
+        pk=lesson_id,
+    )
+
+    enrollment = get_student_enrollment(
+        request.user,
+        lesson.module.course,
+    )
+
+    if enrollment is None:
+        messages.error(
+            request,
+            "You are not enrolled in this course."
+        )
+        return redirect("core:courses")
+
+    if not enrollment_has_access(enrollment):
+        messages.warning(
+            request,
+            "You do not currently have access to this course."
+        )
+        return redirect("core:dashboard")
+
+    if not lesson_is_accessible(
+        enrollment,
+        lesson,
+    ):
+        messages.warning(
+            request,
+            "This lesson is currently locked."
+        )
+        return redirect("core:dashboard")
+
+    record_lesson_opened(
+        enrollment,
+        lesson,
+    )
+
+    progress = get_learning_progress(
+        enrollment,
+        lesson,
+    )
+
+    next_lesson = None
+
+    return render(
+        request,
+        "dashboard/student/lesson.html",
+        {
+            "lesson": lesson,
+            "enrollment": enrollment,
+            "progress": progress,
+            "next_lesson": next_lesson,
+        },
+    )
+
+
+
+
+
+# ============================================================
+# LESSON PROGRESS API
+# ============================================================
+
+@login_required
+@require_POST
+def lesson_progress_api(request, lesson_id):
+
+    if request.user.role != User.Role.STUDENT:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Student access required.",
+            },
+            status=403,
+        )
+
+    lesson = get_object_or_404(
+        Lesson.objects.select_related(
+            "module",
+            "module__course",
+        ),
+        pk=lesson_id,
+    )
+
+    enrollment = get_student_enrollment(
+        request.user,
+        lesson.module.course,
+    )
+
+    if enrollment is None:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Enrollment not found.",
+            },
+            status=403,
+        )
+
+    try:
+        watched_percent = request.POST.get(
+            "watched_percent",
+            "0",
+        )
+
+        position_seconds = request.POST.get(
+            "position_seconds",
+            "0",
+        )
+
+        progress = update_video_progress(
+            enrollment=enrollment,
+            lesson=lesson,
+            watched_percent=watched_percent,
+            position_seconds=position_seconds,
+        )
+
+    except PermissionError as exc:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(exc),
+            },
+            status=403,
+        )
+
+    except ValueError as exc:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(exc),
+            },
+            status=400,
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "watched_percent": float(
+                progress.watched_percent
+            ),
+            "position_seconds": (
+                progress.last_position_seconds
+            ),
+            "status": progress.status,
+        }
+    )
+
+
+# ============================================================
+# LESSON COMPLETION API
+# ============================================================
+
+@login_required
+@require_POST
+def lesson_complete_api(request, lesson_id):
+
+    if request.user.role != User.Role.STUDENT:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Student access required.",
+            },
+            status=403,
+        )
+
+    lesson = get_object_or_404(
+        Lesson.objects.select_related(
+            "module",
+            "module__course",
+        ),
+        pk=lesson_id,
+    )
+
+    enrollment = get_student_enrollment(
+        request.user,
+        lesson.module.course,
+    )
+
+    if enrollment is None:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Enrollment not found.",
+            },
+            status=403,
+        )
+
+    try:
+        progress, next_lesson = complete_lesson(
+            enrollment=enrollment,
+            lesson=lesson,
+        )
+
+    except PermissionError as exc:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(exc),
+            },
+            status=403,
+        )
+
+    except ValueError as exc:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(exc),
+            },
+            status=400,
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "lesson_completed": True,
+            "progress_percent": float(
+                enrollment.progress_percent
+            ),
+            "next_lesson_id": (
+                next_lesson.id
+                if next_lesson
+                else None
+            ),
+            "course_completed": (
+                next_lesson is None
+            ),
+        }
+    )

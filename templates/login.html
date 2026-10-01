@@ -6,6 +6,10 @@
 
 {% block extra_css %}
   {% comment %} <link rel="stylesheet" href="{% static 'css/shop.css' %}"> {% endcomment %}
+  <style>
+    .login-field-error{font-size:12px;line-height:1.4;margin-top:6px;color:#c62828;min-height:0}
+    .tj-login-form input.is-invalid{border-color:#c62828}
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -55,7 +59,10 @@
 
                   <div class="login-divider"><span>or log in with email</span></div>
 
-                  <form class="tj-login-form" action="{% url 'core:login' %}" method="post">
+                  {% comment %}
+                    <!-- Legacy login form preserved without deletion. -->
+                    <!-- The previous nested Django comment marker is preserved as text: &#123;% comment %&#125; -->
+<form class="tj-login-form" action="{% url 'core:login' %}" method="post">
                     {% csrf_token %}
                     <div class="form-input">
                       <label class="cf-label" for="login-email">Email</label>
@@ -89,8 +96,51 @@
                       </button>
                     </div>
                   </form>
+                    {% endcomment %}
 
-                  <p class="login-form-footer">Don't have an account? <a href="sign-in.html">Sign up free</a></p>
+                    <form class="tj-login-form" action="{% url 'core:login' %}" method="post" novalidate>
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{{ next|default:'' }}">
+                      <div class="form-input">
+                        <label class="cf-label" for="login-email">Email</label>
+                        <div class="input-icon-wrap">
+                          <span class="input-icon"><i class="tji-envelope"></i></span>
+                          <input type="email" id="login-email" name="email" value="{{ login_data.email|default:'' }}"
+                                 placeholder="you@example.com" autocomplete="email" required>
+                        </div>
+                        <div class="login-field-error" data-error-for="email">{% if login_errors.email %}{{ login_errors.email }}{% endif %}</div>
+                      </div>
+                      <div class="form-input">
+                        <label class="cf-label" for="login-password">Password</label>
+                        <div class="input-icon-wrap">
+                          <span class="input-icon"><i class="tji-lock"></i></span>
+                          <input type="password" id="login-password" name="password" placeholder="Enter your password"
+                                 autocomplete="current-password" required>
+                          <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">
+                            <i class="tji-eye-off"></i>
+                          </button>
+                        </div>
+                        <div class="login-field-error" data-error-for="password">{% if login_errors.password %}{{ login_errors.password }}{% endif %}</div>
+                      </div>
+                      <div class="login-form-meta">
+                        <label class="remember-check" for="remember-me">
+                          <input type="checkbox" id="remember-me" name="remember">
+                          <span>Remember me</span>
+                        </label>
+                        <a class="forgot-link" href="{% url 'core:forgot_password' %}">Forgot password?</a>
+                      </div>
+                      <div class="form-submit">
+                        <button class="tj-btn-primary flip-text-wrap" type="submit">
+                          <span class="btn-text">Log in</span>
+                          <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                        </button>
+                      </div>
+                    </form>
+
+                  <p class="login-form-footer">Don't have an account?
+                    {% comment %}<a href="sign-in.html">Sign up free</a>{% endcomment %}
+                    <a href="{% url 'core:sign_in' %}">Sign up free</a>
+                  </p>
                 </div>
               </div>
             </div>
@@ -101,4 +151,21 @@
 
 {% block extra_js %}
   <script src="{% static 'js/range-slider.js' %}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded",function(){
+      const form=document.querySelector(".tj-login-form");
+      if(!form)return;
+      const email=document.getElementById("login-email"), password=document.getElementById("login-password");
+      const emailError=form.querySelector('[data-error-for="email"]'), passwordError=form.querySelector('[data-error-for="password"]');
+      const serverEmail=emailError?emailError.textContent.trim():"", serverPassword=passwordError?passwordError.textContent.trim():"";
+      function setError(input,box,message){if(!box)return;box.textContent=message||"";input.classList.toggle("is-invalid",Boolean(message));}
+      function validEmail(){const v=email.value.trim();const msg=!v?"Email address is required.":(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?"Enter a valid email address.":"");setError(email,emailError,msg||serverEmail);return !msg;}
+      function validPassword(){const msg=!password.value?"Password is required.":"";setError(password,passwordError,msg||serverPassword);return !msg;}
+      email.addEventListener("input",function(){setError(email,emailError,"");validEmail();});
+      password.addEventListener("input",function(){setError(password,passwordError,"");validPassword();});
+      const toggle=form.querySelector(".password-toggle");
+      if(toggle)toggle.addEventListener("click",function(){const visible=password.type==="text";password.type=visible?"password":"text";this.setAttribute("aria-pressed",String(!visible));this.setAttribute("aria-label",visible?"Show password":"Hide password");const icon=this.querySelector("i");if(icon){icon.classList.toggle("tji-eye-off",visible);icon.classList.toggle("tji-eye",!visible);}});
+      form.addEventListener("submit",function(e){if(!validEmail()||!validPassword())e.preventDefault();});
+    });
+  </script>
 {% endblock %}

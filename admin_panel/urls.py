@@ -40,6 +40,7 @@ urlpatterns = [
     # COURSES
     # ==================================================
 
+     # Courses
     path(
         "courses/",
         views.course_dashboard,
@@ -47,11 +48,16 @@ urlpatterns = [
     ),
 
     path(
-        "courses/add/",
+        "courses/new/",
+        views.course_form,
+        name="course_create",
+    ),
+
+    path(
+        "courses/<int:course_id>/edit/",
         views.course_form,
         name="course_form",
     ),
-
 
     # ==================================================
     # SYLLABUS

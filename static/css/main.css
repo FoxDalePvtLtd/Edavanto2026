@@ -21513,7 +21513,7 @@ START: Coming soon CSS
   }
 
   /* Login / Sign In become compact account actions instead of menu rows. */
-  .hamburger_menu .mean-container .mean-nav > ul > li:nth-child(4),
+  /* .hamburger_menu .mean-container .mean-nav > ul > li:nth-child(4),
   .hamburger_menu .mean-container .mean-nav > ul > li:nth-child(5) {
     display: inline-block;
     width: calc(50% - 5px);
@@ -21522,7 +21522,71 @@ START: Coming soon CSS
     border-radius: 12px;
     background: #ffffff;
     vertical-align: top;
-  }
+  } */
+
+  /* Guest authentication actions */
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-login-item,
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-signin-item {
+  display: inline-block;
+  width: calc(50% - 5px);
+  margin-top: 16px;
+  border: 1px solid #e4dfd5;
+  border-radius: 12px;
+  background: #ffffff;
+  vertical-align: top;
+}
+
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-signin-item {
+  margin-left: 6px;
+}
+
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-login-item > a,
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-signin-item > a {
+  border: 0 !important;
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #302d28;
+}
+
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-signin-item > a {
+  background: #171717;
+  color: #ffffff;
+  border-radius: 11px;
+}
+
+
+/* Logged-in Logout action */
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-logout-item {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-logout-item form {
+  margin: 0;
+  padding: 0;
+}
+
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-logout-item button {
+  display: block;
+  width: 100%;
+  padding: 15px 2px;
+  border: 0;
+  border-bottom: 1px solid #eae7e1;
+  background: transparent;
+  color: #171717;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hamburger_menu .mean-container .mean-nav > ul > li.mobile-logout-item button:hover {
+  color: #b8861f;
+}
 
   .hamburger_menu .mean-container .mean-nav > ul > li:nth-child(5) {
     margin-left: 6px;

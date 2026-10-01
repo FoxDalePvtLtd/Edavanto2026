@@ -180,7 +180,9 @@
                 </div>
               </div> {% endcomment %}
               <div class="col-12">
-                <div class="row tj-course-wrapper rg-30">
+                {% comment %}
+                  <!-- Legacy static course cards preserved without deletion. -->
+<div class="row tj-course-wrapper rg-30">
                   <div class="col-lg-4 col-md-6 course-col">
                     <div class="tj-course-item">
                       <div class="tj-course-img">
@@ -459,7 +461,67 @@
                     </div>
                   </div>
                 </div>
-                <div class="row">
+                                  {% endcomment %}
+
+                  <!-- Backend-connected course cards. -->
+                  <div class="row tj-course-wrapper rg-30">
+                    {% for course in courses %}
+                      <div class="col-lg-4 col-md-6 course-col">
+                        <div class="tj-course-item">
+                          <div class="tj-course-thumb">
+                            <a href="{% url 'core:course_detail' course.slug %}">
+                              {% if course.thumbnail %}
+                                <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                              {% else %}
+                                <img src="{% static 'images/course/course-img-1.webp' %}" alt="{{ course.title }}">
+                              {% endif %}
+                            </a>
+                            <span class="tj-course-mode">
+                              <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %}"></i>
+                              {{ course.get_mode_display }}
+                            </span>
+                          </div>
+                          <div class="tj-course-content">
+                            <a class="tj-cat" href="{% url 'core:course_detail' course.slug %}">
+                              {{ course.category|default:"Course" }}
+                            </a>
+                            <h3 class="title tj-fs-h5">
+                              <a href="{% url 'core:course_detail' course.slug %}">{{ course.title }}</a>
+                            </h3>
+                            <div class="course-meta">
+                              {% if course.instructor %}
+                                <span><i class="tji-user"></i> {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+                              {% endif %}
+                              <span><i class="tji-layers"></i>{{ course.modules.all|length }} modules</span>
+                            </div>
+                            <div class="tj-course-price-wrap">
+                              <div class="course-price tj-fs-h6">
+                                {% if course.discounted_price %}
+                                  <del>₹{{ course.price|floatformat:"0" }}</del> ₹{{ course.discounted_price|floatformat:"0" }}
+                                {% else %}
+                                  ₹{{ course.price|floatformat:"0" }}
+                                {% endif %}
+                              </div>
+                            </div>
+                            <a class="tj-btn-primary tj-btn-primary-md flip-text-wrap"
+                               href="{% url 'core:course_detail' course.slug %}">
+                              <span class="btn-text">View course</span>
+                              <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    {% empty %}
+                      <div class="col-12">
+                        <div class="tj-course-details-box">
+                          <h3 class="title">No courses available</h3>
+                          <p>Published Edvanto courses will appear here.</p>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+<div class="row">
                   <div class="col-12">
                     <div
                       class="course-pagination-area d-flex flex-wrap align-items-center justify-content-between gap-3 tj-fade-anim">

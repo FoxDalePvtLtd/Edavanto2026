@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Enroll — {{ course.title }} | Edvanto{% endblock %}
+
+{% block content %}
+<section class="tj-course-details-area section-space edvanto-payment-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-10 col-lg-11">
+
+        <div class="text-center mb-4">
+          <span class="tj-section-subtitle">Course Enrollment</span>
+          <h1 class="tj-section-title mt-2">Choose your payment method</h1>
+          <p class="mx-auto edvanto-payment-intro">Complete enrollment for <strong>{{ course.title }}</strong>. Your course access is activated only after the applicable payment and approval checks are completed.</p>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+          <div class="col-lg-5">
+            <div class="tj-course-sidebar h-100">
+              <div class="tj-course-widget-price">
+                <div class="price-wrap">
+                  <div class="course-price tj-fs-h6">
+                    {% if course.discounted_price %}
+                      <del>₹{{ course.price }}</del> ₹{{ course.discounted_price }}
+                    {% else %}
+                      ₹{{ course.price }}
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="tj-course-widget-list">
+                <h3 class="course-widget-title">Enrollment summary</h3>
+                <div class="tj-course-widget-list-inner">
+                  <div class="tj-course-widget-list-item"><span class="icon"><i class="tji-smartphone"></i></span><span class="text">{{ course.get_mode_display }} learning</span></div>
+                  <div class="tj-course-widget-list-item"><span class="icon"><i class="tji-file"></i></span><span class="text">Course materials when provided</span></div>
+                  <div class="tj-course-widget-list-item"><span class="icon"><i class="tji-certified"></i></span><span class="text">Certificate subject to completion requirements</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-7">
+            <div class="row g-4">
+              <div class="col-12">
+                <article class="tj-course-details-box payment-method-card h-100">
+                  <span class="tj-cat">Development Testing</span>
+                  <h3 class="title mt-3">Test Payment</h3>
+                  <p>This is a development-only payment flow. It does not charge a real payment method.</p>
+                  <div class="payment-note"><i class="tji-check"></i><span>Use this while the real Razorpay integration is not enabled.</span></div>
+                  <form method="post" action="{% url 'core:test_payment' course.slug %}" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap">
+                      <span class="btn-text">Complete Test Payment</span>
+                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                    </button>
+                  </form>
+                </article>
+              </div>
+
+              <div class="col-12">
+                <article class="tj-course-details-box payment-method-card h-100">
+                  <span class="tj-cat">Manual Approval</span>
+                  <h3 class="title mt-3">Offline Payment</h3>
+                  <p>Submit your enrollment request for offline payment. An Edvanto administrator must approve the request before course access is granted.</p>
+                  <div class="payment-note"><i class="tji-clock"></i><span>Access remains pending until approval.</span></div>
+                  <form method="post" action="{% url 'core:offline_payment_request' course.slug %}" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="tj-btn-primary tj-btn-primary-border tj-btn-primary-md tj-btn-full flip-text-wrap">
+                      <span class="btn-text">Request Offline Payment</span>
+                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                    </button>
+                  </form>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <a href="{% url 'core:course_detail' course.slug %}" class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md">Back to Course</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/edvanto-payment.css' %}">
+{% endblock %}

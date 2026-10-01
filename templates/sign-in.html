@@ -6,6 +6,10 @@
 
 {% block extra_css %}
   {% comment %} <link rel="stylesheet" href="{% static 'css/shop.css' %}"> {% endcomment %}
+  <style>
+    .login-field-error{font-size:12px;line-height:1.4;margin-top:6px;color:#c62828;min-height:0}
+    .tj-login-form input.is-invalid{border-color:#c62828}
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -187,7 +191,7 @@
                 <input
                   type="text"
                   id="register-name"
-                  name="full_name"
+                  name="full_name" value="{{ registration_data.full_name|default:'' }}"
                   placeholder="Your full name"
                   autocomplete="name"
                   maxlength="150"
@@ -221,7 +225,7 @@
                 <input
                   type="email"
                   id="register-email"
-                  name="email"
+                  name="email" value="{{ registration_data.email|default:'' }}"
                   placeholder="you@example.com"
                   autocomplete="email"
                   maxlength="254"
@@ -229,6 +233,7 @@
                 >
 
               </div>
+                      <div class="login-field-error" data-error-for="email">{% if registration_errors.email %}{{ registration_errors.email }}{% endif %}</div>
 
             </div>
 
@@ -255,7 +260,7 @@
                 <input
                   type="tel"
                   id="register-phone"
-                  name="phone"
+                  name="phone" value="{{ registration_data.phone|default:'' }}"
                   placeholder="Your phone number"
                   autocomplete="tel"
                   maxlength="20"
@@ -264,6 +269,7 @@
                 >
 
               </div>
+                      <div class="login-field-error" data-error-for="phone">{% if registration_errors.phone %}{{ registration_errors.phone }}{% endif %}</div>
 
             </div>
 
@@ -307,6 +313,7 @@
                 </button>
 
               </div>
+                      <div class="login-field-error" data-error-for="password">{% if registration_errors.password %}{{ registration_errors.password }}{% endif %}</div>
 
             </div>
 
@@ -350,6 +357,7 @@
                 </button>
 
               </div>
+                      <div class="login-field-error" data-error-for="confirm_password">{% if registration_errors.confirm_password %}{{ registration_errors.confirm_password }}{% endif %}</div>
 
             </div>
 
@@ -385,6 +393,7 @@
                 </span>
 
               </label>
+                    <div class="login-field-error" data-error-for="terms">{% if registration_errors.terms %}{{ registration_errors.terms }}{% endif %}</div>
 
             </div>
 
@@ -443,5 +452,28 @@
 {% block extra_js %}
 
 <script src="{% static 'js/range-slider.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  const form=document.querySelector('form[action="{% url "core:student_register" %}"]')||document.querySelector(".tj-login-form");
+  if(!form)return;
+  const rules={
+    "register-name":v=>v.trim().length>=2?"":"Enter your full name.",
+    "register-email":v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())?"":"Enter a valid email address.",
+    "register-phone":v=>/^[0-9+\s()-]{7,20}$/.test(v.trim())?"":"Enter a valid phone number.",
+    "register-password":v=>v.length>=8?"":"Password must be at least 8 characters.",
+    "register-confirm-password":v=>v===document.getElementById("register-password").value?"":"Passwords do not match."
+  };
+  Object.keys(rules).forEach(function(id){
+    const input=document.getElementById(id),box=form.querySelector('[data-error-for="'+id.replace("register-","")+'"]');
+    if(!input||!box)return;
+    function validate(){const msg=rules[id](input.value);box.textContent=msg;input.classList.toggle("is-invalid",Boolean(msg));return !msg;}
+    input.addEventListener("input",validate);input.addEventListener("blur",validate);
+  });
+  const terms=form.querySelector('input[name="terms"]'),termsBox=form.querySelector('[data-error-for="terms"]');
+  if(terms&&termsBox)terms.addEventListener("change",function(){termsBox.textContent=terms.checked?"":"Please accept the terms and privacy policy.";});
+  form.querySelectorAll(".password-toggle").forEach(function(toggle){toggle.addEventListener("click",function(){const wrap=this.closest(".input-icon-wrap"),input=wrap&&wrap.querySelector("input");if(!input)return;const visible=input.type==="text";input.type=visible?"password":"text";this.setAttribute("aria-pressed",String(!visible));this.setAttribute("aria-label",visible?"Show password":"Hide password");const icon=this.querySelector("i");if(icon){icon.classList.toggle("tji-eye-off",visible);icon.classList.toggle("tji-eye",!visible);}});});
+  form.addEventListener("submit",function(e){let valid=true;Object.keys(rules).forEach(function(id){const input=document.getElementById(id);if(input&&!rules[id](input.value)){valid=false;}});if(terms&&!terms.checked){valid=false;if(termsBox)termsBox.textContent="Please accept the terms and privacy policy.";}if(!valid)e.preventDefault();});
+});
+</script>
 
 {% endblock %}

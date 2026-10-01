@@ -6,39 +6,38 @@
  EDVANTO STUDENT DASHBOARD — LANDING PAGE
  dashboard/student/dashboard.html
 
- Extends dashboard/base_dashboard.html (which extends base.html).
+ Markup only. All .md-* styles live in base_dashboard.html so
+ dark mode and theming work consistently across the shell.
 
- Single template for both ONLINE and OFFLINE modes.
- The backend context flag `enrollment_mode` (already used by the
- shared shell) drives which sections are rendered.
-
- Reuses Edunex design language:
-   - Urbanist headings, Manrope body
-   - Gold #D4A62A accent
-   - Warm ivory canvas #FFFDF7
-   - Soft warm cards #F7F3E8 / #F5F1E6 / #F3EFE2
-   - edunex-icons (tji-*)
-
- Integration points are marked with:
-   {# INTEGRATION: ... #}
- No invented model fields, context variables or URL names.
+ Preserves every Django connection from the previous version:
+   - active_enrollment, active_enrollment.course,
+     active_enrollment.progress_percent,
+     active_enrollment.payment_status / approval_status /
+     access_paused / get_payment_status_display /
+     get_approval_status_display
+   - course.thumbnail / title / instructor / modules / price /
+     discounted_price / slug
+   - learning_progress (with .status, .lesson.title, .lesson.id,
+     .get_status_display)
+   - current_lesson (with .title, .module.title, .id)
+   - student_name, student_avatar, student_initials
+   - notifications / unread_notifications
+   - assessment_status, recent_doubt, materials_summary, certificate
+   - URL names: core:home, core:dashboard, core:lesson, core:payment,
+     core:logout
 ============================================================
 {% endcomment %}
 
 {% block dashboard_title %}Dashboard{% endblock %}
 
 {% block page_title %}
-  {% if student_name %}
-    Welcome back, {{ student_name }}
-  {% else %}
-    Welcome back
-  {% endif %}
+  {% if student_name %}Welcome back, {{ student_name }}{% else %}Welcome back{% endif %}
 {% endblock %}
 
 {% block page_context %}
-  {% if enrollment_mode == 'offline' %}
+  {% if active_enrollment.course.mode == 'offline' %}
     Your offline learning overview
-  {% elif enrollment_mode == 'both' %}
+  {% elif active_enrollment.course.mode == 'both' %}
     Your online &amp; offline learning overview
   {% else %}
     Your online learning journey
@@ -46,1293 +45,554 @@
 {% endblock %}
 
 {% block dashboard_content %}
+{% with course=active_enrollment.course mode=active_enrollment.course.mode %}
 
+<div class="md-dash">
 
-<style>
-  /* ---------- Welcome hero ---------- */
-  .edv-welcome {
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    border-radius: 16px;
-    padding: 28px 32px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-  }
-  @media (max-width: 767.98px) {
-    .edv-welcome { padding: 22px 20px; }
-  }
-  .edv-welcome-text {
-    min-width: 0;
-    flex: 1;
-  }
-  .edv-welcome-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--tj-color-theme-primary, #D4A62A);
-    margin-bottom: 8px;
-  }
-  .edv-welcome-eyebrow i {
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 12px;
-  }
-  .edv-welcome-title {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 26px;
-    letter-spacing: -0.02em;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 6px;
-    line-height: 1.2;
-  }
-  .edv-welcome-sub {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 14px;
-    color: var(--tj-color-text-body-2, #555555);
-    margin: 0;
-    line-height: 1.5;
-    max-width: 56ch;
-  }
-  .edv-welcome-cta {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
+  {# ---------------- HERO ---------------- #}
+  <section class="md-hero">
+    <svg class="md-hero-art" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="180" cy="90" r="70" stroke="%23D4A62A" stroke-opacity=".35" stroke-width="1" fill="none"/>
+      <circle cx="180" cy="90" r="46" stroke="%23E0B83F" stroke-opacity=".55" stroke-width="1" fill="none"/>
+      <circle cx="180" cy="90" r="22" fill="%23D4A62A" fill-opacity=".18"/>
+      <circle cx="228" cy="60" r="3" fill="%23B8891F" fill-opacity=".7"/>
+      <circle cx="132" cy="140" r="2.5" fill="%23E0B83F" fill-opacity=".8"/>
+      <circle cx="240" cy="150" r="2" fill="%239C7924" fill-opacity=".6"/>
+      <path d="M40 200 L70 180 L100 190 L130 160 L160 170 L190 140"
+            stroke="%23B8891F" stroke-opacity=".55" stroke-width="1.75"
+            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M40 220 L70 205 L100 215 L130 195"
+            stroke="%23E0B83F" stroke-opacity=".45" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
 
-  /* ---------- Section labels ---------- */
-  .edv-section-label {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--tj-color-text-body-3, #777777);
-    margin: 0 0 12px;
-  }
+    <div class="md-hero-text">
+      <div class="md-hero-eyebrow">
+        <i class="tji-{% if mode == 'offline' %}location{% elif mode == 'both' %}layers{% else %}sparkles{% endif %}"></i>
+        {% if mode == 'offline' %}
+          Offline Learning
+        {% elif mode == 'both' %}
+          Online &amp; Offline
+        {% else %}
+          Online Learning
+        {% endif %}
+      </div>
 
-  /* ---------- Generic card ---------- */
-  .edv-card {
-    background: var(--tj-color-common-white, #ffffff);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    border-radius: 14px;
-    padding: 22px 24px;
-    height: 100%;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  .edv-card:hover {
-    border-color: var(--tj-color-theme-bg-8, #F7EBD0);
-  }
-  .edv-card.warm {
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-  }
-  .edv-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .edv-card-head h3 {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: -0.01em;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .edv-card-head h3 i {
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 15px;
-    color: var(--tj-color-theme-primary, #D4A62A);
-  }
-  .edv-card-head a {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--tj-color-theme-primary, #D4A62A);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .edv-card-head a:hover {
-    color: var(--tj-color-theme-primary-hover, rgba(212,166,42,0.82));
-  }
+      <h2 class="md-hero-title">
+        {% if student_name %}Hi {{ student_name }}, ready to continue?{% else %}Ready to continue your learning?{% endif %}
+      </h2>
 
-  /* ---------- Mode chip ---------- */
-  .edv-mode-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 5px 11px;
-    border-radius: 999px;
-    border: 1px solid var(--tj-color-theme-bg-8, #F7EBD0);
-    background: var(--tj-color-theme-bg-9, rgba(212,166,42,0.15));
-    color: var(--tj-color-heading-primary, #171717);
-    white-space: nowrap;
-  }
-  .edv-mode-chip i {
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 11px;
-    color: var(--tj-color-theme-primary, #D4A62A);
-  }
-  .edv-mode-chip.neutral {
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    border-color: var(--tj-color-theme-bg-4, #F3EFE2);
-    color: var(--tj-color-text-body-2, #555555);
-  }
+      <p class="md-hero-sub">
+        {% if current_lesson %}
+          Pick up where you left off — <strong>{{ current_lesson.title }}</strong> is waiting for you.
+        {% elif course %}
+          Your enrolled course <strong>{{ course.title }}</strong> is in progress.
+        {% else %}
+          Explore your enrolled courses, materials, and progress below.
+        {% endif %}
+      </p>
+    </div>
 
-  /* ---------- Enrolled course card ---------- */
-  .edv-course-card {
-    background: var(--tj-color-common-white, #ffffff);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    border-radius: 16px;
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .edv-course-thumb {
-    aspect-ratio: 16 / 9;
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--tj-color-theme-primary, #D4A62A);
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 36px;
-    overflow: hidden;
-    position: relative;
-  }
-  .edv-course-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .edv-course-body {
-    padding: 20px 22px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    flex: 1;
-  }
-  .edv-course-title {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 18px;
-    letter-spacing: -0.015em;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0;
-    line-height: 1.3;
-  }
-  .edv-course-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 14px;
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 12px;
-    color: var(--tj-color-text-body-3, #777777);
-    font-weight: 500;
-  }
-  .edv-course-meta span {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .edv-course-meta i {
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 12px;
-    color: var(--tj-color-theme-primary, #D4A62A);
-  }
+    <div class="md-hero-actions">
+      {% if current_lesson %}
+        <a href="{% url 'core:lesson' current_lesson.id %}" class="md-btn md-btn-primary">
+          <i class="tji-play"></i> Continue Learning
+        </a>
+      {% elif course %}
+        <a href="{% url 'core:dashboard' %}" class="md-btn md-btn-primary">
+          <i class="tji-play"></i> Open Course
+        </a>
+      {% endif %}
+      <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-outline">
+        <i class="tji-wallet"></i> Payment
+      </a>
+    </div>
+  </section>
 
-  /* ---------- Progress bar (slim, gold) ---------- */
-  .edv-progress-block {
-    margin-top: auto;
-  }
-  .edv-progress-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
-  }
-  .edv-progress-head .label {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--tj-color-text-body-3, #777777);
-  }
-  .edv-progress-head .value {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--tj-color-heading-primary, #171717);
-    letter-spacing: -0.01em;
-  }
-  .edv-progress-track {
-    width: 100%;
-    height: 6px;
-    border-radius: 999px;
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    overflow: hidden;
-  }
-  .edv-progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: var(--tj-color-theme-primary, #D4A62A);
-    transition: width 0.4s ease;
-  }
-  .edv-progress-meta {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 12px;
-    color: var(--tj-color-text-body-2, #555555);
-    margin-top: 8px;
-  }
+  {# ---------------- COURSE ---------------- #}
+  <p class="md-section-label">Your Course</p>
 
-  /* ---------- Current lesson callout ---------- */
-  .edv-current-lesson {
-    background: var(--tj-color-theme-bg-9, rgba(212,166,42,0.15));
-    border: 1px solid var(--tj-color-theme-bg-8, #F7EBD0);
-    border-radius: 12px;
-    padding: 16px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .edv-current-lesson-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 11px;
-    background: var(--tj-color-theme-primary, #D4A62A);
-    color: #ffffff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .edv-current-lesson-body {
-    min-width: 0;
-    flex: 1;
-  }
-  .edv-current-lesson-body .eyebrow {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--tj-color-theme-primary, #D4A62A);
-    margin: 0 0 4px;
-  }
-  .edv-current-lesson-body h4 {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: -0.01em;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 4px;
-    line-height: 1.3;
-  }
-  .edv-current-lesson-body p {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 12px;
-    color: var(--tj-color-text-body-2, #555555);
-    margin: 0;
-  }
-
-  /* ---------- Lesson timeline (online) ---------- */
-  .edv-lesson-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .edv-lesson-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    background: var(--tj-color-common-white, #ffffff);
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-  .edv-lesson-item.is-completed {
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-    border-color: var(--tj-color-theme-bg-4, #F3EFE2);
-  }
-  .edv-lesson-item.is-current {
-    background: var(--tj-color-theme-bg-9, rgba(212,166,42,0.15));
-    border-color: var(--tj-color-theme-bg-8, #F7EBD0);
-  }
-  .edv-lesson-item.is-locked {
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    border-color: var(--tj-color-theme-bg-4, #F3EFE2);
-    cursor: not-allowed;
-    opacity: 0.72;
-  }
-  .edv-lesson-item.is-locked * {
-    pointer-events: none;
-  }
-  .edv-lesson-item.is-current:hover {
-    border-color: var(--tj-color-theme-primary, #D4A62A);
-  }
-  .edv-lesson-item:not(.is-locked):not(.is-current):hover {
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-  }
-
-  .edv-lesson-status {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 12px;
-    flex-shrink: 0;
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    background: var(--tj-color-common-white, #ffffff);
-    color: var(--tj-color-text-body-3, #777777);
-  }
-  .edv-lesson-item.is-completed .edv-lesson-status {
-    background: var(--tj-color-theme-primary, #D4A62A);
-    color: #ffffff;
-    border-color: var(--tj-color-theme-primary, #D4A62A);
-  }
-  .edv-lesson-item.is-current .edv-lesson-status {
-    background: var(--tj-color-theme-primary, #D4A62A);
-    color: #ffffff;
-    border-color: var(--tj-color-theme-primary, #D4A62A);
-  }
-  .edv-lesson-item.is-locked .edv-lesson-status {
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    color: var(--tj-color-text-body-3, #777777);
-  }
-
-  .edv-lesson-body {
-    min-width: 0;
-    flex: 1;
-  }
-  .edv-lesson-title {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-weight: 600;
-    font-size: 13.5px;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 2px;
-    line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .edv-lesson-item.is-locked .edv-lesson-title {
-    color: var(--tj-color-text-body-3, #777777);
-  }
-  .edv-lesson-meta {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11px;
-    color: var(--tj-color-text-body-3, #777777);
-    font-weight: 500;
-  }
-
-  /* ---------- Status rows (assessments / doubts / payments / certs) ---------- */
-  .edv-status-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-  }
-  .edv-status-row:last-child { border-bottom: none; }
-  .edv-status-row:first-child { padding-top: 0; }
-
-  .edv-status-info {
-    min-width: 0;
-    flex: 1;
-  }
-  .edv-status-info .title {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-weight: 600;
-    font-size: 13.5px;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 2px;
-    line-height: 1.35;
-  }
-  .edv-status-info .meta {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11.5px;
-    color: var(--tj-color-text-body-3, #777777);
-    font-weight: 500;
-  }
-
-  /* ---------- Badges (restrained, no new palette) ---------- */
-  .edv-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    color: var(--tj-color-text-body-2, #555555);
-    white-space: nowrap;
-  }
-  .edv-badge i {
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 10px;
-  }
-  /* Gold = attention / action required */
-  .edv-badge.gold {
-    background: var(--tj-color-theme-bg-9, rgba(212,166,42,0.15));
-    border-color: var(--tj-color-theme-bg-8, #F7EBD0);
-    color: #8A6A14;
-  }
-  /* Dark = neutral emphasis */
-  .edv-badge.dark {
-    background: var(--tj-color-heading-primary, #171717);
-    border-color: var(--tj-color-heading-primary, #171717);
-    color: #ffffff;
-  }
-
-  /* ---------- Number emphasis ---------- */
-  .edv-num {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--tj-color-heading-primary, #171717);
-  }
-  .edv-num.gold { color: var(--tj-color-theme-primary, #D4A62A); }
-  .edv-num.muted { color: var(--tj-color-text-body-3, #777777); }
-
-  /* ---------- Payment summary tiles ---------- */
-  .edv-pay-tile {
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    border-radius: 10px;
-    padding: 14px 16px;
-    height: 100%;
-  }
-  .edv-pay-tile .label {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--tj-color-text-body-3, #777777);
-    margin: 0 0 6px;
-  }
-  .edv-pay-tile .amount {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: -0.02em;
-    color: var(--tj-color-heading-primary, #171717);
-    line-height: 1.1;
-  }
-  .edv-pay-tile .amount.gold { color: var(--tj-color-theme-primary, #D4A62A); }
-  .edv-pay-tile .note {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11.5px;
-    color: var(--tj-color-text-body-3, #777777);
-    margin: 4px 0 0;
-    font-weight: 500;
-  }
-
-  /* ---------- Certificate card ---------- */
-  .edv-cert {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    border-radius: 12px;
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-    border: 1px solid var(--tj-color-theme-bg-8, #F7EBD0);
-  }
-  .edv-cert-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--tj-color-common-white, #ffffff);
-    border: 1px solid var(--tj-color-theme-bg-8, #F7EBD0);
-    color: var(--tj-color-theme-primary, #D4A62A);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-  .edv-cert-body {
-    min-width: 0;
-    flex: 1;
-  }
-  .edv-cert-body h4 {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 14.5px;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 3px;
-    letter-spacing: -0.01em;
-  }
-  .edv-cert-body p {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 12px;
-    color: var(--tj-color-text-body-2, #555555);
-    margin: 0;
-  }
-  .edv-cert.locked {
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    border-color: var(--tj-color-theme-bg-4, #F3EFE2);
-  }
-  .edv-cert.locked .edv-cert-icon {
-    background: var(--tj-color-theme-bg-3, #F5F1E6);
-    color: var(--tj-color-text-body-3, #777777);
-    border-color: var(--tj-color-theme-bg-4, #F3EFE2);
-  }
-
-  /* ---------- Quick links ---------- */
-  .edv-quick-links {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-  }
-  .edv-quick-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-  .edv-quick-link:hover {
-    background: var(--tj-color-theme-bg-9, rgba(212,166,42,0.15));
-    border-color: var(--tj-color-theme-bg-8, #F7EBD0);
-  }
-  .edv-quick-link .icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: var(--tj-color-common-white, #ffffff);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    color: var(--tj-color-theme-primary, #D4A62A);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-  .edv-quick-link .text {
-    min-width: 0;
-  }
-  .edv-quick-link .text strong {
-    display: block;
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 600;
-    font-size: 13.5px;
-    color: var(--tj-color-heading-primary, #171717);
-    letter-spacing: -0.005em;
-    margin: 0 0 2px;
-    line-height: 1.2;
-  }
-  .edv-quick-link .text span {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11.5px;
-    color: var(--tj-color-text-body-3, #777777);
-    font-weight: 500;
-  }
-
-  /* ---------- Notifications preview ---------- */
-  .edv-notif-preview {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .edv-notif-preview li a {
-    display: flex;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.2s ease;
-  }
-  .edv-notif-preview li a:hover {
-    background: var(--tj-color-theme-bg-2, #F7F3E8);
-  }
-  .edv-notif-preview li.is-unread a {
-    background: var(--tj-color-theme-bg-9, rgba(212,166,42,0.15));
-  }
-  .edv-notif-preview .icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: var(--tj-color-common-white, #ffffff);
-    border: 1px solid var(--tj-color-theme-bg-4, #F3EFE2);
-    color: var(--tj-color-theme-primary, #D4A62A);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  .edv-notif-preview .body {
-    min-width: 0;
-    flex: 1;
-  }
-  .edv-notif-preview .body strong {
-    display: block;
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 2px;
-    line-height: 1.35;
-  }
-  .edv-notif-preview .body span {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 11px;
-    color: var(--tj-color-text-body-3, #777777);
-    font-weight: 500;
-  }
-
-  /* ---------- Empty state ---------- */
-  .edv-empty {
-    text-align: center;
-    padding: 36px 20px;
-  }
-  .edv-empty i {
-    font-family: var(--tj-ff-fonticon, "edunex-icons");
-    font-size: 30px;
-    color: var(--tj-color-theme-primary, #D4A62A);
-    display: block;
-    margin-bottom: 12px;
-  }
-  .edv-empty h4 {
-    font-family: var(--tj-ff-heading, "Urbanist", sans-serif);
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--tj-color-heading-primary, #171717);
-    margin: 0 0 6px;
-  }
-  .edv-empty p {
-    font-family: var(--tj-ff-body, "Manrope", sans-serif);
-    font-size: 13px;
-    color: var(--tj-color-text-body-2, #555555);
-    margin: 0 auto;
-    max-width: 40ch;
-    line-height: 1.55;
-  }
-</style>
-
-
-<section class="edv-welcome">
-
-  <div class="edv-welcome-text">
-    <div class="edv-welcome-eyebrow">
-      <i class="tji-{% if enrollment_mode == 'offline' %}location{% else %}sparkles{% endif %}"></i>
-      {% if enrollment_mode == 'offline' %}
-        Offline Learning
-      {% elif enrollment_mode == 'both' %}
-        Online &amp; Offline Learning
+  <div class="md-course">
+    <div class="md-course-thumb">
+      {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
       {% else %}
-        Online Learning
+        <i class="tji-book"></i>
       {% endif %}
     </div>
 
-    <h2 class="edv-welcome-title">
-      {% if student_first_name %}
-        Hi {{ student_first_name }}, ready to continue?
-      {% else %}
-        Ready to continue your learning?
-      {% endif %}
-    </h2>
+    <div class="md-course-body">
+      <div class="md-course-top">
+        <h3 class="md-course-title">{{ course.title }}</h3>
+        {% if mode == 'offline' %}
+          <span class="md-mode offline"><i class="tji-location"></i> Offline</span>
+        {% elif mode == 'both' %}
+          <span class="md-mode online"><i class="tji-layers"></i> Hybrid</span>
+        {% else %}
+          <span class="md-mode online"><i class="tji-wifi"></i> Online</span>
+        {% endif %}
+      </div>
 
-    <p class="edv-welcome-sub">
-      {% if current_lesson %}
-        Pick up where you left off — <strong>{{ current_lesson.title }}</strong> is waiting for you.
-      {% elif active_course %}
-        Your enrolled course <strong>{{ active_course.title }}</strong> is in progress.
-      {% else %}
-        Explore your enrolled courses, materials, and progress below.
-      {% endif %}
-    </p>
+      <div class="md-course-meta">
+        {% if course.instructor %}
+          <span><i class="tji-user"></i> {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+        {% endif %}
+        <span><i class="tji-play"></i> {{ learning_progress|length }} tracked lessons</span>
+        <span><i class="tji-layers"></i> {{ course.modules.all|length }} modules</span>
+      </div>
+
+      <div class="md-progress">
+        <div class="md-progress-head">
+          <span class="label">Progress</span>
+          <span class="value">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
+        </div>
+        <div class="md-progress-track">
+          <div class="md-progress-fill" style="width: {{ active_enrollment.progress_percent }}%;"></div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        {% if active_enrollment.payment_status == 'paid' %}
+          <span class="md-tag md-tag-success"><i class="tji-check"></i> {{ active_enrollment.get_payment_status_display }}</span>
+        {% elif active_enrollment.payment_status == 'partially_paid' %}
+          <span class="md-tag md-tag-bright"><i class="tji-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
+        {% elif active_enrollment.payment_status == 'pending' %}
+          <span class="md-tag md-tag-gold"><i class="tji-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
+        {% else %}
+          <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
+        {% endif %}
+
+        {% if active_enrollment.approval_status == 'accepted' %}
+          <span class="md-tag md-tag-dark"><i class="tji-check"></i> {{ active_enrollment.get_approval_status_display }}</span>
+        {% elif active_enrollment.approval_status == 'rejected' %}
+          <span class="md-tag md-tag-danger"><i class="tji-lock"></i> {{ active_enrollment.get_approval_status_display }}</span>
+        {% else %}
+          <span class="md-tag md-tag-gold"><i class="tji-clock"></i> {{ active_enrollment.get_approval_status_display }}</span>
+        {% endif %}
+
+        {% if active_enrollment.access_paused %}
+          <span class="md-tag md-tag-danger"><i class="tji-lock"></i> Access Paused</span>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
-  <div class="edv-welcome-cta">
-    {% if current_lesson %}
-      {# INTEGRATION: URL name must exist in the project's urls.py #}
-      <a href="#" class="tj-btn-primary">
-        <span class="flip-text-wrap">
-          <span class="flip-text">Continue Learning</span>
-          <span class="flip-text">Continue Learning</span>
-        </span>
-        <i class="tji-arrow-right-2"></i>
-      </a>
-    {% elif active_course %}
-      <a href="#" class="tj-btn-primary">
-        <span class="flip-text-wrap">
-          <span class="flip-text">View Materials</span>
-          <span class="flip-text">View Materials</span>
-        </span>
-        <i class="tji-arrow-right-2"></i>
-      </a>
-    {% endif %}
-  </div>
+  {% if mode != 'offline' %}
+    <div class="row g-3 g-lg-4">
+      <div class="col-12 col-lg-5">
+        <p class="md-section-label">Continue Learning</p>
 
-</section>
-
-
-<div class="row g-4 mt-1">
-
-  {# ---------- ENROLLED COURSE CARD(S) ---------- #}
-  <div class="col-12 {% if enrollment_mode != 'offline' %}col-lg-7{% endif %}">
-    <p class="edv-section-label">Your Course{% if enrolled_courses|length > 1 %}s{% endif %}</p>
-
-    {% if enrolled_courses %}
-      <div class="row g-3">
-        {% for course in enrolled_courses %}
-          <div class="col-12">
-            <div class="edv-course-card">
-
-              {# Thumbnail if backend supplies one #}
-              <div class="edv-course-thumb">
-                {% if course.thumbnail %}
-                  <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
-                {% else %}
-                  <i class="tji-book"></i>
-                {% endif %}
-              </div>
-
-              <div class="edv-course-body">
-
-                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                  <h3 class="edv-course-title">{{ course.title }}</h3>
-
-                  {# Mode indicator #}
-                  {% if course.mode == 'offline' %}
-                    <span class="edv-mode-chip neutral">
-                      <i class="tji-location"></i> Offline
-                    </span>
-                  {% else %}
-                    <span class="edv-mode-chip">
-                      <i class="tji-wifi"></i> Online
-                    </span>
-                  {% endif %}
-                </div>
-
-                <div class="edv-course-meta">
-                  {% if course.instructor_name %}
-                    <span><i class="tji-user"></i> {{ course.instructor_name }}</span>
-                  {% endif %}
-                  {% if course.lesson_count %}
-                    <span><i class="tji-play"></i> {{ course.lesson_count }} lessons</span>
-                  {% endif %}
-                  {% if course.duration %}
-                    <span><i class="tji-clock"></i> {{ course.duration }}</span>
-                  {% endif %}
-                </div>
-
-                {# Progress #}
-                {% if course.progress_percent is not None %}
-                  <div class="edv-progress-block">
-                    <div class="edv-progress-head">
-                      <span class="label">Progress</span>
-                      <span class="value">{{ course.progress_percent }}%</span>
-                    </div>
-                    <div class="edv-progress-track">
-                      <div class="edv-progress-fill" style="width: {{ course.progress_percent }}%;"></div>
-                    </div>
-                    {% if course.completed_lessons %}
-                      <p class="edv-progress-meta">
-                        {{ course.completed_lessons }} of {{ course.lesson_count }} lessons completed
-                      </p>
-                    {% endif %}
-                  </div>
-                {% endif %}
-
-              </div>
+        {% if current_lesson %}
+          <div class="md-lesson-callout mb-3">
+            <span class="md-lesson-callout-icon"><i class="tji-play"></i></span>
+            <div class="md-lesson-callout-body">
+              <p class="eyebrow">Current Lesson</p>
+              <h4>{{ current_lesson.title }}</h4>
+              {% if current_lesson.module.title %}<p>{{ current_lesson.module.title }}</p>{% endif %}
             </div>
+            <a href="{% url 'core:lesson' current_lesson.id %}" class="md-btn md-btn-primary">
+              Open <i class="tji-arrow-right-2"></i>
+            </a>
           </div>
-        {% endfor %}
+        {% endif %}
       </div>
 
-    {% else %}
-      <div class="edv-card">
-        <div class="edv-empty">
-          <i class="tji-book"></i>
-          <h4>No enrolled courses yet</h4>
-          <p>You aren't enrolled in any course at the moment. Once you enrol, your course will appear here.</p>
+      <div class="col-12 col-lg-7">
+        <div class="md-card">
+          <div class="md-card-head">
+            <h3>
+              <span class="md-icon-dot"><i class="tji-list"></i></span>
+              Lesson Path
+            </h3>
+            <a href="{% url 'core:dashboard' %}">Refresh</a>
+          </div>
+
+          {% if learning_progress %}
+            <ul class="md-lesson-list">
+              {% for progress in learning_progress %}
+                {% if progress.status == 'completed' %}
+                  <li>
+                    <div class="md-lesson-row is-completed">
+                      <span class="md-lesson-icon"><i class="tji-check"></i></span>
+                      <div class="md-lesson-body">
+                        <p class="md-lesson-title">{{ progress.lesson.title }}</p>
+                        <span class="md-lesson-meta">Completed</span>
+                      </div>
+                      <span class="md-tag md-tag-paper">Done</span>
+                    </div>
+                  </li>
+                {% elif progress.status == 'in_progress' or progress.status == 'unlocked' %}
+                  <li>
+                    <a href="{% url 'core:lesson' progress.lesson.id %}" class="md-lesson-row is-current">
+                      <span class="md-lesson-icon"><i class="tji-play"></i></span>
+                      <div class="md-lesson-body">
+                        <p class="md-lesson-title">{{ progress.lesson.title }}</p>
+                        <span class="md-lesson-meta">{{ progress.get_status_display }}</span>
+                      </div>
+                      <span class="md-tag md-tag-gold">Current</span>
+                    </a>
+                  </li>
+                {% else %}
+                  <li>
+                    <div class="md-lesson-row is-locked" aria-disabled="true">
+                      <span class="md-lesson-icon"><i class="tji-lock"></i></span>
+                      <div class="md-lesson-body">
+                        <p class="md-lesson-title">{{ progress.lesson.title }}</p>
+                        <span class="md-lesson-meta">Locked</span>
+                      </div>
+                      <span class="md-tag md-tag-soft">Locked</span>
+                    </div>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="md-empty">
+              <i class="tji-list"></i>
+              <h4>Lesson path will appear here</h4>
+              <p>Published sequential lessons will appear here once learning progress is initialized.</p>
+            </div>
+          {% endif %}
         </div>
       </div>
-    {% endif %}
-  </div>
+    </div>
 
-  {# ---------- ONLINE-ONLY: CURRENT LESSON + SEQUENTIAL LIST ---------- #}
-  {% if enrollment_mode != 'offline' %}
-    <div class="col-12 col-lg-5">
-      <p class="edv-section-label">Continue Learning</p>
-
-      {% if current_lesson %}
-        <div class="edv-current-lesson mb-3">
-          <span class="edv-current-lesson-icon">
-            <i class="tji-play"></i>
-          </span>
-          <div class="edv-current-lesson-body">
-            <p class="eyebrow">Current Lesson</p>
-            <h4>{{ current_lesson.title }}</h4>
-            {% if current_lesson.module_title %}
-              <p>{{ current_lesson.module_title }}</p>
-            {% endif %}
-          </div>
-        </div>
-      {% endif %}
-
-      {% if lessons %}
-        <div class="edv-card">
-          <div class="edv-card-head">
-            <h3><i class="tji-list"></i> Lesson Path</h3>
-            <a href="#">View all</a>
+    <div class="row g-3 g-lg-4">
+      <div class="col-12 col-lg-6">
+        <div class="md-card">
+          <div class="md-card-head">
+            <h3>
+              <span class="md-icon-dot"><i class="tji-clipboard"></i></span>
+              Assessment
+            </h3>
+            <a href="#">Open</a>
           </div>
 
-          <ul class="edv-lesson-list">
-            {% for lesson in lessons %}
-              {% if lesson.state == 'completed' %}
-                <li>
-                  <div class="edv-lesson-item is-completed">
-                    <span class="edv-lesson-status"><i class="tji-check"></i></span>
-                    <div class="edv-lesson-body">
-                      <p class="edv-lesson-title">{{ lesson.title }}</p>
-                      <span class="edv-lesson-meta">Completed</span>
-                    </div>
-                  </div>
-                </li>
-
-              {% elif lesson.state == 'current' %}
-                <li>
-                  {# INTEGRATION: link to real lesson URL name #}
-                  <a href="#" class="edv-lesson-item is-current">
-                    <span class="edv-lesson-status"><i class="tji-play"></i></span>
-                    <div class="edv-lesson-body">
-                      <p class="edv-lesson-title">{{ lesson.title }}</p>
-                      <span class="edv-lesson-meta">In progress</span>
-                    </div>
-                  </a>
-                </li>
-
-              {% else %}
-                {# Locked — not clickable #}
-                <li>
-                  <div class="edv-lesson-item is-locked" aria-disabled="true">
-                    <span class="edv-lesson-status"><i class="tji-lock"></i></span>
-                    <div class="edv-lesson-body">
-                      <p class="edv-lesson-title">{{ lesson.title }}</p>
-                      <span class="edv-lesson-meta">Locked</span>
-                    </div>
-                  </div>
-                </li>
+          {% if assessment_status %}
+            <div class="md-status-row">
+              <div class="md-status-info">
+                <p class="title">{{ assessment_status.title }}</p>
+                <span class="meta">
+                  {% if assessment_status.due_at %}Due {{ assessment_status.due_at }}{% else %}No due date{% endif %}
+                </span>
+              </div>
+              {% if assessment_status.state == 'locked' %}
+                <span class="md-tag md-tag-soft"><i class="tji-lock"></i> Locked</span>
+              {% elif assessment_status.state == 'available' %}
+                <span class="md-tag md-tag-bright"><i class="tji-play"></i> Available</span>
+              {% elif assessment_status.state == 'submitted' %}
+                <span class="md-tag md-tag-dark"><i class="tji-check"></i> Submitted</span>
+              {% elif assessment_status.state == 'graded' %}
+                <span class="md-tag md-tag-success">
+                  <i class="tji-award"></i>
+                  {% if assessment_status.score %}{{ assessment_status.score }}{% else %}Graded{% endif %}
+                </span>
               {% endif %}
-            {% endfor %}
-          </ul>
+            </div>
+          {% else %}
+            <div class="md-empty">
+              <i class="tji-clipboard"></i>
+              <h4>No active assessment</h4>
+              <p>Your next assessment will appear here once it unlocks.</p>
+            </div>
+          {% endif %}
         </div>
-      {% else %}
-        <div class="edv-card">
-          <div class="edv-empty">
-            <i class="tji-list"></i>
-            <h4>Lesson path will appear here</h4>
-            <p>Once your enrolment is confirmed, your sequential lesson list will show up here.</p>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="md-card">
+          <div class="md-card-head">
+            <h3>
+              <span class="md-icon-dot"><i class="tji-chat"></i></span>
+              Doubts
+            </h3>
+            <a href="#">Open</a>
           </div>
+
+          {% if recent_doubt %}
+            <div class="md-status-row">
+              <div class="md-status-info">
+                <p class="title">{{ recent_doubt.subject }}</p>
+                <span class="meta">
+                  {% if recent_doubt.updated_ago %}Updated {{ recent_doubt.updated_ago }}{% endif %}
+                </span>
+              </div>
+              {% if recent_doubt.state == 'answered' %}
+                <span class="md-tag md-tag-dark"><i class="tji-check"></i> Answered</span>
+              {% elif recent_doubt.state == 'resolved' %}
+                <span class="md-tag md-tag-success"><i class="tji-check"></i> Resolved</span>
+              {% elif recent_doubt.state == 'open' %}
+                <span class="md-tag md-tag-gold"><i class="tji-clock"></i> Open</span>
+              {% else %}
+                <span class="md-tag md-tag-soft">{{ recent_doubt.state|title }}</span>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="md-empty">
+              <i class="tji-chat"></i>
+              <h4>No doubts raised yet</h4>
+              <p>Ask a question anytime from your current lesson.</p>
+            </div>
+          {% endif %}
         </div>
-      {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="row g-3 g-lg-4">
+      <div class="col-12 col-lg-6">
+        <div class="md-card">
+          <div class="md-card-head">
+            <h3>
+              <span class="md-icon-dot"><i class="tji-folder"></i></span>
+              Materials
+            </h3>
+            <a href="#">Open</a>
+          </div>
+
+          {% if materials_summary %}
+            <div class="md-status-row">
+              <div class="md-status-info">
+                <p class="title">Available resources</p>
+                <span class="meta">For your enrolled course</span>
+              </div>
+              <span class="md-tag md-tag-dark">
+                <i class="tji-folder"></i> {{ materials_summary.count }} files
+              </span>
+            </div>
+            {% if materials_summary.latest %}
+              <div class="md-status-row">
+                <div class="md-status-info">
+                  <p class="title">{{ materials_summary.latest.title }}</p>
+                  <span class="meta">Latest upload</span>
+                </div>
+                <span class="md-tag md-tag-soft"><i class="tji-download"></i> View</span>
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="md-empty">
+              <i class="tji-folder"></i>
+              <h4>No materials yet</h4>
+              <p>Learning materials for your course will appear here once uploaded.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
   {% endif %}
-</div>
 
-
-<div class="row g-4 mt-1">
-
-  {# ---------- ONLINE ONLY ---------- #}
-  {% if enrollment_mode != 'offline' %}
+  <div class="row g-3 g-lg-4">
     <div class="col-12 col-lg-6">
-      <p class="edv-section-label">Assessment Status</p>
-      <div class="edv-card">
-        <div class="edv-card-head">
-          <h3><i class="tji-clipboard"></i> Assessment</h3>
-          {# INTEGRATION: link to real assessment URL name #}
-          <a href="#">Open</a>
+      <div class="md-card">
+        <div class="md-card-head">
+          <h3>
+            <span class="md-icon-dot"><i class="tji-wallet"></i></span>
+            Payments
+          </h3>
+          <a href="{% url 'core:payment' course.slug %}">Open</a>
         </div>
 
-        {% if assessment_status %}
-          <div class="edv-status-row">
-            <div class="edv-status-info">
-              <p class="title">{{ assessment_status.title }}</p>
-              <span class="meta">
-                {% if assessment_status.due_at %}Due {{ assessment_status.due_at }}{% else %}No due date{% endif %}
-              </span>
-            </div>
-            {% if assessment_status.state == 'locked' %}
-              <span class="edv-badge"><i class="tji-lock"></i> Locked</span>
-            {% elif assessment_status.state == 'available' %}
-              <span class="edv-badge gold"><i class="tji-play"></i> Available</span>
-            {% elif assessment_status.state == 'submitted' %}
-              <span class="edv-badge dark"><i class="tji-check"></i> Submitted</span>
-            {% elif assessment_status.state == 'graded' %}
-              <span class="edv-badge dark">
-                <i class="tji-award"></i>
-                {% if assessment_status.score %}{{ assessment_status.score }}{% else %}Graded{% endif %}
-              </span>
-            {% endif %}
-          </div>
-        {% else %}
-          <div class="edv-empty" style="padding:24px 12px;">
-            <i class="tji-clipboard"></i>
-            <p>No active assessment right now. It will appear here when unlocked.</p>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="col-12 col-lg-6">
-      <p class="edv-section-label">Doubt Clearance</p>
-      <div class="edv-card">
-        <div class="edv-card-head">
-          <h3><i class="tji-chat"></i> Doubts</h3>
-          {# INTEGRATION: link to real doubts URL name #}
-          <a href="#">Open</a>
-        </div>
-
-        {% if recent_doubt %}
-          <div class="edv-status-row">
-            <div class="edv-status-info">
-              <p class="title">{{ recent_doubt.subject }}</p>
-              <span class="meta">
-                {% if recent_doubt.updated_ago %}Updated {{ recent_doubt.updated_ago }}{% endif %}
-              </span>
-            </div>
-            {% if recent_doubt.state == 'answered' %}
-              <span class="edv-badge dark"><i class="tji-check"></i> Answered</span>
-            {% elif recent_doubt.state == 'resolved' %}
-              <span class="edv-badge"><i class="tji-check"></i> Resolved</span>
-            {% elif recent_doubt.state == 'open' %}
-              <span class="edv-badge gold"><i class="tji-clock"></i> Open</span>
-            {% else %}
-              <span class="edv-badge">{{ recent_doubt.state|title }}</span>
-            {% endif %}
-          </div>
-        {% else %}
-          <div class="edv-empty" style="padding:24px 12px;">
-            <i class="tji-chat"></i>
-            <p>No doubts raised yet. Ask a question anytime from your current lesson.</p>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-
-  {# ---------- OFFLINE ONLY: MATERIALS STATUS ---------- #}
-  {% else %}
-    <div class="col-12 col-lg-6">
-      <p class="edv-section-label">Learning Materials</p>
-      <div class="edv-card">
-        <div class="edv-card-head">
-          <h3><i class="tji-folder"></i> Materials</h3>
-          <a href="#">Open</a>
-        </div>
-
-        {% if materials_summary %}
-          <div class="edv-status-row">
-            <div class="edv-status-info">
-              <p class="title">Available resources</p>
-              <span class="meta">For your enrolled course</span>
-            </div>
-            <span class="edv-badge dark">
-              <i class="tji-folder"></i> {{ materials_summary.count }} files
-            </span>
-          </div>
-          {% if materials_summary.latest %}
-            <div class="edv-status-row">
-              <div class="edv-status-info">
-                <p class="title">{{ materials_summary.latest.title }}</p>
-                <span class="meta">Latest upload</span>
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="md-pay-tile">
+              <p class="label">Course Fee</p>
+              <div class="amount">
+                {% if course.discounted_price %}₹{{ course.discounted_price|floatformat:"0" }}{% else %}₹{{ course.price|floatformat:"0" }}{% endif %}
               </div>
-              <span class="edv-badge"><i class="tji-download"></i> View</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="md-pay-tile">
+              <p class="label">Status</p>
+              {% if active_enrollment.payment_status == 'paid' %}
+                <span class="md-tag md-tag-success"><i class="tji-check"></i> Paid</span>
+              {% elif active_enrollment.payment_status == 'partially_paid' %}
+                <span class="md-tag md-tag-bright"><i class="tji-clock"></i> Partial</span>
+              {% elif active_enrollment.payment_status == 'pending' %}
+                <span class="md-tag md-tag-gold"><i class="tji-clock"></i> Pending</span>
+              {% else %}
+                <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="md-status-row mt-3">
+          <div class="md-status-info">
+            <p class="title">Approval</p>
+            <span class="meta">{{ active_enrollment.get_approval_status_display }}</span>
+          </div>
+          {% if active_enrollment.access_paused %}
+            <span class="md-tag md-tag-danger"><i class="tji-lock"></i> Paused</span>
+          {% elif active_enrollment.approval_status == 'accepted' %}
+            <span class="md-tag md-tag-dark"><i class="tji-check"></i> Active</span>
+          {% else %}
+            <span class="md-tag md-tag-gold"><i class="tji-clock"></i> Waiting</span>
+          {% endif %}
+        </div>
+
+        <div class="mt-3">
+          <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-tonal w-100">
+            Open Payment <i class="tji-arrow-right-2"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="md-card">
+        <div class="md-card-head">
+          <h3>
+            <span class="md-icon-dot"><i class="tji-award"></i></span>
+            Certificate
+          </h3>
+          <a href="#">View all</a>
+        </div>
+
+        {% if certificate %}
+          {% if certificate.state == 'issued' %}
+            <div class="md-cert">
+              <span class="md-cert-icon"><i class="tji-award"></i></span>
+              <div class="md-cert-body">
+                <h4>{{ certificate.title }}</h4>
+                <p>Issued on {{ certificate.issued_on }}</p>
+              </div>
+              <span class="md-tag md-tag-dark"><i class="tji-download"></i> View</span>
+            </div>
+          {% elif certificate.state == 'available' %}
+            <div class="md-cert">
+              <span class="md-cert-icon"><i class="tji-award"></i></span>
+              <div class="md-cert-body">
+                <h4>{{ certificate.title }}</h4>
+                <p>Ready to download</p>
+              </div>
+              <span class="md-tag md-tag-dark"><i class="tji-download"></i> Download</span>
+            </div>
+          {% else %}
+            <div class="md-cert locked">
+              <span class="md-cert-icon"><i class="tji-lock"></i></span>
+              <div class="md-cert-body">
+                <h4>Certificate locked</h4>
+                <p>
+                  {% if certificate.progress_percent is not None %}
+                    Complete {{ certificate.progress_percent }}% of your course to unlock it.
+                  {% else %}
+                    Complete your course to unlock the certificate.
+                  {% endif %}
+                </p>
+              </div>
             </div>
           {% endif %}
         {% else %}
-          <div class="edv-empty" style="padding:24px 12px;">
-            <i class="tji-folder"></i>
-            <p>Learning materials for your course will appear here once uploaded.</p>
+          <div class="md-empty">
+            <i class="tji-award"></i>
+            <h4>No certificate yet</h4>
+            <p>Your certificate will appear here once you complete the course.</p>
           </div>
         {% endif %}
       </div>
-    </div>
-  {% endif %}
-
-  {# ---------- COMMON: PAYMENT SUMMARY ---------- #}
-  <div class="col-12 col-lg-6">
-    <p class="edv-section-label">Payment Summary</p>
-    <div class="edv-card">
-      <div class="edv-card-head">
-        <h3><i class="tji-wallet"></i> Payments</h3>
-        <a href="#">View all</a>
-      </div>
-
-      {% if payment_summary %}
-        <div class="row g-2">
-          <div class="col-6">
-            <div class="edv-pay-tile">
-              <p class="label">Total Fee</p>
-              <div class="amount">₹{{ payment_summary.total_fee|floatformat:"0" }}</div>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="edv-pay-tile">
-              <p class="label">Paid</p>
-              <div class="amount">₹{{ payment_summary.paid|floatformat:"0" }}</div>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="edv-pay-tile">
-              <p class="label">Remaining</p>
-              <div class="amount {% if payment_summary.remaining > 0 %}gold{% endif %}">
-                ₹{{ payment_summary.remaining|floatformat:"0" }}
-              </div>
-              {% if payment_summary.next_due_date %}
-                <p class="note">Next due {{ payment_summary.next_due_date }}</p>
-              {% endif %}
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="edv-pay-tile">
-              <p class="label">Status</p>
-              <div style="margin-top:4px;">
-                {% if payment_summary.status == 'paid' %}
-                  <span class="edv-badge dark"><i class="tji-check"></i> Paid</span>
-                {% elif payment_summary.status == 'partial' %}
-                  <span class="edv-badge gold"><i class="tji-clock"></i> Partially Paid</span>
-                {% elif payment_summary.status == 'pending' %}
-                  <span class="edv-badge gold"><i class="tji-clock"></i> Pending</span>
-                {% else %}
-                  <span class="edv-badge">{{ payment_summary.status|title }}</span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {% if payment_summary.remaining > 0 %}
-          <div class="mt-3">
-            {# INTEGRATION: link to real payment URL name; keep as light button #}
-            <a href="#" class="tj-btn-primary-light w-100 d-inline-flex justify-content-center align-items-center gap-2">
-              <span>Complete Payment</span>
-              <i class="tji-arrow-right-2"></i>
-            </a>
-          </div>
-        {% endif %}
-
-      {% else %}
-        <div class="edv-empty" style="padding:24px 12px;">
-          <i class="tji-wallet"></i>
-          <p>Your payment information will appear here once your enrolment is confirmed.</p>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-
-<div class="row g-4 mt-1">
-
-  {# ---------- COMMON: CERTIFICATE STATUS ---------- #}
-  <div class="col-12 col-lg-5">
-    <p class="edv-section-label">Certificate</p>
-    <div class="edv-card">
-      <div class="edv-card-head">
-        <h3><i class="tji-award"></i> Certificates</h3>
-        <a href="#">View all</a>
-      </div>
-
-      {% if certificate %}
-        {% if certificate.state == 'issued' %}
-          <div class="edv-cert">
-            <span class="edv-cert-icon"><i class="tji-award"></i></span>
-            <div class="edv-cert-body">
-              <h4>{{ certificate.title }}</h4>
-              <p>Issued on {{ certificate.issued_on }}</p>
-            </div>
-            <a href="#" class="edv-badge dark" style="text-decoration:none;">
-              <i class="tji-download"></i> View
-            </a>
-          </div>
-        {% elif certificate.state == 'available' %}
-          <div class="edv-cert">
-            <span class="edv-cert-icon"><i class="tji-award"></i></span>
-            <div class="edv-cert-body">
-              <h4>{{ certificate.title }}</h4>
-              <p>Ready to download</p>
-            </div>
-            <a href="#" class="edv-badge dark" style="text-decoration:none;">
-              <i class="tji-download"></i> Download
-            </a>
-          </div>
-        {% else %}
-          <div class="edv-cert locked">
-            <span class="edv-cert-icon"><i class="tji-lock"></i></span>
-            <div class="edv-cert-body">
-              <h4>Certificate locked</h4>
-              <p>
-                {% if certificate.progress_percent is not None %}
-                  Complete {{ certificate.progress_percent }}% of your course to unlock it.
-                {% else %}
-                  Complete your course to unlock the certificate.
-                {% endif %}
-              </p>
-            </div>
-          </div>
-        {% endif %}
-      {% else %}
-        <div class="edv-empty" style="padding:24px 12px;">
-          <i class="tji-award"></i>
-          <p>Your certificate will appear here once you complete the course.</p>
-        </div>
-      {% endif %}
     </div>
   </div>
 
-  {# ---------- COMMON: RECENT NOTIFICATIONS PREVIEW ---------- #}
-  <div class="col-12 col-lg-7">
-    <p class="edv-section-label">Recent Notifications</p>
-    <div class="edv-card">
-      <div class="edv-card-head">
-        <h3><i class="tji-bell"></i> Notifications</h3>
+  <div>
+    <p class="md-section-label">Recent Notifications</p>
+    <div class="md-card">
+      <div class="md-card-head">
+        <h3>
+          <span class="md-icon-dot"><i class="tji-bell"></i></span>
+          Notifications
+        </h3>
         {% if unread_notifications %}
-          <a href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-            {{ unread_notifications }} unread
-          </a>
+          <span class="md-tag md-tag-gold">{{ unread_notifications }} unread</span>
         {% endif %}
       </div>
 
       {% if notifications %}
-        <ul class="edv-notif-preview">
+        <ul class="md-notifs">
           {% for n in notifications|slice:":4" %}
-            <li class="{% if not n.is_read %}is-unread{% endif %}">
-              <a href="{{ n.url|default:'#' }}">
-                <span class="icon">
+            <li>
+              <a href="{{ n.url|default:'#' }}" class="md-notif {% if not n.is_read %}is-unread{% endif %}">
+                <span class="md-notif-icon">
                   <i class="tji-{% if n.icon %}{{ n.icon }}{% else %}bell{% endif %}"></i>
                 </span>
-                <div class="body">
+                <div class="md-notif-body">
                   <strong>{{ n.title }}</strong>
                   <span>{{ n.time_ago }}</span>
                 </div>
+                {% if not n.is_read %}<span class="md-tag md-tag-gold">New</span>{% endif %}
               </a>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <div class="edv-empty" style="padding:24px 12px;">
+        <div class="md-empty">
           <i class="tji-bell"></i>
-          <p>You're all caught up — no new notifications right now.</p>
+          <h4>You're all caught up</h4>
+          <p>No new notifications right now.</p>
         </div>
       {% endif %}
     </div>
   </div>
-</div>
 
+  <div>
+    <p class="md-section-label">Quick Links</p>
+    <div class="md-quick-grid">
 
-<div class="mt-4">
-  <p class="edv-section-label">Quick Links</p>
-  <div class="edv-quick-links">
+      {% if mode != 'offline' %}
+        <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:dashboard' %}{% endif %}" class="md-quick">
+          <span class="md-quick-icon"><i class="tji-play"></i></span>
+          <div class="md-quick-text">
+            <strong>My Course</strong>
+            <span>Continue lessons</span>
+          </div>
+        </a>
+      {% endif %}
 
-    {% if enrollment_mode != 'offline' %}
-      <a href="#" class="edv-quick-link">
-        <span class="icon"><i class="tji-play"></i></span>
-        <div class="text">
-          <strong>My Course</strong>
-          <span>Continue lessons</span>
+      <a href="#" class="md-quick">
+        <span class="md-quick-icon"><i class="tji-folder"></i></span>
+        <div class="md-quick-text">
+          <strong>Materials</strong>
+          <span>Resources &amp; downloads</span>
         </div>
       </a>
-    {% endif %}
 
-    <a href="#" class="edv-quick-link">
-      <span class="icon"><i class="tji-folder"></i></span>
-      <div class="text">
-        <strong>Materials</strong>
-        <span>Resources &amp; downloads</span>
-      </div>
-    </a>
-
-    <a href="#" class="edv-quick-link">
-      <span class="icon"><i class="tji-wallet"></i></span>
-      <div class="text">
-        <strong>Payments</strong>
-        <span>Fees &amp; receipts</span>
-      </div>
-    </a>
-
-    <a href="#" class="edv-quick-link">
-      <span class="icon"><i class="tji-award"></i></span>
-      <div class="text">
-        <strong>Certificates</strong>
-        <span>Your achievements</span>
-      </div>
-    </a>
-
-    {% if enrollment_mode != 'offline' %}
-      <a href="#" class="edv-quick-link">
-        <span class="icon"><i class="tji-chat"></i></span>
-        <div class="text">
-          <strong>Doubts</strong>
-          <span>Ask &amp; track</span>
+      <a href="{% url 'core:payment' course.slug %}" class="md-quick">
+        <span class="md-quick-icon"><i class="tji-wallet"></i></span>
+        <div class="md-quick-text">
+          <strong>Payments</strong>
+          <span>Fees &amp; receipts</span>
         </div>
       </a>
-    {% endif %}
 
-    <a href="#" class="edv-quick-link">
-      <span class="icon"><i class="tji-user"></i></span>
-      <div class="text">
-        <strong>Profile</strong>
-        <span>Personal details</span>
-      </div>
-    </a>
+      <a href="#" class="md-quick">
+        <span class="md-quick-icon"><i class="tji-award"></i></span>
+        <div class="md-quick-text">
+          <strong>Certificates</strong>
+          <span>Your achievements</span>
+        </div>
+      </a>
 
+      {% if mode != 'offline' %}
+        <a href="#" class="md-quick">
+          <span class="md-quick-icon"><i class="tji-chat"></i></span>
+          <div class="md-quick-text">
+            <strong>Doubts</strong>
+            <span>Ask &amp; track</span>
+          </div>
+        </a>
+      {% endif %}
+
+      <a href="#" class="md-quick">
+        <span class="md-quick-icon"><i class="tji-user"></i></span>
+        <div class="md-quick-text">
+          <strong>Profile</strong>
+          <span>Personal details</span>
+        </div>
+      </a>
+
+    </div>
   </div>
+
 </div>
 
+{% endwith %}
 {% endblock %}
