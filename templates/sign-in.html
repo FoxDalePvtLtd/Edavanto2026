@@ -452,27 +452,351 @@
 {% block extra_js %}
 
 <script src="{% static 'js/range-slider.js' %}"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded",function(){
-  const form=document.querySelector('form[action="{% url "core:student_register" %}"]')||document.querySelector(".tj-login-form");
-  if(!form)return;
-  const rules={
-    "register-name":v=>v.trim().length>=2?"":"Enter your full name.",
-    "register-email":v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())?"":"Enter a valid email address.",
-    "register-phone":v=>/^[0-9+\s()-]{7,20}$/.test(v.trim())?"":"Enter a valid phone number.",
-    "register-password":v=>v.length>=8?"":"Password must be at least 8 characters.",
-    "register-confirm-password":v=>v===document.getElementById("register-password").value?"":"Passwords do not match."
-  };
-  Object.keys(rules).forEach(function(id){
-    const input=document.getElementById(id),box=form.querySelector('[data-error-for="'+id.replace("register-","")+'"]');
-    if(!input||!box)return;
-    function validate(){const msg=rules[id](input.value);box.textContent=msg;input.classList.toggle("is-invalid",Boolean(msg));return !msg;}
-    input.addEventListener("input",validate);input.addEventListener("blur",validate);
-  });
-  const terms=form.querySelector('input[name="terms"]'),termsBox=form.querySelector('[data-error-for="terms"]');
-  if(terms&&termsBox)terms.addEventListener("change",function(){termsBox.textContent=terms.checked?"":"Please accept the terms and privacy policy.";});
-  form.querySelectorAll(".password-toggle").forEach(function(toggle){toggle.addEventListener("click",function(){const wrap=this.closest(".input-icon-wrap"),input=wrap&&wrap.querySelector("input");if(!input)return;const visible=input.type==="text";input.type=visible?"password":"text";this.setAttribute("aria-pressed",String(!visible));this.setAttribute("aria-label",visible?"Show password":"Hide password");const icon=this.querySelector("i");if(icon){icon.classList.toggle("tji-eye-off",visible);icon.classList.toggle("tji-eye",!visible);}});});
-  form.addEventListener("submit",function(e){let valid=true;Object.keys(rules).forEach(function(id){const input=document.getElementById(id);if(input&&!rules[id](input.value)){valid=false;}});if(terms&&!terms.checked){valid=false;if(termsBox)termsBox.textContent="Please accept the terms and privacy policy.";}if(!valid)e.preventDefault();});
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.querySelector(".tj-login-form");
+
+    if (!form) {
+        console.error("[EDVANTO REGISTER] Registration form not found.");
+        return;
+    }
+
+    const nameInput = document.getElementById("register-name");
+    const emailInput = document.getElementById("register-email");
+    const phoneInput = document.getElementById("register-phone");
+    const passwordInput = document.getElementById("register-password");
+    const confirmPasswordInput = document.getElementById("register-confirm-password");
+    const termsInput = document.getElementById("register-terms");
+
+    const nameError = form.querySelector('[data-error-for="full_name"]');
+    const emailError = form.querySelector('[data-error-for="email"]');
+    const phoneError = form.querySelector('[data-error-for="phone"]');
+    const passwordError = form.querySelector('[data-error-for="password"]');
+    const confirmPasswordError = form.querySelector('[data-error-for="confirm_password"]');
+    const termsError = form.querySelector('[data-error-for="terms"]');
+
+
+    function setError(input, errorBox, message) {
+
+        if (errorBox) {
+            errorBox.textContent = message || "";
+        }
+
+        if (input) {
+            input.classList.toggle("is-invalid", Boolean(message));
+        }
+
+        return !message;
+    }
+
+
+    function validateName() {
+
+        const value = nameInput.value.trim();
+
+        if (!value) {
+            return setError(
+                nameInput,
+                nameError,
+                "Full name is required."
+            );
+        }
+
+        if (value.length < 2) {
+            return setError(
+                nameInput,
+                nameError,
+                "Enter your full name."
+            );
+        }
+
+        return setError(nameInput, nameError, "");
+    }
+
+
+    function validateEmail() {
+
+        const value = emailInput.value.trim();
+
+        if (!value) {
+            return setError(
+                emailInput,
+                emailError,
+                "Email address is required."
+            );
+        }
+
+        const emailPattern =
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(value)) {
+            return setError(
+                emailInput,
+                emailError,
+                "Enter a valid email address."
+            );
+        }
+
+        return setError(emailInput, emailError, "");
+    }
+
+
+    function validatePhone() {
+
+        const value = phoneInput.value.trim();
+
+        if (!value) {
+            return setError(
+                phoneInput,
+                phoneError,
+                "Phone number is required."
+            );
+        }
+
+        const phonePattern =
+            /^[0-9+\s()-]{7,20}$/;
+
+        if (!phonePattern.test(value)) {
+            return setError(
+                phoneInput,
+                phoneError,
+                "Enter a valid phone number."
+            );
+        }
+
+        return setError(phoneInput, phoneError, "");
+    }
+
+
+    function validatePassword() {
+
+        const value = passwordInput.value;
+
+        if (!value) {
+            return setError(
+                passwordInput,
+                passwordError,
+                "Password is required."
+            );
+        }
+
+        if (value.length < 8) {
+            return setError(
+                passwordInput,
+                passwordError,
+                "Password must be at least 8 characters."
+            );
+        }
+
+        return setError(passwordInput, passwordError, "");
+    }
+
+
+    function validateConfirmPassword() {
+
+        const value = confirmPasswordInput.value;
+
+        if (!value) {
+            return setError(
+                confirmPasswordInput,
+                confirmPasswordError,
+                "Please confirm your password."
+            );
+        }
+
+        if (value !== passwordInput.value) {
+            return setError(
+                confirmPasswordInput,
+                confirmPasswordError,
+                "Passwords do not match."
+            );
+        }
+
+        return setError(
+            confirmPasswordInput,
+            confirmPasswordError,
+            ""
+        );
+    }
+
+
+    function validateTerms() {
+
+        if (!termsInput.checked) {
+
+            if (termsError) {
+                termsError.textContent =
+                    "Please accept the terms and privacy policy.";
+            }
+
+            return false;
+        }
+
+        if (termsError) {
+            termsError.textContent = "";
+        }
+
+        return true;
+    }
+
+
+    /* -----------------------------------------
+       LIVE VALIDATION
+    ----------------------------------------- */
+
+    nameInput.addEventListener("blur", validateName);
+    nameInput.addEventListener("input", validateName);
+
+    emailInput.addEventListener("blur", validateEmail);
+    emailInput.addEventListener("input", validateEmail);
+
+    phoneInput.addEventListener("blur", validatePhone);
+    phoneInput.addEventListener("input", validatePhone);
+
+    passwordInput.addEventListener("blur", validatePassword);
+    passwordInput.addEventListener("input", function () {
+        validatePassword();
+
+        if (confirmPasswordInput.value) {
+            validateConfirmPassword();
+        }
+    });
+
+    confirmPasswordInput.addEventListener(
+        "blur",
+        validateConfirmPassword
+    );
+
+    confirmPasswordInput.addEventListener(
+        "input",
+        validateConfirmPassword
+    );
+
+    termsInput.addEventListener("change", validateTerms);
+
+
+    /* -----------------------------------------
+       PASSWORD SHOW / HIDE
+    ----------------------------------------- */
+
+    form.querySelectorAll(".password-toggle").forEach(function (toggle) {
+
+        toggle.addEventListener("click", function () {
+
+            const wrapper = this.closest(".input-icon-wrap");
+
+            if (!wrapper) {
+                return;
+            }
+
+            const input = wrapper.querySelector("input");
+
+            if (!input) {
+                return;
+            }
+
+            const icon = this.querySelector("i");
+
+            const isVisible = input.type === "text";
+
+            input.type = isVisible
+                ? "password"
+                : "text";
+
+            this.setAttribute(
+                "aria-pressed",
+                String(!isVisible)
+            );
+
+            this.setAttribute(
+                "aria-label",
+                isVisible
+                    ? "Show password"
+                    : "Hide password"
+            );
+
+            if (icon) {
+
+                icon.classList.toggle(
+                    "tji-eye-off",
+                    isVisible
+                );
+
+                icon.classList.toggle(
+                    "tji-eye",
+                    !isVisible
+                );
+            }
+        });
+    });
+
+
+    /* -----------------------------------------
+       FORM SUBMIT
+    ----------------------------------------- */
+
+    form.addEventListener("submit", function (event) {
+
+        console.log(
+            "[EDVANTO REGISTER] Create account clicked."
+        );
+
+        const validName = validateName();
+        const validEmail = validateEmail();
+        const validPhone = validatePhone();
+        const validPassword = validatePassword();
+        const validConfirmPassword =
+            validateConfirmPassword();
+        const validTerms = validateTerms();
+
+
+        const isValid =
+            validName &&
+            validEmail &&
+            validPhone &&
+            validPassword &&
+            validConfirmPassword &&
+            validTerms;
+
+
+        console.log(
+            "[EDVANTO REGISTER] Form valid:",
+            isValid
+        );
+
+
+        if (!isValid) {
+
+            event.preventDefault();
+
+            console.warn(
+                "[EDVANTO REGISTER] Submission blocked by validation."
+            );
+
+            return;
+        }
+
+
+        /*
+         * IMPORTANT:
+         * Do NOT call preventDefault() here.
+         *
+         * Django must receive:
+         * POST /register/
+         */
+
+        console.log(
+            "[EDVANTO REGISTER] Validation passed."
+        );
+
+        console.log(
+            "[EDVANTO REGISTER] Submitting to:",
+            form.action
+        );
+    });
+
 });
 </script>
 
