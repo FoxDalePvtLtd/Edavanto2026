@@ -51,17 +51,17 @@
       --edvanto-border-light:  1px solid rgba(18, 18, 18, 0.06);
       --edvanto-border-medium: 1px solid rgba(18, 18, 18, 0.12);
 
+      /* Layout dimensions */
       --edvanto-sidebar-width: 264px;
       --edvanto-sidebar-width-compact: 76px;
       --edvanto-header-height: 68px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       height: 100%;
+      overflow-x: hidden;
     }
 
     body {
@@ -73,51 +73,141 @@
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
     }
 
     /* ---------- SCROLLBAR ---------- */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb {
       background: var(--edvanto-gold);
       border-radius: 999px;
       opacity: 0.5;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--edvanto-gold-light);
+    ::-webkit-scrollbar-thumb:hover { background: var(--edvanto-gold-light); }
+
+    /* ============================================================
+       APP SHELL — CSS GRID LAYOUT
+       Grid auto-adjusts via media queries. No margin-left hacks.
+       ============================================================ */
+    .edvanto-app {
+      display: grid;
+      grid-template-columns: var(--edvanto-sidebar-width) minmax(0, 1fr);
+      min-height: 100vh;
+      width: 100%;
+      transition: grid-template-columns 0.25s ease;
     }
 
     /* ============================================================
-       APP SHELL LAYOUT
-       ============================================================ */
-    .edvanto-app {
-      display: flex;
-      min-height: 100vh;
-      width: 100%;
-    }
+   SIDEBAR — BASE (Desktop ≥ 1200px)
+   ============================================================ */
+.edvanto-sidebar {
+  grid-column: 1 / 2;
+  width: 100%;                          /* fills the grid column */
+  background: var(--edvanto-dark-2);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--edvanto-cream);
+  position: sticky;                     /* sticky, NOT fixed */
+  top: 0;
+  height: 100vh;
+  z-index: 1040;
+  transition: transform 0.25s ease;
+}
 
-    /* ---------- SIDEBAR ---------- */
-    .edvanto-sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: var(--edvanto-sidebar-width);
-      background: var(--edvanto-dark-2);
-      border-right: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: var(--edvanto-shadow-sidebar);
-      display: flex;
-      flex-direction: column;
-      z-index: 1040;
-      transition: width 0.25s ease, transform 0.25s ease;
-      overflow-x: hidden;
-    }
+/* ============================================================
+   TABLET (768px – 1199.98px) — compact icon-only rail
+   ============================================================ */
+@media (max-width: 1199.98px) and (min-width: 768px) {
+  .edvanto-app {
+    grid-template-columns: var(--edvanto-sidebar-width-compact) minmax(0, 1fr);
+  }
+
+  /* Sidebar stays in normal flow — no fixed positioning here! */
+  .edvanto-sidebar {
+    position: sticky;                   /* keep sticky */
+    width: 100%;                        /* fill the 76px grid column */
+    transform: none;                    /* NO off-canvas shift */
+  }
+
+  .edvanto-logo-text,
+  .edvanto-nav-section,
+  .edvanto-sidebar-user-info,
+  .edvanto-nav-badge {
+    display: none !important;
+  }
+
+  .edvanto-sidebar-brand {
+    justify-content: center;
+    padding: 1.25rem 0.5rem 1.1rem;
+  }
+  .edvanto-nav-link {
+    justify-content: center;
+    padding: 0.7rem 0.5rem;
+  }
+  .edvanto-nav-link i { width: auto; }
+  .edvanto-sidebar-user {
+    justify-content: center;
+    padding: 0.5rem 0.25rem;
+  }
+  .edvanto-sidebar-footer { padding: 0.75rem 0.5rem 1rem; }
+  .edvanto-content { padding: 1.25rem 1.25rem 2rem; }
+}
+
+/* ============================================================
+   MOBILE (< 768px) — off-canvas drawer
+   ============================================================ */
+@media (max-width: 767.98px) {
+  .edvanto-app {
+    grid-template-columns: minmax(0, 1fr);   /* single column */
+  }
+
+  .edvanto-sidebar {
+    position: fixed;                     /* fixed only on mobile */
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--edvanto-sidebar-width); /* 264px */
+    height: 100vh;
+    transform: translateX(-100%);        /* hidden by default */
+    box-shadow: 4px 0 30px rgba(18, 18, 18, 0.25);
+    z-index: 1050;
+    transition: transform 0.25s ease;
+  }
+  .edvanto-sidebar.show {
+    transform: translateX(0);
+  }
+
+  /* Restore full labels on mobile */
+  .edvanto-logo-text,
+  .edvanto-nav-section,
+  .edvanto-sidebar-user-info,
+  .edvanto-nav-badge {
+    display: flex;
+  }
+  .edvanto-nav-section { display: block; }
+
+  .edvanto-sidebar-brand {
+    justify-content: flex-start;
+    padding: 1.25rem 1.5rem 1.1rem;
+  }
+  .edvanto-nav-link {
+    justify-content: flex-start;
+    padding: 0.65rem 0.85rem;
+  }
+  .edvanto-nav-link i { width: 22px; }
+
+  .edvanto-main { grid-column: 1 / -1; }
+  .edvanto-header-toggle { display: flex; align-items: center; justify-content: center; }
+  .edvanto-header-search { flex: 1 1 auto; max-width: none; }
+  .edvanto-header-user-info { display: none; }
+  .edvanto-header-user { padding: 0.3rem; }
+
+  .edvanto-content { padding: 1rem 1rem 2rem; }
+  .edvanto-page-title { font-size: 1.6rem; }
+}
 
     /* ---- Sidebar brand / logo ---- */
     .edvanto-sidebar-brand {
@@ -141,7 +231,6 @@
       color: var(--edvanto-dark);
       font-weight: 800;
       font-size: 1.15rem;
-      letter-spacing: -0.04em;
       flex-shrink: 0;
       box-shadow: 0 4px 12px rgba(212, 166, 42, 0.25);
     }
@@ -220,20 +309,15 @@
       background: rgba(212, 166, 42, 0.08);
       color: var(--edvanto-gold-light);
     }
-    .edvanto-nav-link:hover i {
-      color: var(--edvanto-gold-light);
-    }
+    .edvanto-nav-link:hover i { color: var(--edvanto-gold-light); }
 
-    /* ---- ACTIVE STATE ---- */
     .edvanto-nav-link.active {
       background: var(--edvanto-gold);
       color: var(--edvanto-dark);
       font-weight: 600;
       box-shadow: 0 4px 12px rgba(212, 166, 42, 0.25);
     }
-    .edvanto-nav-link.active i {
-      color: var(--edvanto-dark);
-    }
+    .edvanto-nav-link.active i { color: var(--edvanto-dark); }
     .edvanto-nav-link.active::before {
       content: '';
       position: absolute;
@@ -247,7 +331,6 @@
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
-    /* nav badge */
     .edvanto-nav-badge {
       margin-left: auto;
       font-size: 0.65rem;
@@ -279,9 +362,7 @@
       transition: background 0.15s ease;
       cursor: pointer;
     }
-    .edvanto-sidebar-user:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
+    .edvanto-sidebar-user:hover { background: rgba(255, 255, 255, 0.05); }
     .edvanto-avatar {
       width: 36px;
       height: 36px;
@@ -320,13 +401,12 @@
        MAIN AREA
        ============================================================ */
     .edvanto-main {
-      flex: 1 1 auto;
+      grid-column: 2 / 3;
       min-width: 0;
-      margin-left: var(--edvanto-sidebar-width);
+      width: 100%;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      transition: margin-left 0.25s ease;
     }
 
     /* ---------- TOP HEADER ---------- */
@@ -342,6 +422,7 @@
       gap: 0.75rem;
       padding: 0 1.25rem 0 1.5rem;
       flex-shrink: 0;
+      width: 100%;
     }
 
     .edvanto-header-toggle {
@@ -354,16 +435,16 @@
       border-radius: var(--edvanto-radius-xs);
       line-height: 1;
       transition: background 0.15s ease;
+      cursor: pointer;
+      flex-shrink: 0;
     }
-    .edvanto-header-toggle:hover {
-      background: rgba(212, 166, 42, 0.1);
-    }
+    .edvanto-header-toggle:hover { background: rgba(212, 166, 42, 0.1); }
 
-    /* header search */
     .edvanto-header-search {
       position: relative;
       flex: 1 1 320px;
       max-width: 440px;
+      min-width: 0;
     }
     .edvanto-header-search i {
       position: absolute;
@@ -379,15 +460,13 @@
       height: 40px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: var(--edvanto-dark);
+      background: #FFFDF7;
       padding: 0 1rem 0 2.5rem;
       font-size: 0.85rem;
       color: var(--edvanto-cream);
       transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
     }
-    .edvanto-header-search input::placeholder {
-      color: var(--edvanto-gray);
-    }
+    .edvanto-header-search input::placeholder { color: var(--edvanto-gray); }
     .edvanto-header-search input:focus {
       outline: none;
       border-color: var(--edvanto-gold);
@@ -395,15 +474,13 @@
       box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.15);
     }
 
-    .edvanto-header-spacer {
-      flex: 1 1 auto;
-    }
+    .edvanto-header-spacer { flex: 1 1 auto; min-width: 0; }
 
-    /* header icon buttons */
     .edvanto-header-actions {
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      flex-shrink: 0;
     }
     .edvanto-icon-btn {
       position: relative;
@@ -419,6 +496,7 @@
       justify-content: center;
       transition: background 0.15s ease, color 0.15s ease;
       text-decoration: none;
+      flex-shrink: 0;
     }
     .edvanto-icon-btn:hover {
       background: rgba(212, 166, 42, 0.12);
@@ -435,7 +513,6 @@
       border: 2px solid var(--edvanto-dark-2);
     }
 
-    /* header user chip */
     .edvanto-header-user {
       display: flex;
       align-items: center;
@@ -448,6 +525,7 @@
       transition: box-shadow 0.15s ease, border-color 0.15s ease;
       text-decoration: none;
       color: inherit;
+      flex-shrink: 0;
     }
     .edvanto-header-user:hover {
       box-shadow: 0 4px 16px rgba(212, 166, 42, 0.12);
@@ -482,8 +560,7 @@
       flex: 1 1 auto;
       padding: 1.5rem 1.75rem 2.5rem;
       width: 100%;
-      max-width: 1600px;
-      margin: 0 auto;
+      min-width: 0;
       background: var(--edvanto-cream-2);
     }
 
@@ -499,6 +576,7 @@
       gap: 0.5rem;
       font-size: 0.78rem;
       color: var(--edvanto-gray);
+      width: 100%;
     }
     .edvanto-footer a {
       color: var(--edvanto-dark);
@@ -513,8 +591,6 @@
     /* ============================================================
        SHARED COMPONENTS
        ============================================================ */
-
-    /* --- Cards --- */
     .edvanto-card {
       background: var(--edvanto-white);
       border-radius: var(--edvanto-radius-card);
@@ -538,7 +614,6 @@
       margin: 0;
     }
 
-    /* --- Buttons --- */
     .btn-edvanto-primary {
       background: var(--edvanto-gold);
       border: 1px solid var(--edvanto-gold);
@@ -570,7 +645,6 @@
       background: var(--edvanto-cream);
     }
 
-    /* --- Badges --- */
     .edvanto-badge {
       font-size: 0.7rem;
       font-weight: 600;
@@ -585,7 +659,6 @@
     .badge-soft-green  { background: rgba(15, 157, 88, 0.09); color: #0F6B3E; }
     .badge-soft-red    { background: rgba(220, 53, 69, 0.09); color: #B02A37; }
 
-    /* --- Tables --- */
     .edvanto-table {
       width: 100%;
       margin-bottom: 0;
@@ -611,12 +684,8 @@
       color: var(--edvanto-dark);
       font-weight: 500;
     }
-    .edvanto-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-    .edvanto-table tbody tr:hover {
-      background: rgba(212, 166, 42, 0.04);
-    }
+    .edvanto-table tbody tr:last-child td { border-bottom: none; }
+    .edvanto-table tbody tr:hover { background: rgba(212, 166, 42, 0.04); }
     .table-responsive-edvanto {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -624,7 +693,6 @@
       padding: 0 0.25rem;
     }
 
-    /* --- Breadcrumbs --- */
     .edvanto-breadcrumb .breadcrumb {
       --bs-breadcrumb-divider-color: var(--edvanto-gray);
       --bs-breadcrumb-item-active-color: var(--edvanto-dark);
@@ -640,11 +708,8 @@
       text-decoration: none;
       font-weight: 500;
     }
-    .edvanto-breadcrumb .breadcrumb-item a:hover {
-      color: var(--edvanto-dark);
-    }
+    .edvanto-breadcrumb .breadcrumb-item a:hover { color: var(--edvanto-dark); }
 
-    /* --- Page title --- */
     .edvanto-page-title {
       font-weight: 700;
       font-size: 2rem;
@@ -659,7 +724,6 @@
       margin-bottom: 0;
     }
 
-    /* --- Pagination --- */
     .pagination .page-link {
       color: var(--edvanto-dark);
       border-color: rgba(18, 18, 18, 0.08);
@@ -686,37 +750,22 @@
       background: var(--edvanto-cream);
     }
 
-    /* --- Modals --- */
     .modal-content {
       border-radius: var(--edvanto-radius-card);
       border: none;
       box-shadow: 0 24px 60px rgba(18, 18, 18, 0.18);
     }
-    .modal-header {
-      border-bottom: var(--edvanto-border-light);
-      padding: 1.1rem 1.4rem;
-    }
-    .modal-footer {
-      border-top: var(--edvanto-border-light);
-      padding: 0.9rem 1.4rem;
-    }
-    .modal-title {
-      font-weight: 700;
-      color: var(--edvanto-dark);
-      font-size: 1.05rem;
-    }
+    .modal-header { border-bottom: var(--edvanto-border-light); padding: 1.1rem 1.4rem; }
+    .modal-footer { border-top: var(--edvanto-border-light); padding: 0.9rem 1.4rem; }
+    .modal-title { font-weight: 700; color: var(--edvanto-dark); font-size: 1.05rem; }
 
-    /* --- Toasts --- */
-    .toast-container-edvanto {
-      z-index: 1090;
-    }
+    .toast-container-edvanto { z-index: 1090; }
     .toast-container-edvanto .toast {
       border-radius: var(--edvanto-radius-sm);
       background: var(--edvanto-white);
       border-left: 4px solid var(--edvanto-gold) !important;
     }
 
-    /* --- Forms --- */
     .form-control, .form-select {
       border-radius: var(--edvanto-radius-sm);
       border: var(--edvanto-border-medium);
@@ -736,22 +785,19 @@
     }
 
     /* ============================================================
-       RESPONSIVE BEHAVIOR
+       RESPONSIVE BEHAVIOR (CSS GRID)
        ============================================================ */
 
-    /* ---- TABLET: compact sidebar (icons only) ---- */
-    @media (max-width: 1199.98px) {
-      .edvanto-sidebar {
-        width: var(--edvanto-sidebar-width-compact);
-      }
-      .edvanto-main {
-        margin-left: var(--edvanto-sidebar-width-compact);
+    /* ---- TABLET & SMALL DESKTOP: compact icon-only rail ---- */
+    @media (max-width: 1199.98px) and (min-width: 768px) {
+      .edvanto-app {
+        grid-template-columns: var(--edvanto-sidebar-width-compact) minmax(0, 1fr);
       }
       .edvanto-logo-text,
       .edvanto-nav-section,
       .edvanto-sidebar-user-info,
       .edvanto-nav-badge {
-        display: none;
+        display: none !important;
       }
       .edvanto-sidebar-brand {
         justify-content: center;
@@ -761,31 +807,31 @@
         justify-content: center;
         padding: 0.7rem 0.5rem;
       }
-      .edvanto-nav-link i {
-        width: auto;
-      }
-      .edvanto-nav-link.active::before {
-        left: -0.75rem;
-      }
+      .edvanto-nav-link i { width: auto; }
       .edvanto-sidebar-user {
         justify-content: center;
         padding: 0.5rem 0.25rem;
       }
-      .edvanto-sidebar-footer {
-        padding: 0.75rem 0.5rem 1rem;
-      }
-      .edvanto-content {
-        padding: 1.25rem 1.25rem 2rem;
-      }
+      .edvanto-sidebar-footer { padding: 0.75rem 0.5rem 1rem; }
+      .edvanto-content { padding: 1.25rem 1.25rem 2rem; }
     }
 
-    /* ---- MOBILE: offcanvas sidebar ---- */
+    /* ---- MOBILE: off-canvas drawer ---- */
     @media (max-width: 767.98px) {
+      .edvanto-app {
+        grid-template-columns: minmax(0, 1fr);
+      }
       .edvanto-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
         width: var(--edvanto-sidebar-width);
+        height: 100vh;
         transform: translateX(-100%);
         box-shadow: 4px 0 30px rgba(18, 18, 18, 0.25);
         z-index: 1050;
+        transition: transform 0.25s ease;
       }
       .edvanto-sidebar.show {
         transform: translateX(0);
@@ -797,9 +843,7 @@
       .edvanto-nav-badge {
         display: flex;
       }
-      .edvanto-nav-section {
-        display: block;
-      }
+      .edvanto-nav-section { display: block; }
       .edvanto-sidebar-brand {
         justify-content: flex-start;
         padding: 1.25rem 1.5rem 1.1rem;
@@ -808,48 +852,24 @@
         justify-content: flex-start;
         padding: 0.65rem 0.85rem;
       }
-      .edvanto-nav-link i {
-        width: 22px;
-      }
+      .edvanto-nav-link i { width: 22px; }
       .edvanto-sidebar-user {
         justify-content: flex-start;
         padding: 0.5rem 0.55rem;
       }
-      .edvanto-sidebar-footer {
-        padding: 0.9rem 1rem 1.1rem;
-      }
+      .edvanto-sidebar-footer { padding: 0.9rem 1rem 1.1rem; }
 
-      .edvanto-main {
-        margin-left: 0;
-      }
+      .edvanto-main { grid-column: 1 / -1; }
 
-      .edvanto-header-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+      .edvanto-header-toggle { display: flex; align-items: center; justify-content: center; }
 
-      .edvanto-header-search {
-        flex: 1 1 auto;
-        max-width: none;
-      }
-      .edvanto-header-user-info {
-        display: none;
-      }
-      .edvanto-header-user {
-        padding: 0.3rem;
-      }
+      .edvanto-header-search { flex: 1 1 auto; max-width: none; }
+      .edvanto-header-user-info { display: none; }
+      .edvanto-header-user { padding: 0.3rem; }
 
-      .edvanto-content {
-        padding: 1rem 1rem 2rem;
-      }
-
-      .edvanto-page-title {
-        font-size: 1.6rem;
-      }
-      .edvanto-card {
-        padding: 1rem 1rem 1.25rem;
-      }
+      .edvanto-content { padding: 1rem 1rem 2rem; }
+      .edvanto-page-title { font-size: 1.6rem; }
+      .edvanto-card { padding: 1rem 1rem 1.25rem; }
       .edvanto-table thead th,
       .edvanto-table tbody td {
         padding: 0.6rem 0.75rem;
@@ -884,7 +904,6 @@
     .bg-edvanto-cream { background-color: var(--edvanto-cream) !important; }
     .bg-edvanto-white { background-color: var(--edvanto-white) !important; }
 
-    /* Reduce motion preference */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -892,20 +911,16 @@
       }
     }
 
-    .site_logo {
-      padding: 18px 0;
-    }
-
+    .site_logo { padding: 18px 0; }
     .site_logo .logo {
       display: inline-block;
       max-width: 170px;
       width: 100%;
     }
-
-    @media only screen and (min-width: 768px) and (max-width: 991px), only screen and (min-width: 576px) and (max-width: 767px), (max-width: 575px) {
-      .site_logo .logo {
-        max-width: 150px;
-      }
+    @media only screen and (min-width: 768px) and (max-width: 991px),
+           only screen and (min-width: 576px) and (max-width: 767px),
+           (max-width: 575px) {
+      .site_logo .logo { max-width: 150px; }
     }
   </style>
 
@@ -952,7 +967,7 @@
           </li>
           <li>
             <a href="{% url 'admin_panel:course_dashboard' %}"
-               class="edvanto-nav-link {% if 'course' in request.resolver_match.url_name %}active{% endif %}">
+               class="edvanto-nav-link {% if request.resolver_match.url_name == 'course_dashboard' or request.resolver_match.url_name == 'course_form' or request.resolver_match.url_name == 'course_create' %}active{% endif %}">
               <i class="bi bi-journal-bookmark-fill"></i>
               <span>Courses</span>
             </a>
@@ -964,13 +979,13 @@
               <span>Syllabus</span>
             </a>
           </li>
-          <li>
+          {% comment %} <li>
             <a href="{% url 'admin_panel:syllabus_curriculum' %}"
                class="edvanto-nav-link {% if 'learning' in request.resolver_match.url_name or 'curriculum' in request.resolver_match.url_name %}active{% endif %}">
               <i class="bi bi-mortarboard-fill"></i>
               <span>Learning</span>
             </a>
-          </li>
+          </li> {% endcomment %}
           <li>
             <a href="{% url 'admin_panel:enrollment_list' %}"
                class="edvanto-nav-link {% if 'enrollment' in request.resolver_match.url_name %}active{% endif %}">
@@ -1158,13 +1173,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    /* ============================================================
-       EDVANTO ADMIN – GLOBAL JAVASCRIPT
-       ============================================================ */
     (function () {
       'use strict';
 
-      /* ---------- Mobile sidebar (offcanvas behaviour) ---------- */
       var sidebar = document.getElementById('edvantoSidebar');
       var backdrop = document.getElementById('edvantoSidebarBackdrop');
       var toggle = document.getElementById('edvantoSidebarToggle');
@@ -1187,30 +1198,20 @@
 
       if (toggle) {
         toggle.addEventListener('click', function () {
-          if (sidebar.classList.contains('show')) {
-            closeSidebar();
-          } else {
-            openSidebar();
-          }
+          if (sidebar.classList.contains('show')) closeSidebar();
+          else openSidebar();
         });
       }
-
-      if (backdrop) {
-        backdrop.addEventListener('click', closeSidebar);
-      }
+      if (backdrop) backdrop.addEventListener('click', closeSidebar);
 
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) {
-          closeSidebar();
-        }
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) closeSidebar();
       });
 
       if (sidebar) {
         sidebar.querySelectorAll('.edvanto-nav-link').forEach(function (link) {
           link.addEventListener('click', function () {
-            if (window.innerWidth < 768) {
-              closeSidebar();
-            }
+            if (window.innerWidth < 768) closeSidebar();
           });
         });
       }
@@ -1219,20 +1220,15 @@
       window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
-          if (window.innerWidth >= 768 && sidebar && sidebar.classList.contains('show')) {
-            closeSidebar();
-          }
+          if (window.innerWidth >= 768 && sidebar && sidebar.classList.contains('show')) closeSidebar();
         }, 150);
       });
 
-      /* ---------- Global toast helper ---------- */
       window.edvantoToast = function (message, type) {
         var toastEl = document.getElementById('edvantoGlobalToast');
         var msgEl = document.getElementById('edvantoGlobalToastMessage');
         if (!toastEl || !msgEl) return;
-
         msgEl.textContent = message || 'Action completed successfully.';
-
         var icon = toastEl.querySelector('.toast-body i');
         if (icon) {
           if (type === 'warning') {
@@ -1253,18 +1249,15 @@
             toastEl.style.borderLeftColor = 'var(--edvanto-gold)';
           }
         }
-
         var toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 3200 });
         toast.show();
       };
 
-      /* ---------- Auto-dismiss Django messages ---------- */
       {% if messages %}
         {% for message in messages %}
           window.edvantoToast("{{ message|escapejs }}", "{{ message.tags|default:'success' }}");
         {% endfor %}
       {% endif %}
-
     })();
   </script>
 
