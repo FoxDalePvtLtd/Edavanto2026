@@ -21,6 +21,7 @@ urlpatterns = [
     path("course/<slug:slug>/offline-payment/", views.offline_payment_request, name="offline_payment_request"),
 
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("courses/<slug:slug>/", views.course_dashboard, name="course_dashboard"),
 
     path("register/", views.student_register, name="student_register"),
     path("verify-otp/", views.verify_otp_view, name="verify_otp"),

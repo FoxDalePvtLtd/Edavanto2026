@@ -1,0 +1,424 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% comment %}
+============================================================
+ EDVANTO — MY COURSE (student learning workspace)
+
+ URL      : core:course_dashboard  (see urls.py)
+ View     : core.views.course_dashboard  (patched)
+ Template : this file
+ Styles   : static/css/student_my_course.css
+
+ Verified context (exactly what the patched view passes):
+   enrollments          list of Enrollment (fallback list page)
+   active_enrollment    Enrollment for THIS course
+   current_lesson       first unlocked lesson (or None)
+   learning_progress    flat list of LessonProgress rows
+   progress_by_lesson   dict { lesson_id: LessonProgress }
+   student_name         str
+   student_initials     str
+
+ Fallback-safe (all wrapped in {% if %}):
+   materials_summary    None for now
+   assessment_status    None for now
+   pending_assessments  0
+   open_doubts          0
+
+ Verified related names used by your code:
+   enrollment.lesson_progress         (progress rows)
+   lesson.module                      (FK, exists)
+   course.modules.all                 (standard reverse FK)
+
+ Only one name is assumed: module.lessons — the reverse FK
+ from Module to Lesson. If your model uses a different
+ related_name, swap it in the two spots marked ADAPT-REL.
+============================================================
+{% endcomment %}
+
+{% block dashboard_title %}My Course{% endblock %}
+
+{% block page_title %}{{ active_enrollment.course.title }}{% endblock %}
+
+{% block page_context %}Your learning workspace{% endblock %}
+
+{% block dashboard_content %}
+{% with course=active_enrollment.course mode=active_enrollment.course.mode|default:"online" %}
+
+<div class="mc-page">
+
+    <header class="mc-intro">
+    <div class="mc-intro-text">
+      <div class="mc-intro-eyebrow">
+        <i class="bi {% if mode == 'offline' %}bi-geo-alt{% elif mode == 'both' %}bi-layers{% else %}bi-wifi{% endif %}"></i>
+        {% if mode == 'offline' %}
+          Offline Learning
+        {% elif mode == 'both' %}
+          Online &amp; Offline
+        {% else %}
+          Online Learning
+        {% endif %}
+      </div>
+      <h1 class="mc-intro-title">My Course</h1>
+      <p class="mc-intro-sub">
+        {% if student_name %}{{ student_name }}, {% endif %}here is your course and everything you can work through today.
+      </p>
+    </div>
+
+    <div class="mc-intro-status">
+      {% if active_enrollment.access_paused %}
+        <span class="mc-badge mc-badge--danger"><i class="bi bi-lock"></i> Access Paused</span>
+      {% elif active_enrollment.approval_status == 'accepted' and active_enrollment.payment_status == 'paid' %}
+        <span class="mc-badge mc-badge--dark"><i class="bi bi-check-circle"></i> Active</span>
+      {% elif active_enrollment.approval_status == 'accepted' %}
+        <span class="mc-badge mc-badge--gold"><i class="bi bi-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
+      {% else %}
+        <span class="mc-badge mc-badge--gold"><i class="bi bi-clock"></i> {{ active_enrollment.get_approval_status_display }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  
+  <section class="mc-overview" aria-label="Course overview">
+
+    <div class="mc-overview-thumb">
+      {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+      {% else %}
+        <i class="bi bi-book"></i>
+      {% endif %}
+    </div>
+
+    <div class="mc-overview-body">
+      <h2 class="mc-overview-title">{{ course.title }}</h2>
+
+      <div class="mc-overview-meta">
+        {% if course.instructor %}
+          <span><i class="bi bi-person"></i>
+            {{ course.instructor.get_full_name|default:course.instructor.username }}
+          </span>
+        {% endif %}
+        {% if course.modules.all %}
+          <span><i class="bi bi-layers"></i> {{ course.modules.all|length }} modules</span>
+        {% endif %}
+        {% if learning_progress %}
+          <span><i class="bi bi-play-circle"></i> {{ learning_progress|length }} lessons</span>
+        {% endif %}
+      </div>
+
+      {% if course.description %}
+        <p class="mc-overview-desc">{{ course.description|truncatechars:200 }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mc-overview-right">
+      <span class="mc-overview-label">Progress</span>
+      <span class="mc-overview-value">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
+      <div class="mc-overview-bar">
+        <div class="mc-overview-bar-fill"
+             style="width: {{ active_enrollment.progress_percent }}%;"></div>
+      </div>
+    </div>
+
+  </section>
+
+  
+  <section class="mc-continue" aria-label="Continue learning">
+
+    {% if active_enrollment.access_paused %}
+      <div class="mc-continue-blocked">
+        <span class="mc-continue-icon"><i class="bi bi-lock"></i></span>
+        <div class="mc-continue-body">
+          <p class="mc-continue-label">Access paused</p>
+          <h3 class="mc-continue-title">Your course access is temporarily paused</h3>
+          <p class="mc-continue-sub">Resolve the pending items on your enrollment to resume learning.</p>
+        </div>
+        {% if course.slug %}
+          <a href="{% url 'core:payment' course.slug %}" class="mc-btn mc-btn-outline">
+            <i class="bi bi-wallet2"></i> Manage Enrollment
+          </a>
+        {% endif %}
+      </div>
+
+    {% elif current_lesson %}
+      <div class="mc-continue-active">
+        <span class="mc-continue-icon mc-continue-icon--gold"><i class="bi bi-play-circle"></i></span>
+        <div class="mc-continue-body">
+          <p class="mc-continue-label">Continue Learning</p>
+          <h3 class="mc-continue-title">{{ current_lesson.title }}</h3>
+          {% if current_lesson.module.title %}
+            <p class="mc-continue-sub">{{ current_lesson.module.title }}</p>
+          {% endif %}
+        </div>
+        <a href="{% url 'core:lesson' current_lesson.id %}" class="mc-btn mc-btn-primary">
+          <i class="bi bi-play-circle"></i> Continue
+        </a>
+      </div>
+
+    {% elif learning_progress %}
+      <div class="mc-continue-blocked">
+        <span class="mc-continue-icon"><i class="bi bi-hourglass-split"></i></span>
+        <div class="mc-continue-body">
+          <p class="mc-continue-label">Nothing to continue yet</p>
+          <h3 class="mc-continue-title">Your next lesson will unlock soon</h3>
+          <p class="mc-continue-sub">Check back after your instructor publishes or unlocks the next lesson.</p>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="mc-continue-blocked">
+        <span class="mc-continue-icon"><i class="bi bi-journal-text"></i></span>
+        <div class="mc-continue-body">
+          <p class="mc-continue-label">No lessons yet</p>
+          <h3 class="mc-continue-title">This course has no published lessons</h3>
+          <p class="mc-continue-sub">Lessons will appear here as soon as your instructor publishes them.</p>
+        </div>
+      </div>
+    {% endif %}
+
+  </section>
+
+  
+  <section class="mc-stats" aria-label="Course progress summary">
+
+    <div class="mc-stat">
+      <span class="mc-stat-label">Progress</span>
+      <span class="mc-stat-value">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
+    </div>
+
+    {% if learning_progress %}
+      <div class="mc-stat">
+        <span class="mc-stat-label">Lessons</span>
+        <span class="mc-stat-value">{{ learning_progress|length }}</span>
+      </div>
+    {% endif %}
+
+    {% if course.modules.all %}
+      <div class="mc-stat">
+        <span class="mc-stat-label">Modules</span>
+        <span class="mc-stat-value">{{ course.modules.all|length }}</span>
+      </div>
+    {% endif %}
+
+    <div class="mc-stat">
+      <span class="mc-stat-label">Payment</span>
+      <span class="mc-stat-value">{{ active_enrollment.get_payment_status_display }}</span>
+    </div>
+
+    <div class="mc-stat">
+      <span class="mc-stat-label">Approval</span>
+      <span class="mc-stat-value">{{ active_enrollment.get_approval_status_display }}</span>
+    </div>
+
+    {% if pending_assessments %}
+      <div class="mc-stat">
+        <span class="mc-stat-label">Assessments</span>
+        <span class="mc-stat-value">{{ pending_assessments }} pending</span>
+      </div>
+    {% endif %}
+
+    {% if open_doubts %}
+      <div class="mc-stat">
+        <span class="mc-stat-label">Doubts</span>
+        <span class="mc-stat-value">{{ open_doubts }} open</span>
+      </div>
+    {% endif %}
+
+  </section>
+
+  
+  {% if mode != 'offline' %}
+    <section class="mc-curriculum-wrap" aria-label="Course curriculum">
+
+      <div class="mc-curriculum-head">
+        <h2 class="mc-section-title">Course Curriculum</h2>
+        {% if course.modules.all %}
+          <span class="mc-section-sub">{{ course.modules.all|length }} modules</span>
+        {% endif %}
+      </div>
+
+      {% if course.modules.all %}
+
+        <nav class="mc-modnav" aria-label="Module navigation">
+          <div class="mc-modnav-track">
+            {% for module in course.modules.all %}
+              <a href="#mc-mod-{{ module.id }}" class="mc-modnav-item">
+                <i class="bi bi-journal-text"></i>
+                <span>{{ module.title }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </nav>
+
+        <div class="accordion mc-modules" id="mcModules">
+          {% for module in course.modules.all %}
+            <div class="accordion-item mc-module" id="mc-mod-{{ module.id }}">
+
+              <h3 class="accordion-header" id="mc-mod-h-{{ module.id }}">
+                <button class="accordion-button mc-module-btn{% if not forloop.first %} collapsed{% endif %}"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mc-mod-b-{{ module.id }}"
+                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                        aria-controls="mc-mod-b-{{ module.id }}">
+                  <span class="mc-module-index">{{ forloop.counter|stringformat:"02d" }}</span>
+                  <span class="mc-module-title">{{ module.title }}</span>
+                  {# ADAPT-REL: swap `module.lessons.all` for your related name if different #}
+                  <span class="mc-module-meta">
+                    <i class="bi bi-play-circle"></i> {{ module.lessons.all|length }} lessons
+                  </span>
+                </button>
+              </h3>
+
+              <div id="mc-mod-b-{{ module.id }}"
+                   class="accordion-collapse collapse{% if forloop.first %} show{% endif %}"
+                   aria-labelledby="mc-mod-h-{{ module.id }}"
+                   data-bs-parent="#mcModules">
+                <div class="accordion-body mc-module-body">
+
+                  {% if module.description %}
+                    <p class="mc-module-desc">{{ module.description }}</p>
+                  {% endif %}
+
+                  {# ADAPT-REL: same related name here #}
+                  {% if module.lessons.all %}
+                    <ul class="mc-lessons">
+                      {% for lesson in module.lessons.all %}
+
+                        {# Verified: progress_by_lesson was built in the view #}
+                        {% comment %} {% with progress=progress_by_lesson|get_item:lesson.id %} {% endcomment %}
+
+                          {% if progress and progress.status == 'completed' %}
+                            <li class="mc-lesson is-completed">
+                              <span class="mc-lesson-icon"><i class="bi bi-check-circle"></i></span>
+                              <div class="mc-lesson-body">
+                                <span class="mc-lesson-title">{{ lesson.title }}</span>
+                                {% if lesson.duration %}
+                                  <span class="mc-lesson-meta"><i class="bi bi-clock"></i> {{ lesson.duration }}</span>
+                                {% endif %}
+                              </div>
+                              <span class="mc-lesson-tag mc-lesson-tag--done">Completed</span>
+                            </li>
+
+                          {% elif progress and progress.status == 'in_progress' or progress and progress.status == 'unlocked' %}
+                            <li class="mc-lesson is-current">
+                              <a href="{% url 'core:lesson' lesson.id %}" class="mc-lesson-link">
+                                <span class="mc-lesson-icon"><i class="bi bi-play-circle"></i></span>
+                                <div class="mc-lesson-body">
+                                  <span class="mc-lesson-title">{{ lesson.title }}</span>
+                                  {% if lesson.duration %}
+                                    <span class="mc-lesson-meta"><i class="bi bi-clock"></i> {{ lesson.duration }}</span>
+                                  {% endif %}
+                                </div>
+                                <span class="mc-lesson-tag mc-lesson-tag--current">
+                                  {% if progress.status == 'in_progress' %}Continue{% else %}Start{% endif %}
+                                </span>
+                              </a>
+                            </li>
+
+                          {% else %}
+                            {# No progress row OR locked status → render as locked, no href #}
+                            <li class="mc-lesson is-locked" aria-disabled="true">
+                              <span class="mc-lesson-icon"><i class="bi bi-lock"></i></span>
+                              <div class="mc-lesson-body">
+                                <span class="mc-lesson-title">{{ lesson.title }}</span>
+                                {% if lesson.duration %}
+                                  <span class="mc-lesson-meta"><i class="bi bi-clock"></i> {{ lesson.duration }}</span>
+                                {% endif %}
+                              </div>
+                              <span class="mc-lesson-tag mc-lesson-tag--locked">Locked</span>
+                            </li>
+                          {% endif %}
+
+                        {% comment %} {% endwith %}  {% endcomment %}
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <div class="mc-empty">
+                      <i class="bi bi-journal-text"></i>
+                      <p>No lessons published in this module yet.</p>
+                    </div>
+                  {% endif %}
+
+                </div>
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="mc-empty mc-empty--big">
+          <i class="bi bi-journal-text"></i>
+          <h4>Curriculum will appear here</h4>
+          <p>Modules and lessons for this course will show up as soon as they are published.</p>
+        </div>
+      {% endif %}
+
+    </section>
+
+  {% else %}
+    {# ---------- Offline mode: materials ---------- #}
+    <section class="mc-curriculum-wrap" aria-label="Offline course resources">
+      <div class="mc-curriculum-head">
+        <h2 class="mc-section-title">Course Materials</h2>
+      </div>
+
+      {% if materials_summary %}
+        <div class="mc-materials">
+          <div class="mc-materials-head">
+            <span class="mc-materials-count">
+              <i class="bi bi-folder2-open"></i> {{ materials_summary.count }} resources
+            </span>
+          </div>
+          {% if materials_summary.latest %}
+            <div class="mc-materials-latest">
+              <span class="mc-materials-label">Latest</span>
+              <span class="mc-materials-title">{{ materials_summary.latest.title }}</span>
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="mc-empty mc-empty--big">
+          <i class="bi bi-folder2-open"></i>
+          <h4>No materials yet</h4>
+          <p>Learning materials for this course will appear here once uploaded.</p>
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  
+  <section class="mc-resources" aria-label="Related resources">
+    <div class="mc-resources-track">
+
+      {% if mode != 'offline' %}
+        <a href="#" class="mc-resource">
+          <i class="bi bi-clipboard-check"></i><span>Assessments</span>
+        </a>
+        <a href="#" class="mc-resource">
+          <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
+        </a>
+      {% endif %}
+
+      <a href="#" class="mc-resource">
+        <i class="bi bi-folder2-open"></i><span>Materials</span>
+      </a>
+
+      {% if course.slug %}
+        <a href="{% url 'core:payment' course.slug %}" class="mc-resource">
+          <i class="bi bi-wallet2"></i><span>Payments</span>
+        </a>
+      {% endif %}
+
+      <a href="#" class="mc-resource">
+        <i class="bi bi-award"></i><span>Certificates</span>
+      </a>
+
+    </div>
+  </section>
+
+</div>
+
+{% endwith %}
+{% endblock %}

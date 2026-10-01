@@ -5,8 +5,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import Course
 from .forms import *
+from django.views.decorators.http import require_GET, require_http_methods
+
+from .permissions import admin_required
 
 
+@admin_required
+@require_GET
 def dashboard(request):
     return render(
         request,
@@ -18,6 +23,8 @@ def dashboard(request):
 # USERS
 # ==================================================
 
+@admin_required
+@require_GET
 def user_list(request):
     return render(
         request,
@@ -25,6 +32,8 @@ def user_list(request):
     )
 
 
+@admin_required
+@require_GET
 def user_form(request):
     return render(
         request,
@@ -36,6 +45,8 @@ def user_form(request):
 # COURSES
 # ==================================================
 
+@admin_required
+@require_GET
 def course_dashboard(request):
     courses = Course.objects.all().order_by("-created_at")
 
@@ -48,6 +59,8 @@ def course_dashboard(request):
     )
 
 
+@admin_required
+@require_http_methods(["GET", "POST"])
 def course_form(request, course_id=None):
 
     course = None
@@ -138,7 +151,8 @@ def course_form(request, course_id=None):
 # ==================================================
 # SYLLABUS
 # ==================================================
-
+@admin_required
+@require_GET
 def syllabus_course_list(request):
     return render(
         request,
@@ -146,6 +160,8 @@ def syllabus_course_list(request):
     )
 
 
+@admin_required
+@require_GET
 def syllabus_curriculum(request):
     return render(
         request,
@@ -153,6 +169,8 @@ def syllabus_curriculum(request):
     )
 
 
+@admin_required
+@require_GET
 def syllabus_media_lesson(request):
     return render(
         request,
@@ -163,7 +181,8 @@ def syllabus_media_lesson(request):
 # ==================================================
 # ENROLLMENTS
 # ==================================================
-
+@admin_required
+@require_GET
 def enrollment_list(request):
     return render(
         request,
@@ -174,14 +193,16 @@ def enrollment_list(request):
 # ==================================================
 # PAYMENTS
 # ==================================================
-
+@admin_required
+@require_GET
 def payment_list(request):
     return render(
         request,
         "payments/list.html",
     )
 
-
+@admin_required
+@require_GET
 def payment_installments(request):
     return render(
         request,
@@ -192,21 +213,24 @@ def payment_installments(request):
 # ==================================================
 # BATCHES
 # ==================================================
-
+@admin_required
+@require_GET
 def batch_list(request):
     return render(
         request,
         "batches/list.html",
     )
 
-
+@admin_required
+@require_GET
 def batch_sessions(request):
     return render(
         request,
         "batches/sessions.html",
     )
 
-
+@admin_required
+@require_GET
 def batch_attendance(request):
     return render(
         request,
@@ -217,21 +241,24 @@ def batch_attendance(request):
 # ==================================================
 # ASSESSMENTS
 # ==================================================
-
+@admin_required
+@require_GET
 def assessment_list(request):
     return render(
         request,
         "assessments/list.html",
     )
 
-
+@admin_required
+@require_GET
 def assessment_questions(request):
     return render(
         request,
         "assessments/questions.html",
     )
 
-
+@admin_required
+@require_GET
 def assessment_submissions(request):
     return render(
         request,
@@ -242,7 +269,8 @@ def assessment_submissions(request):
 # ==================================================
 # DOUBTS
 # ==================================================
-
+@admin_required
+@require_GET
 def doubt_list(request):
     return render(
         request,
@@ -253,7 +281,8 @@ def doubt_list(request):
 # ==================================================
 # NOTIFICATIONS
 # ==================================================
-
+@admin_required
+@require_GET
 def notification_list(request):
     return render(
         request,
@@ -264,7 +293,8 @@ def notification_list(request):
 # ==================================================
 # CONSULTATIONS
 # ==================================================
-
+@admin_required
+@require_GET
 def consultation_list(request):
     return render(
         request,
@@ -275,7 +305,8 @@ def consultation_list(request):
 # ==================================================
 # CERTIFICATES
 # ==================================================
-
+@admin_required
+@require_GET
 def certificate_list(request):
     return render(
         request,
@@ -287,6 +318,8 @@ def certificate_list(request):
 # REPORTS
 # ==================================================
 
+@admin_required
+@require_GET
 def report_dashboard(request):
     return render(
         request,
@@ -297,7 +330,8 @@ def report_dashboard(request):
 # ==================================================
 # SECURITY
 # ==================================================
-
+@admin_required
+@require_GET
 def security_dashboard(request):
     return render(
         request,

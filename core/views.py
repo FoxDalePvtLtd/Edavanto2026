@@ -1324,3 +1324,139 @@ def lesson_complete_api(request, lesson_id):
             ),
         }
     )
+
+@login_required
+def course_dashboard(request, slug):
+    """
+    Two responsibilities, same URL:
+
+    1) If the student is enrolled in the requested course AND has access,
+       render the dedicated My Course learning workspace.
+
+    2) Otherwise, fall back to the existing enrollments list page
+       (dashboard/student/my_courses.html) — preserving old behaviour.
+    """
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can access their courses."
+        )
+        return redirect("core:dashboard")
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=request.user)
+        .select_related(
+            "course",
+            "course__instructor",
+            "course__center",
+        )
+        .order_by("-enrolled_at")
+    )
+
+    # Try to resolve the slug against the student's own enrollments only.
+    active_enrollment = next(
+        (e for e in enrollments if e.course.slug == slug),
+        None,
+    )
+
+    # If the slug is not the student's, fall back to the list view.
+    if active_enrollment is None:
+        messages.warning(
+            request,
+            "You are not enrolled in that course.",
+        )
+        return render(
+            request,
+            "dashboard/student/my_courses.html",
+            {"enrollments": enrollments},
+        )
+
+    # If the student is enrolled but access is currently denied
+    # (pending approval, unpaid, paused), send them to the course
+    # detail page so they can see/resolve the reason — same pattern
+    # the dashboard view already uses.
+    if not enrollment_has_access(active_enrollment):
+        if active_enrollment.approval_status == Enrollment.ApprovalStatus.PENDING:
+            messages.warning(
+                request,
+                f"Your enrollment for "
+                f"“{active_enrollment.course.title}” is awaiting approval.",
+            )
+        elif active_enrollment.access_paused:
+            messages.warning(
+                request,
+                f"Your access to "
+                f"“{active_enrollment.course.title}” is currently paused.",
+            )
+        else:
+            messages.warning(
+                request,
+                f"You do not currently have access to "
+                f"“{active_enrollment.course.title}”.",
+            )
+        return redirect(
+            "core:course_detail",
+            slug=active_enrollment.course.slug,
+        )
+
+    # -------- Build the My Course workspace context --------
+    course = active_enrollment.course
+
+    current_lesson = None
+    learning_progress = []
+
+    if course.mode == Course.Mode.ONLINE:
+        current_lesson = get_current_unlocked_lesson(active_enrollment)
+
+        # Same queryset the dashboard view uses — ordered exactly the
+        # way the curriculum expects.
+        learning_progress = list(
+            active_enrollment.lesson_progress
+            .select_related(
+                "lesson",
+                "lesson__module",
+            )
+            .order_by(
+                "lesson__module__unlock_order",
+                "lesson__module__order",
+                "lesson__unlock_order",
+                "lesson__order",
+                "lesson__pk",
+            )
+        )
+
+    # Fast lookup: lesson_id -> progress row.
+    # Template uses this to render per-lesson status without N+1.
+    progress_by_lesson = {
+        row.lesson_id: row for row in learning_progress
+    }
+
+    return render(
+        request,
+        "dashboard/student/my_course.html",
+        {
+            # shared shell context (same shape as dashboard)
+            "enrollments": enrollments,
+            "active_enrollment": active_enrollment,
+            "current_lesson": current_lesson,
+            "learning_progress": learning_progress,
+            "progress_by_lesson": progress_by_lesson,
+            "is_student": True,
+            "student_name": (
+                request.user.get_full_name()
+                or request.user.username
+            ),
+            "student_initials": (
+                (request.user.first_name[:1] if request.user.first_name else "")
+                + (request.user.last_name[:1] if request.user.last_name else "")
+            ).upper() or "S",
+            # My Course uses these too (may be None — template guards them)
+            "materials_summary": None,
+            "assessment_status": None,
+            "pending_assessments": 0,
+            "open_doubts": 0,
+            "unread_notifications": 0,
+            "notifications": [],
+        },
+    )

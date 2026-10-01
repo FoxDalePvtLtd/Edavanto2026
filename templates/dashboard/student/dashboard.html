@@ -6,25 +6,26 @@
  EDVANTO STUDENT DASHBOARD — LANDING PAGE
  dashboard/student/dashboard.html
 
- Markup only. All .md-* styles live in base_dashboard.html so
- dark mode and theming work consistently across the shell.
+ Markup + Django logic only. Styles live in
+ static/css/student_dashboard.css.
 
- Preserves every Django connection from the previous version:
-   - active_enrollment, active_enrollment.course,
-     active_enrollment.progress_percent,
-     active_enrollment.payment_status / approval_status /
-     access_paused / get_payment_status_display /
-     get_approval_status_display
-   - course.thumbnail / title / instructor / modules / price /
-     discounted_price / slug
-   - learning_progress (with .status, .lesson.title, .lesson.id,
-     .get_status_display)
-   - current_lesson (with .title, .module.title, .id)
-   - student_name, student_avatar, student_initials
-   - notifications / unread_notifications
-   - assessment_status, recent_doubt, materials_summary, certificate
-   - URL names: core:home, core:dashboard, core:lesson, core:payment,
-     core:logout
+ Preserved Django context (do NOT rename):
+   active_enrollment, active_enrollment.course,
+   active_enrollment.progress_percent,
+   active_enrollment.payment_status / approval_status /
+   access_paused / get_payment_status_display /
+   get_approval_status_display
+   course.thumbnail / title / instructor / modules / price /
+   discounted_price / slug
+   learning_progress (status, lesson.title, lesson.id,
+   get_status_display)
+   current_lesson (title, module.title, id)
+   student_name, student_avatar, student_initials
+   notifications, unread_notifications
+   assessment_status, recent_doubt, materials_summary, certificate
+
+ Preserved URL names:
+   core:home, core:dashboard, core:lesson, core:payment, core:logout
 ============================================================
 {% endcomment %}
 
@@ -49,26 +50,19 @@
 
 <div class="md-dash">
 
-  {# ---------------- HERO ---------------- #}
+  
   <section class="md-hero">
-    <svg class="md-hero-art" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="180" cy="90" r="70" stroke="%23D4A62A" stroke-opacity=".35" stroke-width="1" fill="none"/>
-      <circle cx="180" cy="90" r="46" stroke="%23E0B83F" stroke-opacity=".55" stroke-width="1" fill="none"/>
-      <circle cx="180" cy="90" r="22" fill="%23D4A62A" fill-opacity=".18"/>
-      <circle cx="228" cy="60" r="3" fill="%23B8891F" fill-opacity=".7"/>
-      <circle cx="132" cy="140" r="2.5" fill="%23E0B83F" fill-opacity=".8"/>
-      <circle cx="240" cy="150" r="2" fill="%239C7924" fill-opacity=".6"/>
-      <path d="M40 200 L70 180 L100 190 L130 160 L160 170 L190 140"
-            stroke="%23B8891F" stroke-opacity=".55" stroke-width="1.75"
-            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      <path d="M40 220 L70 205 L100 215 L130 195"
-            stroke="%23E0B83F" stroke-opacity=".45" stroke-width="1.5"
-            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    </svg>
+
+    <div class="md-hero-art" aria-hidden="true">
+      <i class="bi bi-mortarboard"></i>
+      <i class="bi bi-journal-text"></i>
+      <i class="bi bi-bar-chart"></i>
+      <i class="bi bi-stars"></i>
+    </div>
 
     <div class="md-hero-text">
       <div class="md-hero-eyebrow">
-        <i class="tji-{% if mode == 'offline' %}location{% elif mode == 'both' %}layers{% else %}sparkles{% endif %}"></i>
+        <i class="bi {% if mode == 'offline' %}bi-geo-alt{% elif mode == 'both' %}bi-layers{% else %}bi-stars{% endif %}"></i>
         {% if mode == 'offline' %}
           Offline Learning
         {% elif mode == 'both' %}
@@ -96,180 +90,211 @@
     <div class="md-hero-actions">
       {% if current_lesson %}
         <a href="{% url 'core:lesson' current_lesson.id %}" class="md-btn md-btn-primary">
-          <i class="tji-play"></i> Continue Learning
+          <i class="bi bi-play-circle"></i> Continue Learning
         </a>
       {% elif course %}
-        <a href="{% url 'core:dashboard' %}" class="md-btn md-btn-primary">
-          <i class="tji-play"></i> Open Course
+        <a href="{% url 'core:course_dashboard' course.slug %}" class="md-btn md-btn-primary">
+          <i class="bi bi-play-circle"></i> Open Course
         </a>
       {% endif %}
       <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-outline">
-        <i class="tji-wallet"></i> Payment
+        <i class="bi bi-credit-card"></i> Payment
       </a>
     </div>
   </section>
 
-  {# ---------------- COURSE ---------------- #}
-  <p class="md-section-label">Your Course</p>
+  
+  <section aria-label="Learning snapshot">
+    <div class="snapshot-strip">
 
-  <div class="md-course">
-    <div class="md-course-thumb">
-      {% if course.thumbnail %}
-        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
-      {% else %}
-        <i class="tji-book"></i>
+      <div class="snapshot-item">
+        <span class="snapshot-icon"><i class="bi bi-bar-chart"></i></span>
+        <div class="snapshot-body">
+          <span class="snapshot-label">Progress</span>
+          <span class="snapshot-value gold">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
+        </div>
+      </div>
+
+      {% if current_lesson %}
+        <div class="snapshot-item">
+          <span class="snapshot-icon"><i class="bi bi-play-circle"></i></span>
+          <div class="snapshot-body">
+            <span class="snapshot-label">Current Lesson</span>
+            <span class="snapshot-value">{{ current_lesson.title }}</span>
+          </div>
+        </div>
       {% endif %}
-    </div>
 
-    <div class="md-course-body">
-      <div class="md-course-top">
-        <h3 class="md-course-title">{{ course.title }}</h3>
-        {% if mode == 'offline' %}
-          <span class="md-mode offline"><i class="tji-location"></i> Offline</span>
-        {% elif mode == 'both' %}
-          <span class="md-mode online"><i class="tji-layers"></i> Hybrid</span>
-        {% else %}
-          <span class="md-mode online"><i class="tji-wifi"></i> Online</span>
-        {% endif %}
-      </div>
-
-      <div class="md-course-meta">
-        {% if course.instructor %}
-          <span><i class="tji-user"></i> {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
-        {% endif %}
-        <span><i class="tji-play"></i> {{ learning_progress|length }} tracked lessons</span>
-        <span><i class="tji-layers"></i> {{ course.modules.all|length }} modules</span>
-      </div>
-
-      <div class="md-progress">
-        <div class="md-progress-head">
-          <span class="label">Progress</span>
-          <span class="value">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
-        </div>
-        <div class="md-progress-track">
-          <div class="md-progress-fill" style="width: {{ active_enrollment.progress_percent }}%;"></div>
+      <div class="snapshot-item">
+        <span class="snapshot-icon">
+          <i class="bi {% if mode == 'offline' %}bi-geo-alt{% elif mode == 'both' %}bi-layers{% else %}bi-wifi{% endif %}"></i>
+        </span>
+        <div class="snapshot-body">
+          <span class="snapshot-label">Mode</span>
+          <span class="snapshot-value">
+            {% if mode == 'offline' %}Offline{% elif mode == 'both' %}Hybrid{% else %}Online{% endif %}
+          </span>
         </div>
       </div>
 
-      <div class="d-flex flex-wrap gap-2">
-        {% if active_enrollment.payment_status == 'paid' %}
-          <span class="md-tag md-tag-success"><i class="tji-check"></i> {{ active_enrollment.get_payment_status_display }}</span>
-        {% elif active_enrollment.payment_status == 'partially_paid' %}
-          <span class="md-tag md-tag-bright"><i class="tji-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
-        {% elif active_enrollment.payment_status == 'pending' %}
-          <span class="md-tag md-tag-gold"><i class="tji-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
-        {% else %}
-          <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
-        {% endif %}
-
-        {% if active_enrollment.approval_status == 'accepted' %}
-          <span class="md-tag md-tag-dark"><i class="tji-check"></i> {{ active_enrollment.get_approval_status_display }}</span>
-        {% elif active_enrollment.approval_status == 'rejected' %}
-          <span class="md-tag md-tag-danger"><i class="tji-lock"></i> {{ active_enrollment.get_approval_status_display }}</span>
-        {% else %}
-          <span class="md-tag md-tag-gold"><i class="tji-clock"></i> {{ active_enrollment.get_approval_status_display }}</span>
-        {% endif %}
-
-        {% if active_enrollment.access_paused %}
-          <span class="md-tag md-tag-danger"><i class="tji-lock"></i> Access Paused</span>
-        {% endif %}
+      <div class="snapshot-item">
+        <span class="snapshot-icon"><i class="bi bi-wallet2"></i></span>
+        <div class="snapshot-body">
+          <span class="snapshot-label">Payment</span>
+          <span class="snapshot-value">{{ active_enrollment.get_payment_status_display }}</span>
+        </div>
       </div>
+
+      {% if pending_assessments %}
+        <div class="snapshot-item">
+          <span class="snapshot-icon"><i class="bi bi-clipboard-check"></i></span>
+          <div class="snapshot-body">
+            <span class="snapshot-label">Assessments</span>
+            <span class="snapshot-value">{{ pending_assessments }} pending</span>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if open_doubts %}
+        <div class="snapshot-item">
+          <span class="snapshot-icon"><i class="bi bi-chat-dots"></i></span>
+          <div class="snapshot-body">
+            <span class="snapshot-label">Doubts</span>
+            <span class="snapshot-value">{{ open_doubts }} open</span>
+          </div>
+        </div>
+      {% endif %}
+
     </div>
-  </div>
+  </section>
 
-  {% if mode != 'offline' %}
-    <div class="row g-3 g-lg-4">
-      <div class="col-12 col-lg-5">
-        <p class="md-section-label">Continue Learning</p>
+ 
+  <section aria-label="Your course">
+    <p class="md-section-label">Your Course</p>
 
-        {% if current_lesson %}
-          <div class="md-lesson-callout mb-3">
-            <span class="md-lesson-callout-icon"><i class="tji-play"></i></span>
-            <div class="md-lesson-callout-body">
-              <p class="eyebrow">Current Lesson</p>
-              <h4>{{ current_lesson.title }}</h4>
-              {% if current_lesson.module.title %}<p>{{ current_lesson.module.title }}</p>{% endif %}
-            </div>
-            <a href="{% url 'core:lesson' current_lesson.id %}" class="md-btn md-btn-primary">
-              Open <i class="tji-arrow-right-2"></i>
-            </a>
-          </div>
+    <div class="course-editorial">
+      <div class="course-editorial-thumb">
+        {% if course.thumbnail %}
+          <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+        {% else %}
+          <i class="bi bi-book"></i>
         {% endif %}
       </div>
 
-      <div class="col-12 col-lg-7">
-        <div class="md-card">
-          <div class="md-card-head">
-            <h3>
-              <span class="md-icon-dot"><i class="tji-list"></i></span>
-              Lesson Path
-            </h3>
-            <a href="{% url 'core:dashboard' %}">Refresh</a>
-          </div>
-
-          {% if learning_progress %}
-            <ul class="md-lesson-list">
-              {% for progress in learning_progress %}
-                {% if progress.status == 'completed' %}
-                  <li>
-                    <div class="md-lesson-row is-completed">
-                      <span class="md-lesson-icon"><i class="tji-check"></i></span>
-                      <div class="md-lesson-body">
-                        <p class="md-lesson-title">{{ progress.lesson.title }}</p>
-                        <span class="md-lesson-meta">Completed</span>
-                      </div>
-                      <span class="md-tag md-tag-paper">Done</span>
-                    </div>
-                  </li>
-                {% elif progress.status == 'in_progress' or progress.status == 'unlocked' %}
-                  <li>
-                    <a href="{% url 'core:lesson' progress.lesson.id %}" class="md-lesson-row is-current">
-                      <span class="md-lesson-icon"><i class="tji-play"></i></span>
-                      <div class="md-lesson-body">
-                        <p class="md-lesson-title">{{ progress.lesson.title }}</p>
-                        <span class="md-lesson-meta">{{ progress.get_status_display }}</span>
-                      </div>
-                      <span class="md-tag md-tag-gold">Current</span>
-                    </a>
-                  </li>
-                {% else %}
-                  <li>
-                    <div class="md-lesson-row is-locked" aria-disabled="true">
-                      <span class="md-lesson-icon"><i class="tji-lock"></i></span>
-                      <div class="md-lesson-body">
-                        <p class="md-lesson-title">{{ progress.lesson.title }}</p>
-                        <span class="md-lesson-meta">Locked</span>
-                      </div>
-                      <span class="md-tag md-tag-soft">Locked</span>
-                    </div>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
+      <div class="course-editorial-body">
+        <div class="course-editorial-top">
+          <h3 class="course-editorial-title">{{ course.title }}</h3>
+          {% if mode == 'offline' %}
+            <span class="md-mode offline"><i class="bi bi-geo-alt"></i> Offline</span>
+          {% elif mode == 'both' %}
+            <span class="md-mode online"><i class="bi bi-layers"></i> Hybrid</span>
           {% else %}
-            <div class="md-empty">
-              <i class="tji-list"></i>
-              <h4>Lesson path will appear here</h4>
-              <p>Published sequential lessons will appear here once learning progress is initialized.</p>
-            </div>
+            <span class="md-mode online"><i class="bi bi-wifi"></i> Online</span>
+          {% endif %}
+        </div>
+
+        <div class="course-editorial-meta">
+          {% if course.instructor %}
+            <span><i class="bi bi-person"></i> {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+          {% endif %}
+          <span><i class="bi bi-play-circle"></i> {{ learning_progress|length }} tracked lessons</span>
+          <span><i class="bi bi-layers"></i> {{ course.modules.all|length }} modules</span>
+        </div>
+
+        <div class="md-progress">
+          <div class="md-progress-head">
+            <span class="label">Progress</span>
+            <span class="value">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
+          </div>
+          <div class="md-progress-track">
+            <div class="md-progress-fill" style="width: {{ active_enrollment.progress_percent }}%;"></div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          {% if active_enrollment.payment_status == 'paid' %}
+            <span class="md-tag md-tag-success"><i class="bi bi-check-circle"></i> {{ active_enrollment.get_payment_status_display }}</span>
+          {% elif active_enrollment.payment_status == 'partially_paid' %}
+            <span class="md-tag md-tag-bright"><i class="bi bi-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
+          {% elif active_enrollment.payment_status == 'pending' %}
+            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
+          {% else %}
+            <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
+          {% endif %}
+
+          {% if active_enrollment.approval_status == 'accepted' %}
+            <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> {{ active_enrollment.get_approval_status_display }}</span>
+          {% elif active_enrollment.approval_status == 'rejected' %}
+            <span class="md-tag md-tag-danger"><i class="bi bi-lock"></i> {{ active_enrollment.get_approval_status_display }}</span>
+          {% else %}
+            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> {{ active_enrollment.get_approval_status_display }}</span>
+          {% endif %}
+
+          {% if active_enrollment.access_paused %}
+            <span class="md-tag md-tag-danger"><i class="bi bi-lock"></i> Access Paused</span>
           {% endif %}
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="row g-3 g-lg-4">
-      <div class="col-12 col-lg-6">
-        <div class="md-card">
-          <div class="md-card-head">
-            <h3>
-              <span class="md-icon-dot"><i class="tji-clipboard"></i></span>
-              Assessment
-            </h3>
+  
+  {% if mode != 'offline' %}
+    <section aria-label="Lesson path">
+      <p class="md-section-label">Lesson Path</p>
+
+      {% if learning_progress %}
+        <div class="lesson-journey">
+          <div class="lesson-journey-track">
+            {% for progress in learning_progress %}
+
+              {% if progress.status == 'completed' %}
+                <div class="lesson-journey-item is-completed">
+                  <span class="lesson-journey-dot"><i class="bi bi-check-circle"></i></span>
+                  <p class="lesson-journey-title">{{ progress.lesson.title }}</p>
+                  <span class="lesson-journey-meta">Completed</span>
+                </div>
+
+              {% elif progress.status == 'in_progress' or progress.status == 'unlocked' %}
+                <a href="{% url 'core:lesson' progress.lesson.id %}" class="lesson-journey-item is-current">
+                  <span class="lesson-journey-dot"><i class="bi bi-play-circle"></i></span>
+                  <p class="lesson-journey-title">{{ progress.lesson.title }}</p>
+                  <span class="lesson-journey-meta">{{ progress.get_status_display }}</span>
+                </a>
+
+              {% else %}
+                <div class="lesson-journey-item is-locked" aria-disabled="true">
+                  <span class="lesson-journey-dot"><i class="bi bi-lock"></i></span>
+                  <p class="lesson-journey-title">{{ progress.lesson.title }}</p>
+                  <span class="lesson-journey-meta">Locked</span>
+                </div>
+              {% endif %}
+
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="md-empty">
+          <i class="bi bi-journal-text"></i>
+          <h4>Lesson path will appear here</h4>
+          <p>Published sequential lessons will appear here once learning progress is initialized.</p>
+        </div>
+      {% endif %}
+    </section>
+
+    
+    <section aria-label="Student activity">
+      <div class="activity-rail">
+
+        {# ---- Assessment ---- #}
+        <div class="activity-block">
+          <div class="activity-block-head">
+            <h3><i class="bi bi-clipboard-check"></i> Assessment</h3>
             <a href="#">Open</a>
           </div>
 
           {% if assessment_status %}
-            <div class="md-status-row">
+            <div class="activity-row">
               <div class="md-status-info">
                 <p class="title">{{ assessment_status.title }}</p>
                 <span class="meta">
@@ -277,40 +302,36 @@
                 </span>
               </div>
               {% if assessment_status.state == 'locked' %}
-                <span class="md-tag md-tag-soft"><i class="tji-lock"></i> Locked</span>
+                <span class="md-tag md-tag-soft"><i class="bi bi-lock"></i> Locked</span>
               {% elif assessment_status.state == 'available' %}
-                <span class="md-tag md-tag-bright"><i class="tji-play"></i> Available</span>
+                <span class="md-tag md-tag-bright"><i class="bi bi-play-circle"></i> Available</span>
               {% elif assessment_status.state == 'submitted' %}
-                <span class="md-tag md-tag-dark"><i class="tji-check"></i> Submitted</span>
+                <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Submitted</span>
               {% elif assessment_status.state == 'graded' %}
                 <span class="md-tag md-tag-success">
-                  <i class="tji-award"></i>
+                  <i class="bi bi-award"></i>
                   {% if assessment_status.score %}{{ assessment_status.score }}{% else %}Graded{% endif %}
                 </span>
               {% endif %}
             </div>
           {% else %}
             <div class="md-empty">
-              <i class="tji-clipboard"></i>
+              <i class="bi bi-clipboard-check"></i>
               <h4>No active assessment</h4>
               <p>Your next assessment will appear here once it unlocks.</p>
             </div>
           {% endif %}
         </div>
-      </div>
 
-      <div class="col-12 col-lg-6">
-        <div class="md-card">
-          <div class="md-card-head">
-            <h3>
-              <span class="md-icon-dot"><i class="tji-chat"></i></span>
-              Doubts
-            </h3>
+        {# ---- Doubts ---- #}
+        <div class="activity-block">
+          <div class="activity-block-head">
+            <h3><i class="bi bi-chat-dots"></i> Doubts</h3>
             <a href="#">Open</a>
           </div>
 
           {% if recent_doubt %}
-            <div class="md-status-row">
+            <div class="activity-row">
               <div class="md-status-info">
                 <p class="title">{{ recent_doubt.subject }}</p>
                 <span class="meta">
@@ -318,279 +339,227 @@
                 </span>
               </div>
               {% if recent_doubt.state == 'answered' %}
-                <span class="md-tag md-tag-dark"><i class="tji-check"></i> Answered</span>
+                <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Answered</span>
               {% elif recent_doubt.state == 'resolved' %}
-                <span class="md-tag md-tag-success"><i class="tji-check"></i> Resolved</span>
+                <span class="md-tag md-tag-success"><i class="bi bi-check-circle"></i> Resolved</span>
               {% elif recent_doubt.state == 'open' %}
-                <span class="md-tag md-tag-gold"><i class="tji-clock"></i> Open</span>
+                <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> Open</span>
               {% else %}
                 <span class="md-tag md-tag-soft">{{ recent_doubt.state|title }}</span>
               {% endif %}
             </div>
           {% else %}
             <div class="md-empty">
-              <i class="tji-chat"></i>
+              <i class="bi bi-question-circle"></i>
               <h4>No doubts raised yet</h4>
               <p>Ask a question anytime from your current lesson.</p>
             </div>
           {% endif %}
         </div>
+
       </div>
-    </div>
+    </section>
+
   {% else %}
-    <div class="row g-3 g-lg-4">
-      <div class="col-12 col-lg-6">
-        <div class="md-card">
-          <div class="md-card-head">
-            <h3>
-              <span class="md-icon-dot"><i class="tji-folder"></i></span>
-              Materials
-            </h3>
-            <a href="#">Open</a>
-          </div>
+    {# ---- Offline mode: materials ---- #}
+    <section aria-label="Materials">
+      <p class="md-section-label">Materials</p>
+      <div class="activity-block">
+        <div class="activity-block-head">
+          <h3><i class="bi bi-folder2-open"></i> Materials</h3>
+          <a href="#">Open</a>
+        </div>
 
-          {% if materials_summary %}
-            <div class="md-status-row">
+        {% if materials_summary %}
+          <div class="activity-row">
+            <div class="md-status-info">
+              <p class="title">Available resources</p>
+              <span class="meta">For your enrolled course</span>
+            </div>
+            <span class="md-tag md-tag-dark">
+              <i class="bi bi-folder2-open"></i> {{ materials_summary.count }} files
+            </span>
+          </div>
+          {% if materials_summary.latest %}
+            <div class="activity-row">
               <div class="md-status-info">
-                <p class="title">Available resources</p>
-                <span class="meta">For your enrolled course</span>
+                <p class="title">{{ materials_summary.latest.title }}</p>
+                <span class="meta">Latest upload</span>
               </div>
-              <span class="md-tag md-tag-dark">
-                <i class="tji-folder"></i> {{ materials_summary.count }} files
-              </span>
-            </div>
-            {% if materials_summary.latest %}
-              <div class="md-status-row">
-                <div class="md-status-info">
-                  <p class="title">{{ materials_summary.latest.title }}</p>
-                  <span class="meta">Latest upload</span>
-                </div>
-                <span class="md-tag md-tag-soft"><i class="tji-download"></i> View</span>
-              </div>
-            {% endif %}
-          {% else %}
-            <div class="md-empty">
-              <i class="tji-folder"></i>
-              <h4>No materials yet</h4>
-              <p>Learning materials for your course will appear here once uploaded.</p>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
-  <div class="row g-3 g-lg-4">
-    <div class="col-12 col-lg-6">
-      <div class="md-card">
-        <div class="md-card-head">
-          <h3>
-            <span class="md-icon-dot"><i class="tji-wallet"></i></span>
-            Payments
-          </h3>
-          <a href="{% url 'core:payment' course.slug %}">Open</a>
-        </div>
-
-        <div class="row g-2">
-          <div class="col-6">
-            <div class="md-pay-tile">
-              <p class="label">Course Fee</p>
-              <div class="amount">
-                {% if course.discounted_price %}₹{{ course.discounted_price|floatformat:"0" }}{% else %}₹{{ course.price|floatformat:"0" }}{% endif %}
-              </div>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="md-pay-tile">
-              <p class="label">Status</p>
-              {% if active_enrollment.payment_status == 'paid' %}
-                <span class="md-tag md-tag-success"><i class="tji-check"></i> Paid</span>
-              {% elif active_enrollment.payment_status == 'partially_paid' %}
-                <span class="md-tag md-tag-bright"><i class="tji-clock"></i> Partial</span>
-              {% elif active_enrollment.payment_status == 'pending' %}
-                <span class="md-tag md-tag-gold"><i class="tji-clock"></i> Pending</span>
-              {% else %}
-                <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="md-status-row mt-3">
-          <div class="md-status-info">
-            <p class="title">Approval</p>
-            <span class="meta">{{ active_enrollment.get_approval_status_display }}</span>
-          </div>
-          {% if active_enrollment.access_paused %}
-            <span class="md-tag md-tag-danger"><i class="tji-lock"></i> Paused</span>
-          {% elif active_enrollment.approval_status == 'accepted' %}
-            <span class="md-tag md-tag-dark"><i class="tji-check"></i> Active</span>
-          {% else %}
-            <span class="md-tag md-tag-gold"><i class="tji-clock"></i> Waiting</span>
-          {% endif %}
-        </div>
-
-        <div class="mt-3">
-          <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-tonal w-100">
-            Open Payment <i class="tji-arrow-right-2"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-lg-6">
-      <div class="md-card">
-        <div class="md-card-head">
-          <h3>
-            <span class="md-icon-dot"><i class="tji-award"></i></span>
-            Certificate
-          </h3>
-          <a href="#">View all</a>
-        </div>
-
-        {% if certificate %}
-          {% if certificate.state == 'issued' %}
-            <div class="md-cert">
-              <span class="md-cert-icon"><i class="tji-award"></i></span>
-              <div class="md-cert-body">
-                <h4>{{ certificate.title }}</h4>
-                <p>Issued on {{ certificate.issued_on }}</p>
-              </div>
-              <span class="md-tag md-tag-dark"><i class="tji-download"></i> View</span>
-            </div>
-          {% elif certificate.state == 'available' %}
-            <div class="md-cert">
-              <span class="md-cert-icon"><i class="tji-award"></i></span>
-              <div class="md-cert-body">
-                <h4>{{ certificate.title }}</h4>
-                <p>Ready to download</p>
-              </div>
-              <span class="md-tag md-tag-dark"><i class="tji-download"></i> Download</span>
-            </div>
-          {% else %}
-            <div class="md-cert locked">
-              <span class="md-cert-icon"><i class="tji-lock"></i></span>
-              <div class="md-cert-body">
-                <h4>Certificate locked</h4>
-                <p>
-                  {% if certificate.progress_percent is not None %}
-                    Complete {{ certificate.progress_percent }}% of your course to unlock it.
-                  {% else %}
-                    Complete your course to unlock the certificate.
-                  {% endif %}
-                </p>
-              </div>
+              <span class="md-tag md-tag-soft"><i class="bi bi-download"></i> View</span>
             </div>
           {% endif %}
         {% else %}
           <div class="md-empty">
-            <i class="tji-award"></i>
-            <h4>No certificate yet</h4>
-            <p>Your certificate will appear here once you complete the course.</p>
+            <i class="bi bi-folder2-open"></i>
+            <h4>No materials yet</h4>
+            <p>Learning materials for your course will appear here once uploaded.</p>
           </div>
         {% endif %}
       </div>
-    </div>
-  </div>
+    </section>
+  {% endif %}
 
-  <div>
-    <p class="md-section-label">Recent Notifications</p>
-    <div class="md-card">
-      <div class="md-card-head">
-        <h3>
-          <span class="md-icon-dot"><i class="tji-bell"></i></span>
-          Notifications
-        </h3>
-        {% if unread_notifications %}
-          <span class="md-tag md-tag-gold">{{ unread_notifications }} unread</span>
-        {% endif %}
+  
+  <section aria-label="Payments and certificate">
+    <p class="md-section-label">Services</p>
+
+    <div class="service-strip">
+
+      {# ---- Payments ---- #}
+      <div class="service-block">
+        <div class="service-head">
+          <h3><i class="bi bi-wallet2"></i> Payments</h3>
+          <a href="{% url 'core:payment' course.slug %}">Open</a>
+        </div>
+
+        <div class="service-amount">
+          {% if course.discounted_price %}₹{{ course.discounted_price|floatformat:"0" }}{% else %}₹{{ course.price|floatformat:"0" }}{% endif %}
+        </div>
+
+        <div class="service-meta">
+          {% if active_enrollment.payment_status == 'paid' %}
+            <span class="md-tag md-tag-success"><i class="bi bi-check-circle"></i> Paid</span>
+          {% elif active_enrollment.payment_status == 'partially_paid' %}
+            <span class="md-tag md-tag-bright"><i class="bi bi-clock"></i> Partial</span>
+          {% elif active_enrollment.payment_status == 'pending' %}
+            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> Pending</span>
+          {% else %}
+            <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
+          {% endif %}
+
+          {% if active_enrollment.access_paused %}
+            <span class="md-tag md-tag-danger"><i class="bi bi-lock"></i> Paused</span>
+          {% elif active_enrollment.approval_status == 'accepted' %}
+            <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Active</span>
+          {% else %}
+            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> Waiting</span>
+          {% endif %}
+        </div>
+
+        <div class="service-cta">
+          <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-tonal w-100">
+            Open Payment <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
       </div>
 
-      {% if notifications %}
-        <ul class="md-notifs">
-          {% for n in notifications|slice:":4" %}
-            <li>
-              <a href="{{ n.url|default:'#' }}" class="md-notif {% if not n.is_read %}is-unread{% endif %}">
-                <span class="md-notif-icon">
-                  <i class="tji-{% if n.icon %}{{ n.icon }}{% else %}bell{% endif %}"></i>
-                </span>
-                <div class="md-notif-body">
-                  <strong>{{ n.title }}</strong>
-                  <span>{{ n.time_ago }}</span>
-                </div>
-                {% if not n.is_read %}<span class="md-tag md-tag-gold">New</span>{% endif %}
+      {# ---- Certificate ---- #}
+      <div class="service-block">
+        <div class="service-head">
+          <h3><i class="bi bi-award"></i> Certificate</h3>
+          <a href="#">View</a>
+        </div>
+
+        {% if certificate %}
+          {% if certificate.state == 'issued' %}
+            <div class="service-amount">{{ certificate.title }}</div>
+            <div class="service-meta">
+              <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Issued</span>
+              <span class="md-tag md-tag-soft"><i class="bi bi-clock"></i> {{ certificate.issued_on }}</span>
+            </div>
+            <div class="service-cta">
+              <a href="#" class="md-btn md-btn-outline w-100">
+                <i class="bi bi-download"></i> View Certificate
               </a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="md-empty">
-          <i class="tji-bell"></i>
-          <h4>You're all caught up</h4>
-          <p>No new notifications right now.</p>
-        </div>
-      {% endif %}
-    </div>
-  </div>
+            </div>
+          {% elif certificate.state == 'available' %}
+            <div class="service-amount">{{ certificate.title }}</div>
+            <div class="service-meta">
+              <span class="md-tag md-tag-bright"><i class="bi bi-award"></i> Ready</span>
+            </div>
+            <div class="service-cta">
+              <a href="#" class="md-btn md-btn-outline w-100">
+                <i class="bi bi-download"></i> Download
+              </a>
+            </div>
+          {% else %}
+            <div class="service-amount" style="font-size: 17px;">Certificate locked</div>
+            <div class="service-meta">
+              <span class="md-tag md-tag-soft"><i class="bi bi-lock"></i>
+                {% if certificate.progress_percent is not None %}
+                  {{ certificate.progress_percent }}% required
+                {% else %}Locked{% endif %}
+              </span>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="service-amount" style="font-size: 17px;">No certificate yet</div>
+          <div class="service-meta">
+            <span class="md-tag md-tag-soft"><i class="bi bi-award"></i> Complete course</span>
+          </div>
+        {% endif %}
+      </div>
 
-  <div>
-    <p class="md-section-label">Quick Links</p>
-    <div class="md-quick-grid">
+    </div>
+  </section>
+
+  
+  <section aria-label="Recent notifications">
+    <p class="md-section-label">Recent Notifications</p>
+
+    {% if notifications %}
+      <ul class="notif-feed">
+        {% for n in notifications|slice:":4" %}
+          <li>
+            <a href="{{ n.url|default:'#' }}" class="notif-feed-item {% if not n.is_read %}is-unread{% endif %}">
+              <span class="notif-feed-icon"><i class="bi bi-bell"></i></span>
+              <div class="notif-feed-body">
+                <p class="notif-feed-title">{{ n.title }}</p>
+                <p class="notif-feed-text">{{ n.message }}</p>
+                <span class="notif-feed-time">{{ n.time_ago }}</span>
+              </div>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="md-empty">
+        <i class="bi bi-bell"></i>
+        <h4>You're all caught up</h4>
+        <p>No new notifications right now.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  
+  <section aria-label="Quick links">
+    <p class="md-section-label">Quick Access</p>
+    <div class="quick-scroll">
 
       {% if mode != 'offline' %}
-        <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:dashboard' %}{% endif %}" class="md-quick">
-          <span class="md-quick-icon"><i class="tji-play"></i></span>
-          <div class="md-quick-text">
-            <strong>My Course</strong>
-            <span>Continue lessons</span>
-          </div>
+        <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:dashboard' %}{% endif %}" class="quick-tile">
+          <i class="bi bi-play-circle"></i> My Course
         </a>
       {% endif %}
 
-      <a href="#" class="md-quick">
-        <span class="md-quick-icon"><i class="tji-folder"></i></span>
-        <div class="md-quick-text">
-          <strong>Materials</strong>
-          <span>Resources &amp; downloads</span>
-        </div>
+      <a href="#" class="quick-tile">
+        <i class="bi bi-folder2-open"></i> Materials
       </a>
 
-      <a href="{% url 'core:payment' course.slug %}" class="md-quick">
-        <span class="md-quick-icon"><i class="tji-wallet"></i></span>
-        <div class="md-quick-text">
-          <strong>Payments</strong>
-          <span>Fees &amp; receipts</span>
-        </div>
+      <a href="{% url 'core:payment' course.slug %}" class="quick-tile">
+        <i class="bi bi-wallet2"></i> Payments
       </a>
 
-      <a href="#" class="md-quick">
-        <span class="md-quick-icon"><i class="tji-award"></i></span>
-        <div class="md-quick-text">
-          <strong>Certificates</strong>
-          <span>Your achievements</span>
-        </div>
+      <a href="#" class="quick-tile">
+        <i class="bi bi-award"></i> Certificates
       </a>
 
       {% if mode != 'offline' %}
-        <a href="#" class="md-quick">
-          <span class="md-quick-icon"><i class="tji-chat"></i></span>
-          <div class="md-quick-text">
-            <strong>Doubts</strong>
-            <span>Ask &amp; track</span>
-          </div>
+        <a href="#" class="quick-tile">
+          <i class="bi bi-clipboard-check"></i> Assessments
+        </a>
+        <a href="#" class="quick-tile">
+          <i class="bi bi-chat-dots"></i> Doubts
         </a>
       {% endif %}
 
-      <a href="#" class="md-quick">
-        <span class="md-quick-icon"><i class="tji-user"></i></span>
-        <div class="md-quick-text">
-          <strong>Profile</strong>
-          <span>Personal details</span>
-        </div>
+      <a href="#" class="quick-tile">
+        <i class="bi bi-person"></i> Profile
       </a>
 
     </div>
-  </div>
+  </section>
 
 </div>
 

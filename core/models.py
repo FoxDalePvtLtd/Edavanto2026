@@ -229,7 +229,17 @@ class Course(models.Model):
         blank=True,
         validators=[MinValueValidator(0)],
     )
+    duration_hours = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Total estimated learning hours for online courses.",
+    )
 
+    duration_weeks = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Total planned duration in weeks for offline courses.",
+    )
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -355,6 +365,17 @@ class Module(models.Model):
 
     order = models.PositiveIntegerField(
         default=0,
+    )
+    duration_hours = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Estimated module duration in hours for online courses.",
+    )
+
+    duration_weeks = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Planned module duration in weeks for offline courses.",
     )
 
     unlock_order = models.PositiveIntegerField(
