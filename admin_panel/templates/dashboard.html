@@ -5,122 +5,150 @@
 <!-- ============================================================
      EDVANTO ADMIN DASHBOARD – PREMIUM LMS CONTROL PANEL
      Bootstrap 5 · Django Template Language · Vanilla JS
+     Palette: #FFFDF7 · #F7F3E8 · #171717 · #4a4a4a · #D4A62A
+     Layout: Responsive CSS Grid (auto-fit + minmax)
      ============================================================ -->
 
 <style>
-
-  /* ----- EDVANTO DESIGN TOKENS (aligned with public site) ----- */
   :root {
+    --edvanto-cream:      #FFFDF7;
+    --edvanto-cream-2:    #F7F3E8;
+    --edvanto-dark:       #171717;
+    --edvanto-gray:       #4a4a4a;
+    --edvanto-gold:       #D4A62A;
+    --edvanto-gold-light:  #E0B83F;
 
-
-    --edvanto-color-gradient-2: linear-gradient(66deg, rgba(255, 244, 201, 0.5) 5%, rgba(243, 229, 184, 0.5) 60%);
-    --edvanto-wine: #7A1F3D;
-
-    /**
-     @Font-weight Declaration
-   */
-  --edvanto-fw-bold: 700;
-
-
-
-
-  
-    /* --edvanto-navy: #032A5A; */
-    --edvanto-navy: #000000;
-
-    /* --edvanto-violet: #451CEE; */
-    --edvanto-violet: #D4A62A;
-    
-    --edvanto-cyan: #01DFFE;
-    --edvanto-gold: #FFB303;
-    --edvanto-white: #FFFFFF;
-    --edvanto-gray-50: #F8FAFC;
-    --edvanto-gray-100: #F1F5F9;
-    --edvanto-gray-200: #E9EFF6;
-    --edvanto-gray-300: #DCE5EF;
-    --edvanto-gray-600: #5A6E8A;
-    --edvanto-gray-800: #1F2E45;
     --edvanto-radius-card: 1rem;
-    --edvanto-radius-sm: 0.6rem;
-    --edvanto-shadow-card: 0 4px 16px rgba(3, 42, 90, 0.04), 0 1px 4px rgba(3, 42, 90, 0.02);
-    --edvanto-shadow-hover: 0 8px 28px rgba(3, 42, 90, 0.08);
-    --edvanto-border-light: 2px solid rgba(23, 23, 23, 0.08);
+    --edvanto-radius-sm:   0.6rem;
+    --edvanto-fw-bold:     700;
 
-
-
-  --edvanto-color-red-1: #e04040;
-  --edvanto-color-red-2: #bc4614;
-  --edvanto-color-red-3: #ef6aa2;
-  --edvanto-color-red-4: #e3037d;
-  --edvanto-color-green-1: #28c840;
-  --edvanto-color-green-2: #2c9864;
-  --edvanto-color-green-3: #10b981;
-  --edvanto-color-green-4: #5ab18f;
-
-  --edvanto-color-yellow-1: hsl(53, 100%, 50%);
-
+    --edvanto-shadow-card:  0 4px 16px rgba(23, 23, 23, 0.05), 0 1px 4px rgba(23, 23, 23, 0.03);
+    --edvanto-shadow-hover: 0 8px 28px rgba(23, 23, 23, 0.10);
+    --edvanto-border-light: 1px solid rgba(23, 23, 23, 0.08);
   }
 
-  /* ----- GLOBAL LAYOUT TWEAKS ----- */
-  body {
-    background-color: var(--edvanto-gray-50);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    color: var(--edvanto-gray-800);
+  .edvanto-dashboard {
+    color: var(--edvanto-dark);
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ============================================================
+     RESPONSIVE CSS GRID SYSTEM
+     ============================================================ */
+  .edvanto-grid-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  {% comment %}  On mobile — stack to 1 column {% endcomment %}
+@media (max-width: 767.98px) {
+  .edvanto-grid-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+  .edvanto-grid-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+  }
+  .edvanto-grid-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+  }
+  @media (min-width: 992px) {
+    .edvanto-grid-split {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+  .edvanto-grid-side {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+  }
+  .edvanto-grid-pending {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+  .edvanto-grid-quick {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+  .edvanto-grid-full {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
   }
 
   /* ----- BREADCRUMB & PAGE TITLE ----- */
   .edvanto-breadcrumb .breadcrumb {
-    --bs-breadcrumb-divider-color: var(--edvanto-gray-600);
-    --bs-breadcrumb-item-active-color: var(--edvanto-navy);
+    --bs-breadcrumb-divider-color: var(--edvanto-gray);
+    --bs-breadcrumb-item-active-color: var(--edvanto-dark);
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: -0.01em;
+    margin-bottom: 0;
+    background: transparent;
   }
   .edvanto-breadcrumb .breadcrumb-item a {
-    color: var(--edvanto-violet);
+    color: var(--edvanto-gold);
     text-decoration: none;
     font-weight: 500;
   }
-  .edvanto-breadcrumb .breadcrumb-item a:hover {
-    color: var(--edvanto-navy);
-  }
+  .edvanto-breadcrumb .breadcrumb-item a:hover { color: var(--edvanto-dark); }
 
   .edvanto-page-title {
     font-weight: 700;
     font-size: 2rem;
     letter-spacing: -0.03em;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     line-height: 1.2;
   }
   .edvanto-page-subtitle {
     font-size: 0.95rem;
-    color: var(--edvanto-gray-600);
+    color: var(--edvanto-gray);
     font-weight: 400;
     margin-bottom: 0;
   }
 
   /* ----- STAT CARDS ----- */
   .edvanto-stat-card {
-    background: var(--edvanto-white);
+    background: var(--edvanto-cream);
     border-radius: 18px;
     border: var(--edvanto-border-light);
     box-shadow: var(--edvanto-shadow-card);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-    padding: 30px 30px 17px;
+    padding: 1.5rem 1.5rem 1.1rem;
     position: relative;
     overflow: hidden;
     height: 100%;
-    -webkit-transition: all 0.3s ease-in;
-    transition: all 0.3s ease-in; 
-    
-
-  
+    width: 100%;
+    min-width: 0;
   }
   .edvanto-stat-card:hover {
     box-shadow: var(--edvanto-shadow-hover);
     transform: translateY(-2px);
   }
-  /* subtle Edvanto gradient accent */
   .edvanto-stat-card::before {
     content: '';
     position: absolute;
@@ -128,7 +156,7 @@
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-wine) 100%);
+    background: var(--edvanto-gold);
     opacity: 0.85;
   }
   .edvanto-stat-icon {
@@ -139,97 +167,69 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
+    background: rgba(212, 166, 42, 0.12);
+    color: var(--edvanto-gold);
     margin-bottom: 1rem;
   }
-  .edvanto-stat-icon.gold {
-    background: rgba(255, 179, 3, 0.08);
-    color: var(--edvanto-gold);
-  }
-  .edvanto-stat-icon.cyan {
-    background: rgba(1, 223, 254, 0.08);
-    color: #0099B5;
-  }
-  .edvanto-stat-icon.navy {
-    background: rgba(3, 42, 90, 0.06);
-    color: var(--edvanto-navy);
-  }
+  .edvanto-stat-icon.gold { background: rgba(212, 166, 42, 0.18); color: var(--edvanto-gold); }
+  .edvanto-stat-icon.cyan { background: rgba(74, 74, 74, 0.10); color: var(--edvanto-gray); }
+  .edvanto-stat-icon.navy { background: rgba(23, 23, 23, 0.08); color: var(--edvanto-dark); }
   .edvanto-stat-label {
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--edvanto-gray-600);
+    color: var(--edvanto-gray);
     margin-bottom: 0.25rem;
   }
   .edvanto-stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     letter-spacing: -0.03em;
     line-height: 1.1;
+    word-break: break-word;
   }
   .edvanto-stat-meta {
     font-size: 0.8rem;
-    color: var(--edvanto-gray-600);
+    color: var(--edvanto-gray);
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.3rem;
   }
-  .edvanto-stat-meta .positive {
-    color: #0F9D58;
-    font-weight: 600;
-  }
-  .edvanto-stat-meta .warning {
-    color: var(--edvanto-gold);
-    font-weight: 600;
-  }
+  .edvanto-stat-meta .positive { color: var(--edvanto-gold); font-weight: 600; }
+  .edvanto-stat-meta .warning { color: var(--edvanto-gold); font-weight: 600; }
 
   /* ----- CARDS (generic) ----- */
   .edvanto-card {
-    background: var(--edvanto-white);
+    background: var(--edvanto-cream);
     border-radius: 18px;
     border: var(--edvanto-border-light);
     box-shadow: var(--edvanto-shadow-card);
-    padding: 30px 30px 17px;
+    padding: 1.5rem 1.5rem 1.1rem;
     height: 100%;
- 
-
-
+    width: 100%;
+    min-width: 0;
   }
   .edvanto-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.25rem;
-
-
-
-    /* 
-    background: var(--edvanto-white);
-    border-radius: 18px;
-    border: var(--edvanto-border-light);
-    box-shadow: var(--edvanto-shadow-card);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-    padding: 30px 30px 17px;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-    -webkit-transition: all 0.3s ease-in;
-    transition: all 0.3s ease-in;  */
-  
+    gap: 0.75rem;
+    flex-wrap: wrap;
   }
   .edvanto-card-title {
     font-size: 1.05rem;
     font-weight: 700;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     letter-spacing: -0.02em;
     margin: 0;
   }
 
-  /* ----- CHART PLACEHOLDERS (lightweight visual) ----- */
+  /* ----- CHART PLACEHOLDERS ----- */
   .edvanto-chart-placeholder {
     width: 100%;
     height: 160px;
@@ -240,22 +240,19 @@
   }
   .edvanto-chart-bar {
     flex: 1;
-    background: linear-gradient(180deg, var(--edvanto-color-red-1) 0%,var(--edvanto-color-red-2));
+    background: var(--edvanto-gold);
     border-radius: 6px 6px 2px 2px;
     min-height: 8px;
     transition: height 0.3s ease;
     opacity: 0.85;
-    
   }
-  .edvanto-chart-bar.cyan {
-    background: linear-gradient(180deg, var(--edvanto-color-green-2) 0%, var(--edvanto-color-green-1));
-  }
+  .edvanto-chart-bar.gray { background: var(--edvanto-gray); }
   .edvanto-chart-labels {
     display: flex;
     justify-content: space-between;
     margin-top: 0.5rem;
     font-size: 0.7rem;
-    color: var(--edvanto-gray-600);
+    color: var(--edvanto-gray);
     font-weight: 500;
   }
 
@@ -272,26 +269,29 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--edvanto-gray-600);
-    background: var(--edvanto-gray-50);
+    color: var(--edvanto-gray);
+    background: var(--edvanto-cream-2);
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--edvanto-gray-200);
+    border-bottom: 1px solid rgba(23, 23, 23, 0.06);
     white-space: nowrap;
   }
   .edvanto-table tbody td {
     padding: 0.85rem 1rem;
-    border-bottom: 1px solid var(--edvanto-gray-100);
+    border-bottom: 1px solid rgba(23, 23, 23, 0.05);
     vertical-align: middle;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     font-weight: 500;
   }
-  .edvanto-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-  .edvanto-table tbody tr:hover {
-    background: rgba(69, 28, 238, 0.015);
+  .edvanto-table tbody tr:last-child td { border-bottom: none; }
+  .edvanto-table tbody tr:hover { background: rgba(212, 166, 42, 0.05); }
+  .table-responsive-edvanto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem;
   }
 
+  /* ----- BADGES ----- */
   .edvanto-badge {
     font-size: 0.7rem;
     font-weight: 600;
@@ -300,45 +300,32 @@
     letter-spacing: 0.01em;
     display: inline-block;
   }
-  .badge-soft-violet {
-    background: rgba(69, 28, 238, 0.08);
-    color: var(--edvanto-violet);
-  }
-  .badge-soft-cyan {
-    background: rgba(1, 223, 254, 0.12);
-    color: #007A8F;
-  }
-  .badge-soft-gold {
-    background: rgba(255, 179, 3, 0.12);
-    color: #9A6D00;
-  }
-  .badge-soft-navy {
-    background: rgba(3, 42, 90, 0.07);
-    color: var(--edvanto-navy);
-  }
-  .badge-soft-green {
-    background: rgba(15, 157, 88, 0.09);
-    color: #0F6B3E;
-  }
+  .badge-soft-gold { background: rgba(212, 166, 42, 0.12); color: #8B6D0F; }
+  .badge-soft-gray { background: rgba(74, 74, 74, 0.10); color: var(--edvanto-gray); }
+  .badge-soft-dark { background: rgba(23, 23, 23, 0.07); color: var(--edvanto-dark); }
+  .badge-soft-green { background: rgba(212, 166, 42, 0.14); color: #8B6D0F; }
 
   /* ----- PENDING ACTION CARDS ----- */
   .edvanto-pending-card {
-    background: var(--edvanto-white);
+    background: var(--edvanto-cream-2);
     border-radius: var(--edvanto-radius-sm);
     border: var(--edvanto-border-light);
     padding: 1rem 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: box-shadow 0.15s ease;
+    gap: 0.5rem;
+    transition: box-shadow 0.15s ease, background 0.15s ease;
     text-decoration: none;
     color: inherit;
     height: 100%;
+    min-width: 0;
   }
   .edvanto-pending-card:hover {
     box-shadow: var(--edvanto-shadow-hover);
-    border-color: rgba(69, 28, 238, 0.2);
+    border-color: rgba(212, 166, 42, 0.35);
     color: inherit;
+    background: var(--edvanto-cream);
   }
   .edvanto-pending-icon {
     width: 36px;
@@ -349,30 +336,25 @@
     justify-content: center;
     font-size: 1.1rem;
     flex-shrink: 0;
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
+    background: rgba(212, 166, 42, 0.12);
+    color: var(--edvanto-gold);
     margin-right: 0.85rem;
   }
-  .edvanto-pending-icon.gold {
-    background: rgba(255, 179, 3, 0.08);
-    color: var(--edvanto-gold);
-  }
-  .edvanto-pending-icon.cyan {
-    background: rgba(1, 223, 254, 0.08);
-    color: #0099B5;
-  }
+  .edvanto-pending-icon.gold { background: rgba(212, 166, 42, 0.18); color: var(--edvanto-gold); }
+  .edvanto-pending-icon.cyan { background: rgba(74, 74, 74, 0.10); color: var(--edvanto-gray); }
   .edvanto-pending-label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     margin: 0;
   }
   .edvanto-pending-count {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     letter-spacing: -0.02em;
     line-height: 1;
+    flex-shrink: 0;
   }
 
   /* ----- QUICK ACTIONS ----- */
@@ -382,9 +364,9 @@
     gap: 0.75rem;
     padding: 0.75rem 1rem;
     border-radius: var(--edvanto-radius-sm);
-    border: 1px solid var(--edvanto-gray-200);
-    background: var(--edvanto-white);
-    color: var(--edvanto-navy);
+    border: 1px solid rgba(23, 23, 23, 0.10);
+    background: var(--edvanto-cream-2);
+    color: var(--edvanto-dark);
     font-size: 0.85rem;
     font-weight: 600;
     text-decoration: none;
@@ -392,16 +374,16 @@
     width: 100%;
   }
   .edvanto-quick-btn:hover {
-    border-color: var(--edvanto-violet);
-    background: rgba(69, 28, 238, 0.02);
-    color: var(--edvanto-violet);
-    box-shadow: 0 2px 8px rgba(69, 28, 238, 0.06);
+    border-color: var(--edvanto-gold);
+    background: var(--edvanto-cream);
+    color: var(--edvanto-gold);
+    box-shadow: 0 2px 8px rgba(212, 166, 42, 0.12);
   }
   .edvanto-quick-btn i {
     font-size: 1.1rem;
     width: 20px;
     text-align: center;
-    color: var(--edvanto-violet);
+    color: var(--edvanto-gold);
   }
 
   /* ----- ACTIVITY TIMELINE ----- */
@@ -418,16 +400,11 @@
     top: 0.25rem;
     bottom: 0.25rem;
     width: 2px;
-    background: var(--edvanto-gray-200);
+    background: rgba(23, 23, 23, 0.08);
     border-radius: 2px;
   }
-  .edvanto-timeline-item {
-    position: relative;
-    padding-bottom: 1.25rem;
-  }
-  .edvanto-timeline-item:last-child {
-    padding-bottom: 0;
-  }
+  .edvanto-timeline-item { position: relative; padding-bottom: 1.25rem; }
+  .edvanto-timeline-item:last-child { padding-bottom: 0; }
   .edvanto-timeline-dot {
     position: absolute;
     left: -1.45rem;
@@ -435,272 +412,192 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--edvanto-violet);
-    border: 2px solid var(--edvanto-white);
-    box-shadow: 0 0 0 2px rgba(69, 28, 238, 0.15);
+    background: var(--edvanto-gold);
+    border: 2px solid var(--edvanto-cream);
+    box-shadow: 0 0 0 2px rgba(212, 166, 42, 0.2);
   }
   .edvanto-timeline-dot.cyan {
-    background: var(--edvanto-cyan);
-    box-shadow: 0 0 0 2px rgba(1, 223, 254, 0.2);
+    background: var(--edvanto-gray);
+    box-shadow: 0 0 0 2px rgba(74, 74, 74, 0.2);
   }
   .edvanto-timeline-dot.gold {
     background: var(--edvanto-gold);
-    box-shadow: 0 0 0 2px rgba(255, 179, 3, 0.2);
+    box-shadow: 0 0 0 2px rgba(212, 166, 42, 0.25);
   }
   .edvanto-timeline-text {
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--edvanto-navy);
+    color: var(--edvanto-dark);
     margin: 0;
     line-height: 1.4;
   }
   .edvanto-timeline-time {
     font-size: 0.7rem;
-    color: var(--edvanto-gray-600);
+    color: var(--edvanto-gray);
     font-weight: 500;
   }
 
   /* ----- RESPONSIVE TWEAKS ----- */
   @media (max-width: 991.98px) {
-    .edvanto-page-title {
-      font-size: 1.6rem;
-    }
-    .edvanto-stat-value {
-      font-size: 1.6rem;
-    }
+    .edvanto-page-title { font-size: 1.6rem; }
+    .edvanto-stat-value { font-size: 1.6rem; }
   }
   @media (max-width: 767.98px) {
-    .edvanto-card {
-      padding: 1rem 1rem 1.25rem;
-    }
+    .edvanto-card,
+    .edvanto-stat-card { padding: 1rem 1rem 1.25rem; }
     .edvanto-table thead th,
     .edvanto-table tbody td {
       padding: 0.6rem 0.75rem;
       font-size: 0.8rem;
     }
-    .edvanto-timeline {
-      padding-left: 1.25rem;
-    }
+    .edvanto-timeline { padding-left: 1.25rem; }
+    .edvanto-grid-stats,
+    .edvanto-grid-charts,
+    .edvanto-grid-split,
+    .edvanto-grid-side,
+    .edvanto-grid-pending,
+    .edvanto-grid-quick,
+    .edvanto-grid-full { gap: 0.75rem; }
   }
 
-  /* horizontal scroll for tables on small screens */
-  .table-responsive-edvanto {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -0.25rem;
-    padding: 0 0.25rem;
-  }
-
-  /* toast container positioning */
-  .toast-container-edvanto {
-    z-index: 1090;
-  }
-
-
-
-
-/* .export-btn {
-    background: var(--edvanto-violet);
-    color: white;
-    border: none;
-    border-radius: 60px;
-    font-weight: var(--edvanto-fw-bold);
-    transition: background-color 0.25s ease, transform 0.2s ease;
-} */
-
-/* .export-btn:hover {
-    background: rgba(212, 166, 42, 0.82);
-    color: white;
-} */
-
-
-
-/* ================================
-   EDVANTO EXPORT BUTTON
-   ================================ */
-
-.export-btn {
-    background: var(--edvanto-violet);
-    color: var(--edvanto-white);
-    border: 1px solid var(--edvanto-violet);
+  /* ----- BUTTONS ----- */
+  .export-btn {
+    background: var(--edvanto-gold);
+    color: var(--edvanto-dark);
+    border: 1px solid var(--edvanto-gold);
     border-radius: var(--edvanto-radius-sm);
     font-weight: var(--edvanto-fw-bold);
     padding: 0.5rem 1rem;
     transition: all 0.25s ease;
-    box-shadow: 0 3px 10px rgba(212, 166, 42, 0.12);
-}
+    box-shadow: 0 3px 10px rgba(212, 166, 42, 0.18);
+  }
+  .export-btn:hover,
+  .export-btn:focus,
+  .export-btn.show {
+    background: var(edvanto-gold-light);
+    color: var(--edvanto-dark);
+    border-color: var(--edvanto-gold);
+    box-shadow: 0 5px 16px rgba(212, 166, 42, 0.30);
+  }
+  .export-btn i { color: var(--edvanto-dark); transition: color 0.25s ease; }
+  .export-btn:hover i,
+  .export-btn:focus i,
+  .export-btn.show i { color: var(--edvanto-dark); }
 
-/* Hover */
-.export-btn:hover,
-.export-btn:focus,
-.export-btn.show {
-    background: var(--edvanto-gold);
-    color: var(--edvanto-navy);
-    border-color: var(--edvanto-violet);
-    box-shadow: 0 5px 16px rgba(212, 166, 42, 0.25);
-}
-
-/* Download icon */
-.export-btn i {
-    color: #ffffff;
-    transition: color 0.25s ease;
-}
-
-.export-btn:hover i,
-.export-btn:focus i,
-.export-btn.show i {
-    color: var(--edvanto-navy);
-}
-
-
-/* ================================
-   EXPORT DROPDOWN
-   ================================ */
-
-.export-btn + .dropdown-menu {
+  .export-btn + .dropdown-menu {
     min-width: 210px;
     margin-top: 8px !important;
     padding: 0.5rem;
-    background: var(--edvanto-white);
+    background: var(--edvanto-cream);
     border: 1px solid rgba(212, 166, 42, 0.25) !important;
     border-radius: var(--edvanto-radius-sm);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
-}
-
-/* Dropdown items */
-.export-btn + .dropdown-menu .dropdown-item {
+    box-shadow: 0 10px 30px rgba(23, 23, 23, 0.12) !important;
+  }
+  .export-btn + .dropdown-menu .dropdown-item {
     display: flex;
     align-items: center;
     gap: 2px;
     padding: 0.65rem 0.8rem;
     border-radius: 0.45rem;
-    color: var(--edvanto-gray-800);
+    color: var(--edvanto-dark);
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s ease;
-}
-
-/* Icons */
-.export-btn + .dropdown-menu .dropdown-item i {
-    color: var(--edvanto-violet);
+  }
+  .export-btn + .dropdown-menu .dropdown-item i {
+    color: var(--edvanto-gold);
     font-size: 1rem;
     transition: color 0.2s ease;
-}
-
-/* Dropdown hover */
-.export-btn + .dropdown-menu .dropdown-item:hover {
-    background: var(--edvanto-color-gradient-2);
-    color: var(--edvanto-navy);
+  }
+  .export-btn + .dropdown-menu .dropdown-item:hover {
+    background: var(--edvanto-cream-2);
+    color: var(--edvanto-dark);
     transform: translateX(3px);
-}
-
-.export-btn + .dropdown-menu .dropdown-item:hover i {
-    color: var(--edvanto-navy);
-}
-
-/* Divider */
-.export-btn + .dropdown-menu .dropdown-divider {
+  }
+  .export-btn + .dropdown-menu .dropdown-item:hover i { color: var(--edvanto-dark); }
+  .export-btn + .dropdown-menu .dropdown-divider {
     border-top-color: rgba(212, 166, 42, 0.2);
     margin: 0.4rem 0.3rem;
-}
+  }
 
-
-
-/* ================================
-   EDVANTO REFRESH BUTTON
-   ================================ */
-
-.refresh-btn {
-    background: var(--edvanto-white);
-    color: var(--edvanto-navy);
-    border: 1px solid var(--edvanto-gray-300);
+  .refresh-btn {
+    background: var(--edvanto-cream);
+    color: var(--edvanto-dark);
+    border: 1px solid rgba(23, 23, 23, 0.15);
     border-radius: 60px;
     font-weight: var(--edvanto-fw-bold);
     padding: 0.5rem 1rem;
     transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Refresh icon */
-.refresh-btn i {
-    color: var(--edvanto-violet);
+    box-shadow: 0 2px 8px rgba(23, 23, 23, 0.05);
+  }
+  .refresh-btn i {
+    color: var(--edvanto-gold);
     transition: transform 0.4s ease, color 0.25s ease;
-}
-
-/* Hover */
-.refresh-btn:hover {
-    background: var(--edvanto-white);
-    color: var(--edvanto-navy);
-    border-color: var(--edvanto-violet);
-    box-shadow: 0 4px 14px rgba(212, 166, 42, 0.18);
-}
-
-/* Rotate icon on hover */
-.refresh-btn:hover i {
-    color: var(--edvanto-violet);
+  }
+  .refresh-btn:hover {
+    background: var(--edvanto-cream);
+    color: var(--edvanto-dark);
+    border-color: var(--edvanto-gold);
+    box-shadow: 0 4px 14px rgba(212, 166, 42, 0.20);
+  }
+  .refresh-btn:hover i {
+    color: var(--edvanto-gold);
     transform: rotate(180deg);
-}
+  }
+  .refresh-btn:focus,
+  .refresh-btn:active {
+    background: var(--edvanto-cream) !important;
+    color: var(--edvanto-dark) !important;
+    border-color: var(--edvanto-gold) !important;
+    box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.18) !important;
+  }
 
-/* Click / focus */
-.refresh-btn:focus,
-.refresh-btn:active {
-    background: var(--edvanto-white) !important;
-    color: var(--edvanto-navy) !important;
-    border-color: var(--edvanto-violet) !important;
-    box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.15) !important;
-}
-
-  
+  .toast-container-edvanto { z-index: 1090; }
 </style>
 
-<!-- ============================================================
-     BREADCRUMB + PAGE TITLE
-     ============================================================ -->
-<div class="edvanto-breadcrumb mb-3">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-    </ol>
-  </nav>
-</div>
+<div class="edvanto-dashboard">
 
-<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-  <div>
-    <h1 class="edvanto-page-title mb-1">Dashboard</h1>
-    <p class="edvanto-page-subtitle">Overview of your Edvanto learning platform.</p>
+  <!-- ============================================================
+       BREADCRUMB + PAGE TITLE
+       ============================================================ -->
+  <div class="edvanto-breadcrumb mb-3">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Edvanto</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+      </ol>
+    </nav>
   </div>
-  <div class="d-flex gap-2">
-    <!-- <button class="btn btn-outline-secondary btn-sm px-3" type="button" onclick="window.location.reload()" style="border-radius: 60px; font-weight: var(--edvanto-fw-bold);">
-      <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-    </button> -->
-    <button class="btn btn-sm px-3 refresh-btn" type="button" onclick="window.location.reload()">
-      <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-    </button>
-    <div class="dropdown">
-      <button class="btn btn-sm px-3 dropdown-toggle export-btn" type="button" data-bs-toggle="dropdown">
-        <i class="bi bi-download me-1"></i> Export
+
+  <div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div class="min-w-0">
+      <h1 class="edvanto-page-title mb-1">Dashboard</h1>
+      <p class="edvanto-page-subtitle">Overview of your Edvanto learning platform.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-sm px-3 refresh-btn" type="button" onclick="window.location.reload()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Refresh
       </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>PDF Report</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel Export</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i>Print Dashboard</a></li>
-      </ul>
+      <div class="dropdown">
+        <button class="btn btn-sm px-3 dropdown-toggle export-btn" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-download me-1"></i> Export
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+          <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>PDF Report</a></li>
+          <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel Export</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i>Print Dashboard</a></li>
+        </ul>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ============================================================
-     STAT CARDS ROW
-     ============================================================ -->
-<div class="row g-3 g-lg-4 mb-4">
-  <!-- Total Students -->
-  <div class="col-12 col-sm-6 col-xl-3">
+  <!-- ============================================================
+       STAT CARDS ROW (CSS Grid: auto-fit minmax(280px, 1fr))
+       ============================================================ -->
+  <div class="edvanto-grid-stats mb-4">
     <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon">
-        <i class="bi bi-people-fill"></i>
-      </div>
+      <div class="edvanto-stat-icon"><i class="bi bi-people-fill"></i></div>
       <div class="edvanto-stat-label">Total Students</div>
       <div class="edvanto-stat-value">4,862</div>
       <div class="edvanto-stat-meta">
@@ -709,29 +606,19 @@
         <span>vs last month</span>
       </div>
     </div>
-  </div>
 
-  <!-- Active Courses -->
-  <div class="col-12 col-sm-6 col-xl-3">
     <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon cyan">
-        <i class="bi bi-journal-bookmark-fill"></i>
-      </div>
+      <div class="edvanto-stat-icon cyan"><i class="bi bi-journal-bookmark-fill"></i></div>
       <div class="edvanto-stat-label">Active Courses</div>
       <div class="edvanto-stat-value">184</div>
       <div class="edvanto-stat-meta">
-        <i class="bi bi-check-circle-fill" style="color: #0F9D58; font-size: 0.75rem;"></i>
+        <i class="bi bi-check-circle-fill" style="color: var(--edvanto-gold); font-size: 0.75rem;"></i>
         <span>14 new this month</span>
       </div>
     </div>
-  </div>
 
-  <!-- Pending Enrollments -->
-  <div class="col-12 col-sm-6 col-xl-3">
     <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon gold">
-        <i class="bi bi-hourglass-split"></i>
-      </div>
+      <div class="edvanto-stat-icon gold"><i class="bi bi-hourglass-split"></i></div>
       <div class="edvanto-stat-label">Pending Enrollments</div>
       <div class="edvanto-stat-value">37</div>
       <div class="edvanto-stat-meta">
@@ -739,14 +626,9 @@
         <span class="warning">Needs attention</span>
       </div>
     </div>
-  </div>
 
-  <!-- Total Revenue -->
-  <div class="col-12 col-sm-6 col-xl-3">
     <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon navy">
-        <i class="bi bi-currency-rupee"></i>
-      </div>
+      <div class="edvanto-stat-icon navy"><i class="bi bi-currency-rupee"></i></div>
       <div class="edvanto-stat-label">Total Revenue</div>
       <div class="edvanto-stat-value">₹48.2L</div>
       <div class="edvanto-stat-meta">
@@ -756,18 +638,15 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- ============================================================
-     SECOND ROW: REVENUE & ENROLLMENT OVERVIEW (lightweight charts)
-     ============================================================ -->
-<div class="row g-3 g-lg-4 mb-4">
-  <!-- Revenue Overview chart -->
-  <div class="col-12 col-lg-6">
+  <!-- ============================================================
+       SECOND ROW: REVENUE & ENROLLMENT OVERVIEW
+       ============================================================ -->
+  <div class="edvanto-grid-charts mb-4">
     <div class="edvanto-card">
       <div class="edvanto-card-header">
         <h2 class="edvanto-card-title">Revenue Overview</h2>
-        <span class="badge-soft-violet edvanto-badge">Last 6 months</span>
+        <span class="badge-soft-gold edvanto-badge">Last 6 months</span>
       </div>
       <div class="edvanto-chart-placeholder" aria-label="Revenue chart placeholder">
         <div class="edvanto-chart-bar" style="height: 45%;"></div>
@@ -780,61 +659,55 @@
       <div class="edvanto-chart-labels">
         <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
       </div>
-      <div class="d-flex justify-content-between mt-3 pt-2 border-top" style="border-color: var(--edvanto-gray-100) !important;">
+      <div class="d-flex justify-content-between mt-3 pt-2 border-top" style="border-color: rgba(23,23,23,0.06) !important;">
         <div>
           <div class="edvanto-stat-label" style="font-size: 0.7rem;">This Month</div>
-          <div style="font-weight: 700; color: var(--edvanto-navy);">₹9.4L</div>
+          <div style="font-weight: 700; color: var(--edvanto-dark);">₹9.4L</div>
         </div>
         <div class="text-end">
           <div class="edvanto-stat-label" style="font-size: 0.7rem;">Growth</div>
-          <div style="font-weight: 700; color: #0F9D58;">+8.7%</div>
+          <div style="font-weight: 700; color: var(--edvanto-gold);">+8.7%</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Enrollment Overview chart -->
-  <div class="col-12 col-lg-6">
     <div class="edvanto-card">
       <div class="edvanto-card-header">
         <h2 class="edvanto-card-title">Enrollment Overview</h2>
-        <span class="badge-soft-cyan edvanto-badge">Last 6 months</span>
+        <span class="badge-soft-gray edvanto-badge">Last 6 months</span>
       </div>
       <div class="edvanto-chart-placeholder" aria-label="Enrollment chart placeholder">
-        <div class="edvanto-chart-bar cyan" style="height: 30%;"></div>
-        <div class="edvanto-chart-bar cyan" style="height: 52%;"></div>
-        <div class="edvanto-chart-bar cyan" style="height: 48%;"></div>
-        <div class="edvanto-chart-bar cyan" style="height: 65%;"></div>
-        <div class="edvanto-chart-bar cyan" style="height: 58%;"></div>
-        <div class="edvanto-chart-bar cyan" style="height: 78%;"></div>
+        <div class="edvanto-chart-bar gray" style="height: 30%;"></div>
+        <div class="edvanto-chart-bar gray" style="height: 52%;"></div>
+        <div class="edvanto-chart-bar gray" style="height: 48%;"></div>
+        <div class="edvanto-chart-bar gray" style="height: 65%;"></div>
+        <div class="edvanto-chart-bar gray" style="height: 58%;"></div>
+        <div class="edvanto-chart-bar gray" style="height: 78%;"></div>
       </div>
       <div class="edvanto-chart-labels">
         <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
       </div>
-      <div class="d-flex justify-content-between mt-3 pt-2 border-top" style="border-color: var(--edvanto-gray-100) !important;">
+      <div class="d-flex justify-content-between mt-3 pt-2 border-top" style="border-color: rgba(23,23,23,0.06) !important;">
         <div>
           <div class="edvanto-stat-label" style="font-size: 0.7rem;">This Month</div>
-          <div style="font-weight: 700; color: var(--edvanto-navy);">312</div>
+          <div style="font-weight: 700; color: var(--edvanto-dark);">312</div>
         </div>
         <div class="text-end">
           <div class="edvanto-stat-label" style="font-size: 0.7rem;">Growth</div>
-          <div style="font-weight: 700; color: #0F9D58;">+5.2%</div>
+          <div style="font-weight: 700; color: var(--edvanto-gold);">+5.2%</div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ============================================================
-     THIRD ROW: RECENT ENROLLMENTS TABLE + PENDING ACTIONS + QUICK ACTIONS
-     ============================================================ -->
-<div class="row g-3 g-lg-4 mb-4">
-  <!-- Recent Enrollments Table (main column) -->
-  <div class="col-12 col-xl-8">
+  <!-- ============================================================
+       THIRD ROW: RECENT ENROLLMENTS + PENDING + QUICK ACTIONS
+       ============================================================ -->
+  <div class="edvanto-grid-split mb-4">
     <div class="edvanto-card">
       <div class="edvanto-card-header">
         <h2 class="edvanto-card-title">Recent Enrollments</h2>
-        <a href="#" class="text-decoration-none fw-semibold" style="color: var(--edvanto-violet); font-size: 0.85rem;">
+        <a href="#" class="text-decoration-none fw-semibold" style="color: var(--edvanto-gold); font-size: 0.85rem;">
           View all <i class="bi bi-arrow-right ms-1"></i>
         </a>
       </div>
@@ -857,20 +730,20 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 28px; height: 28px; background: rgba(69,28,238,0.08); color: var(--edvanto-violet); font-size: 0.7rem; font-weight: 700;">AK</span>
+                        style="width: 28px; height: 28px; background: rgba(212,166,42,0.12); color: var(--edvanto-gold); font-size: 0.7rem; font-weight: 700;">AK</span>
                   <span>Ananya Kapoor</span>
                 </div>
               </td>
               <td>Full Stack Development</td>
-              <td><span class="edvanto-badge badge-soft-navy">Online</span></td>
+              <td><span class="edvanto-badge badge-soft-dark">Online</span></td>
               <td><span class="edvanto-badge badge-soft-green">Paid</span></td>
               <td><span class="edvanto-badge badge-soft-gold">Pending</span></td>
               <td>22 Jun 2025</td>
               <td>
-                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-violet);" title="Approve">
+                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gold);" title="Approve">
                   <i class="bi bi-check-circle"></i>
                 </button>
-                <button class="btn btn-sm p-0 border-0 ms-2" style="color: var(--edvanto-gray-600);" title="View">
+                <button class="btn btn-sm p-0 border-0 ms-2" style="color: var(--edvanto-gray);" title="View">
                   <i class="bi bi-eye"></i>
                 </button>
               </td>
@@ -879,17 +752,17 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 28px; height: 28px; background: rgba(1,223,254,0.1); color: #007A8F; font-size: 0.7rem; font-weight: 700;">RS</span>
+                        style="width: 28px; height: 28px; background: rgba(74,74,74,0.10); color: var(--edvanto-gray); font-size: 0.7rem; font-weight: 700;">RS</span>
                   <span>Rohan Sharma</span>
                 </div>
               </td>
               <td>Data Science & AI</td>
-              <td><span class="edvanto-badge badge-soft-navy">Online</span></td>
+              <td><span class="edvanto-badge badge-soft-dark">Online</span></td>
               <td><span class="edvanto-badge badge-soft-green">Paid</span></td>
               <td><span class="edvanto-badge badge-soft-green">Approved</span></td>
               <td>21 Jun 2025</td>
               <td>
-                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gray-600);" title="View">
+                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gray);" title="View">
                   <i class="bi bi-eye"></i>
                 </button>
               </td>
@@ -898,20 +771,20 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 28px; height: 28px; background: rgba(255,179,3,0.1); color: #9A6D00; font-size: 0.7rem; font-weight: 700;">PM</span>
+                        style="width: 28px; height: 28px; background: rgba(212,166,42,0.15); color: var(--edvanto-gold); font-size: 0.7rem; font-weight: 700;">PM</span>
                   <span>Priya Mehta</span>
                 </div>
               </td>
               <td>UI/UX Design Masterclass</td>
-              <td><span class="edvanto-badge badge-soft-navy">Offline</span></td>
+              <td><span class="edvanto-badge badge-soft-dark">Offline</span></td>
               <td><span class="edvanto-badge badge-soft-gold">Partial</span></td>
               <td><span class="edvanto-badge badge-soft-gold">Pending</span></td>
               <td>20 Jun 2025</td>
               <td>
-                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-violet);" title="Approve">
+                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gold);" title="Approve">
                   <i class="bi bi-check-circle"></i>
                 </button>
-                <button class="btn btn-sm p-0 border-0 ms-2" style="color: var(--edvanto-gray-600);" title="View">
+                <button class="btn btn-sm p-0 border-0 ms-2" style="color: var(--edvanto-gray);" title="View">
                   <i class="bi bi-eye"></i>
                 </button>
               </td>
@@ -920,17 +793,17 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 28px; height: 28px; background: rgba(69,28,238,0.08); color: var(--edvanto-violet); font-size: 0.7rem; font-weight: 700;">AV</span>
+                        style="width: 28px; height: 28px; background: rgba(212,166,42,0.12); color: var(--edvanto-gold); font-size: 0.7rem; font-weight: 700;">AV</span>
                   <span>Arjun Verma</span>
                 </div>
               </td>
               <td>Cloud Computing with AWS</td>
-              <td><span class="edvanto-badge badge-soft-navy">Online</span></td>
+              <td><span class="edvanto-badge badge-soft-dark">Online</span></td>
               <td><span class="edvanto-badge badge-soft-green">Paid</span></td>
               <td><span class="edvanto-badge badge-soft-green">Approved</span></td>
               <td>19 Jun 2025</td>
               <td>
-                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gray-600);" title="View">
+                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gray);" title="View">
                   <i class="bi bi-eye"></i>
                 </button>
               </td>
@@ -939,20 +812,20 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 28px; height: 28px; background: rgba(1,223,254,0.1); color: #007A8F; font-size: 0.7rem; font-weight: 700;">SN</span>
+                        style="width: 28px; height: 28px; background: rgba(74,74,74,0.10); color: var(--edvanto-gray); font-size: 0.7rem; font-weight: 700;">SN</span>
                   <span>Sneha Nair</span>
                 </div>
               </td>
               <td>Digital Marketing Pro</td>
-              <td><span class="edvanto-badge badge-soft-navy">Offline</span></td>
+              <td><span class="edvanto-badge badge-soft-dark">Offline</span></td>
               <td><span class="edvanto-badge badge-soft-gold">Pending</span></td>
               <td><span class="edvanto-badge badge-soft-gold">Pending</span></td>
               <td>18 Jun 2025</td>
               <td>
-                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-violet);" title="Approve">
+                <button class="btn btn-sm p-0 border-0" style="color: var(--edvanto-gold);" title="Approve">
                   <i class="bi bi-check-circle"></i>
                 </button>
-                <button class="btn btn-sm p-0 border-0 ms-2" style="color: var(--edvanto-gray-600);" title="View">
+                <button class="btn btn-sm p-0 border-0 ms-2" style="color: var(--edvanto-gray);" title="View">
                   <i class="bi bi-eye"></i>
                 </button>
               </td>
@@ -961,102 +834,86 @@
         </table>
       </div>
 
-      <!-- Pagination -->
       <nav class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span class="text-muted" style="font-size: 0.8rem;">Showing 5 of 37 enrollments</span>
+        <span style="color: var(--edvanto-gray); font-size: 0.8rem;">Showing 5 of 37 enrollments</span>
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
-          <li class="page-item active"><a class="page-link" href="#" style="background: var(--edvanto-violet); border-color: var(--edvanto-violet);">1</a></li>
-          <li class="page-item"><a class="page-link" href="#" style="color: var(--edvanto-navy);">2</a></li>
-          <li class="page-item"><a class="page-link" href="#" style="color: var(--edvanto-navy);">3</a></li>
-          <li class="page-item"><a class="page-link" href="#" style="color: var(--edvanto-navy);"><i class="bi bi-chevron-right"></i></a></li>
+          <li class="page-item active"><a class="page-link" href="#" style="background: var(--edvanto-gold); border-color: var(--edvanto-gold); color: var(--edvanto-dark);">1</a></li>
+          <li class="page-item"><a class="page-link" href="#" style="color: var(--edvanto-dark);">2</a></li>
+          <li class="page-item"><a class="page-link" href="#" style="color: var(--edvanto-dark);">3</a></li>
+          <li class="page-item"><a class="page-link" href="#" style="color: var(--edvanto-dark);"><i class="bi bi-chevron-right"></i></a></li>
         </ul>
       </nav>
     </div>
-  </div>
 
-  <!-- Pending Actions + Quick Actions (side column) -->
-  <div class="col-12 col-xl-4">
-    <!-- Pending Actions -->
-    <div class="edvanto-card mb-3 mb-lg-4">
-      <div class="edvanto-card-header">
-        <h2 class="edvanto-card-title">Pending Actions</h2>
-        <span class="badge-soft-gold edvanto-badge">5 items</span>
+    <div class="edvanto-grid-side">
+      <div class="edvanto-card">
+        <div class="edvanto-card-header">
+          <h2 class="edvanto-card-title">Pending Actions</h2>
+          <span class="badge-soft-gold edvanto-badge">5 items</span>
+        </div>
+        <div class="edvanto-grid-pending">
+          <a href="#" class="edvanto-pending-card">
+            <div class="d-flex align-items-center min-w-0">
+              <div class="edvanto-pending-icon"><i class="bi bi-person-badge"></i></div>
+              <span class="edvanto-pending-label">Instructor approvals</span>
+            </div>
+            <span class="edvanto-pending-count">6</span>
+          </a>
+          <a href="#" class="edvanto-pending-card">
+            <div class="d-flex align-items-center min-w-0">
+              <div class="edvanto-pending-icon cyan"><i class="bi bi-person-check"></i></div>
+              <span class="edvanto-pending-label">Student approvals</span>
+            </div>
+            <span class="edvanto-pending-count">12</span>
+          </a>
+          <a href="#" class="edvanto-pending-card">
+            <div class="d-flex align-items-center min-w-0">
+              <div class="edvanto-pending-icon gold"><i class="bi bi-credit-card"></i></div>
+              <span class="edvanto-pending-label">Pending payments</span>
+            </div>
+            <span class="edvanto-pending-count">8</span>
+          </a>
+          <a href="#" class="edvanto-pending-card">
+            <div class="d-flex align-items-center min-w-0">
+              <div class="edvanto-pending-icon"><i class="bi bi-question-circle"></i></div>
+              <span class="edvanto-pending-label">Open doubts</span>
+            </div>
+            <span class="edvanto-pending-count">23</span>
+          </a>
+          <a href="#" class="edvanto-pending-card">
+            <div class="d-flex align-items-center min-w-0">
+              <div class="edvanto-pending-icon cyan"><i class="bi bi-chat-dots"></i></div>
+              <span class="edvanto-pending-label">New consultations</span>
+            </div>
+            <span class="edvanto-pending-count">5</span>
+          </a>
+        </div>
       </div>
-      <div class="d-flex flex-column gap-2">
-        <a href="#" class="edvanto-pending-card">
-          <div class="d-flex align-items-center">
-            <div class="edvanto-pending-icon"><i class="bi bi-person-badge"></i></div>
-            <span class="edvanto-pending-label">Instructor approvals</span>
-          </div>
-          <span class="edvanto-pending-count">6</span>
-        </a>
-        <a href="#" class="edvanto-pending-card">
-          <div class="d-flex align-items-center">
-            <div class="edvanto-pending-icon cyan"><i class="bi bi-person-check"></i></div>
-            <span class="edvanto-pending-label">Student approvals</span>
-          </div>
-          <span class="edvanto-pending-count">12</span>
-        </a>
-        <a href="#" class="edvanto-pending-card">
-          <div class="d-flex align-items-center">
-            <div class="edvanto-pending-icon gold"><i class="bi bi-credit-card"></i></div>
-            <span class="edvanto-pending-label">Pending payments</span>
-          </div>
-          <span class="edvanto-pending-count">8</span>
-        </a>
-        <a href="#" class="edvanto-pending-card">
-          <div class="d-flex align-items-center">
-            <div class="edvanto-pending-icon"><i class="bi bi-question-circle"></i></div>
-            <span class="edvanto-pending-label">Open doubts</span>
-          </div>
-          <span class="edvanto-pending-count">23</span>
-        </a>
-        <a href="#" class="edvanto-pending-card">
-          <div class="d-flex align-items-center">
-            <div class="edvanto-pending-icon cyan"><i class="bi bi-chat-dots"></i></div>
-            <span class="edvanto-pending-label">New consultations</span>
-          </div>
-          <span class="edvanto-pending-count">5</span>
-        </a>
-      </div>
-    </div>
 
-    <!-- Quick Actions -->
-    <div class="edvanto-card">
-      <div class="edvanto-card-header">
-        <h2 class="edvanto-card-title">Quick Actions</h2>
-      </div>
-      <div class="d-flex flex-column gap-2">
-        <a href="#" class="edvanto-quick-btn">
-          <i class="bi bi-person-plus"></i> Add Student
-        </a>
-        <a href="#" class="edvanto-quick-btn">
-          <i class="bi bi-person-badge"></i> Add Instructor
-        </a>
-        <a href="#" class="edvanto-quick-btn">
-          <i class="bi bi-journal-plus"></i> Add Course
-        </a>
-        <a href="#" class="edvanto-quick-btn">
-          <i class="bi bi-calendar-plus"></i> Create Batch
-        </a>
-        <a href="#" class="edvanto-quick-btn">
-          <i class="bi bi-wallet2"></i> View Payments
-        </a>
+      <div class="edvanto-card">
+        <div class="edvanto-card-header">
+          <h2 class="edvanto-card-title">Quick Actions</h2>
+        </div>
+        <div class="edvanto-grid-quick">
+          <a href="#" class="edvanto-quick-btn"><i class="bi bi-person-plus"></i> Add Student</a>
+          <a href="#" class="edvanto-quick-btn"><i class="bi bi-person-badge"></i> Add Instructor</a>
+          <a href="#" class="edvanto-quick-btn"><i class="bi bi-journal-plus"></i> Add Course</a>
+          <a href="#" class="edvanto-quick-btn"><i class="bi bi-calendar-plus"></i> Create Batch</a>
+          <a href="#" class="edvanto-quick-btn"><i class="bi bi-wallet2"></i> View Payments</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ============================================================
-     FOURTH ROW: RECENT ACTIVITY TIMELINE (full width)
-     ============================================================ -->
-<div class="row g-3 g-lg-4 mb-4">
-  <div class="col-12">
+  <!-- ============================================================
+       FOURTH ROW: RECENT ACTIVITY TIMELINE
+       ============================================================ -->
+  <div class="edvanto-grid-full mb-4">
     <div class="edvanto-card">
       <div class="edvanto-card-header">
         <h2 class="edvanto-card-title">Recent Activity</h2>
-        <a href="#" class="text-decoration-none fw-semibold" style="color: var(--edvanto-violet); font-size: 0.85rem;">
+        <a href="#" class="text-decoration-none fw-semibold" style="color: var(--edvanto-gold); font-size: 0.85rem;">
           View all <i class="bi bi-arrow-right ms-1"></i>
         </a>
       </div>
@@ -1099,17 +956,18 @@
       </ul>
     </div>
   </div>
-</div>
+
+</div><!-- /.edvanto-dashboard -->
 
 <!-- ============================================================
-     TOAST NOTIFICATIONS (hidden by default, triggered by JS)
+     TOAST NOTIFICATIONS
      ============================================================ -->
 <div class="toast-container-edvanto position-fixed bottom-0 end-0 p-3">
   <div id="edvantoToast" class="toast align-items-center border-0 shadow-sm" role="alert" aria-live="assertive" aria-atomic="true"
-       style="background: var(--edvanto-white); border-left: 4px solid var(--edvanto-violet) !important;">
+       style="background: var(--edvanto-cream); border-left: 4px solid var(--edvanto-gold) !important;">
     <div class="d-flex">
-      <div class="toast-body d-flex align-items-center gap-2" style="font-size: 0.85rem; color: var(--edvanto-navy);">
-        <i class="bi bi-check-circle-fill" style="color: var(--edvanto-violet);"></i>
+      <div class="toast-body d-flex align-items-center gap-2" style="font-size: 0.85rem; color: var(--edvanto-dark);">
+        <i class="bi bi-check-circle-fill" style="color: var(--edvanto-gold);"></i>
         <span id="edvantoToastMessage">Action completed successfully.</span>
       </div>
       <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -1118,23 +976,24 @@
 </div>
 
 <!-- ============================================================
-     MODAL: QUICK APPROVE (example interaction)
+     MODAL: QUICK APPROVE
      ============================================================ -->
 <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: var(--edvanto-radius-card);">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: var(--edvanto-radius-card); background: var(--edvanto-cream);">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold" id="approveModalLabel" style="color: var(--edvanto-navy); font-size: 1rem;">
+        <h5 class="modal-title fw-bold" id="approveModalLabel" style="color: var(--edvanto-dark); font-size: 1rem;">
           Confirm Approval
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray-600);">
+      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray);">
         Are you sure you want to approve this enrollment?
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-sm text-white" style="background: var(--edvanto-violet);"
+        <button type="button" class="btn btn-sm" style="background: var(--edvanto-cream-2); color: var(--edvanto-dark); border: 1px solid rgba(23,23,23,0.1);" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm"
+                style="background: var(--edvanto-gold); color: var(--edvanto-dark); border: 1px solid var(--edvanto-gold);"
                 onclick="showToast('Enrollment approved successfully.'); bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();">
           Approve
         </button>
@@ -1147,7 +1006,6 @@
      VANILLA JAVASCRIPT
      ============================================================ -->
 <script>
-  // Toast helper
   function showToast(message) {
     var toastEl = document.getElementById('edvantoToast');
     document.getElementById('edvantoToastMessage').textContent = message;
@@ -1155,9 +1013,7 @@
     toast.show();
   }
 
-  // Attach approve button handlers (example)
   document.addEventListener('DOMContentLoaded', function () {
-    // Approve buttons in the table
     document.querySelectorAll('[title="Approve"]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
@@ -1165,9 +1021,6 @@
         modal.show();
       });
     });
-
-    // Demo toast on page load (optional, remove if annoying)
-    // setTimeout(function () { showToast('Welcome to Edvanto Admin Dashboard.'); }, 1200);
   });
 </script>
 
