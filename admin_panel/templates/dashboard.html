@@ -8,10 +8,29 @@
      ============================================================ -->
 
 <style>
+
   /* ----- EDVANTO DESIGN TOKENS (aligned with public site) ----- */
   :root {
-    --edvanto-navy: #032A5A;
-    --edvanto-violet: #451CEE;
+
+
+    --edvanto-color-gradient-2: linear-gradient(66deg, rgba(255, 244, 201, 0.5) 5%, rgba(243, 229, 184, 0.5) 60%);
+    --edvanto-wine: #7A1F3D;
+
+    /**
+     @Font-weight Declaration
+   */
+  --edvanto-fw-bold: 700;
+
+
+
+
+  
+    /* --edvanto-navy: #032A5A; */
+    --edvanto-navy: #000000;
+
+    /* --edvanto-violet: #451CEE; */
+    --edvanto-violet: #D4A62A;
+    
     --edvanto-cyan: #01DFFE;
     --edvanto-gold: #FFB303;
     --edvanto-white: #FFFFFF;
@@ -25,7 +44,21 @@
     --edvanto-radius-sm: 0.6rem;
     --edvanto-shadow-card: 0 4px 16px rgba(3, 42, 90, 0.04), 0 1px 4px rgba(3, 42, 90, 0.02);
     --edvanto-shadow-hover: 0 8px 28px rgba(3, 42, 90, 0.08);
-    --edvanto-border-light: 1px solid rgba(3, 42, 90, 0.06);
+    --edvanto-border-light: 2px solid rgba(23, 23, 23, 0.08);
+
+
+
+  --edvanto-color-red-1: #e04040;
+  --edvanto-color-red-2: #bc4614;
+  --edvanto-color-red-3: #ef6aa2;
+  --edvanto-color-red-4: #e3037d;
+  --edvanto-color-green-1: #28c840;
+  --edvanto-color-green-2: #2c9864;
+  --edvanto-color-green-3: #10b981;
+  --edvanto-color-green-4: #5ab18f;
+
+  --edvanto-color-yellow-1: hsl(53, 100%, 50%);
+
   }
 
   /* ----- GLOBAL LAYOUT TWEAKS ----- */
@@ -69,14 +102,19 @@
   /* ----- STAT CARDS ----- */
   .edvanto-stat-card {
     background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
+    border-radius: 18px;
     border: var(--edvanto-border-light);
     box-shadow: var(--edvanto-shadow-card);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-    padding: 1.5rem 1.5rem 1.25rem;
+    padding: 30px 30px 17px;
     position: relative;
     overflow: hidden;
     height: 100%;
+    -webkit-transition: all 0.3s ease-in;
+    transition: all 0.3s ease-in; 
+    
+
+  
   }
   .edvanto-stat-card:hover {
     box-shadow: var(--edvanto-shadow-hover);
@@ -90,7 +128,7 @@
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
+    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-wine) 100%);
     opacity: 0.85;
   }
   .edvanto-stat-icon {
@@ -152,17 +190,36 @@
   /* ----- CARDS (generic) ----- */
   .edvanto-card {
     background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
+    border-radius: 18px;
     border: var(--edvanto-border-light);
     box-shadow: var(--edvanto-shadow-card);
-    padding: 1.25rem 1.5rem 1.5rem;
+    padding: 30px 30px 17px;
     height: 100%;
+ 
+
+
   }
   .edvanto-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.25rem;
+
+
+
+    /* 
+    background: var(--edvanto-white);
+    border-radius: 18px;
+    border: var(--edvanto-border-light);
+    box-shadow: var(--edvanto-shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    padding: 30px 30px 17px;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    -webkit-transition: all 0.3s ease-in;
+    transition: all 0.3s ease-in;  */
+  
   }
   .edvanto-card-title {
     font-size: 1.05rem;
@@ -183,14 +240,15 @@
   }
   .edvanto-chart-bar {
     flex: 1;
-    background: linear-gradient(180deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
+    background: linear-gradient(180deg, var(--edvanto-color-red-1) 0%,var(--edvanto-color-red-2));
     border-radius: 6px 6px 2px 2px;
     min-height: 8px;
     transition: height 0.3s ease;
     opacity: 0.85;
+    
   }
   .edvanto-chart-bar.cyan {
-    background: linear-gradient(180deg, var(--edvanto-cyan) 0%, #4DE8FF 100%);
+    background: linear-gradient(180deg, var(--edvanto-color-green-2) 0%, var(--edvanto-color-green-1));
   }
   .edvanto-chart-labels {
     display: flex;
@@ -437,6 +495,162 @@
   .toast-container-edvanto {
     z-index: 1090;
   }
+
+
+
+
+/* .export-btn {
+    background: var(--edvanto-violet);
+    color: white;
+    border: none;
+    border-radius: 60px;
+    font-weight: var(--edvanto-fw-bold);
+    transition: background-color 0.25s ease, transform 0.2s ease;
+} */
+
+/* .export-btn:hover {
+    background: rgba(212, 166, 42, 0.82);
+    color: white;
+} */
+
+
+
+/* ================================
+   EDVANTO EXPORT BUTTON
+   ================================ */
+
+.export-btn {
+    background: var(--edvanto-violet);
+    color: var(--edvanto-white);
+    border: 1px solid var(--edvanto-violet);
+    border-radius: var(--edvanto-radius-sm);
+    font-weight: var(--edvanto-fw-bold);
+    padding: 0.5rem 1rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 3px 10px rgba(212, 166, 42, 0.12);
+}
+
+/* Hover */
+.export-btn:hover,
+.export-btn:focus,
+.export-btn.show {
+    background: var(--edvanto-gold);
+    color: var(--edvanto-navy);
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 5px 16px rgba(212, 166, 42, 0.25);
+}
+
+/* Download icon */
+.export-btn i {
+    color: #ffffff;
+    transition: color 0.25s ease;
+}
+
+.export-btn:hover i,
+.export-btn:focus i,
+.export-btn.show i {
+    color: var(--edvanto-navy);
+}
+
+
+/* ================================
+   EXPORT DROPDOWN
+   ================================ */
+
+.export-btn + .dropdown-menu {
+    min-width: 210px;
+    margin-top: 8px !important;
+    padding: 0.5rem;
+    background: var(--edvanto-white);
+    border: 1px solid rgba(212, 166, 42, 0.25) !important;
+    border-radius: var(--edvanto-radius-sm);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Dropdown items */
+.export-btn + .dropdown-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0.65rem 0.8rem;
+    border-radius: 0.45rem;
+    color: var(--edvanto-gray-800);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Icons */
+.export-btn + .dropdown-menu .dropdown-item i {
+    color: var(--edvanto-violet);
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
+/* Dropdown hover */
+.export-btn + .dropdown-menu .dropdown-item:hover {
+    background: var(--edvanto-color-gradient-2);
+    color: var(--edvanto-navy);
+    transform: translateX(3px);
+}
+
+.export-btn + .dropdown-menu .dropdown-item:hover i {
+    color: var(--edvanto-navy);
+}
+
+/* Divider */
+.export-btn + .dropdown-menu .dropdown-divider {
+    border-top-color: rgba(212, 166, 42, 0.2);
+    margin: 0.4rem 0.3rem;
+}
+
+
+
+/* ================================
+   EDVANTO REFRESH BUTTON
+   ================================ */
+
+.refresh-btn {
+    background: var(--edvanto-white);
+    color: var(--edvanto-navy);
+    border: 1px solid var(--edvanto-gray-300);
+    border-radius: 60px;
+    font-weight: var(--edvanto-fw-bold);
+    padding: 0.5rem 1rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Refresh icon */
+.refresh-btn i {
+    color: var(--edvanto-violet);
+    transition: transform 0.4s ease, color 0.25s ease;
+}
+
+/* Hover */
+.refresh-btn:hover {
+    background: var(--edvanto-white);
+    color: var(--edvanto-navy);
+    border-color: var(--edvanto-violet);
+    box-shadow: 0 4px 14px rgba(212, 166, 42, 0.18);
+}
+
+/* Rotate icon on hover */
+.refresh-btn:hover i {
+    color: var(--edvanto-violet);
+    transform: rotate(180deg);
+}
+
+/* Click / focus */
+.refresh-btn:focus,
+.refresh-btn:active {
+    background: var(--edvanto-white) !important;
+    color: var(--edvanto-navy) !important;
+    border-color: var(--edvanto-violet) !important;
+    box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.15) !important;
+}
+
+  
 </style>
 
 <!-- ============================================================
@@ -457,12 +671,14 @@
     <p class="edvanto-page-subtitle">Overview of your Edvanto learning platform.</p>
   </div>
   <div class="d-flex gap-2">
-    <button class="btn btn-outline-secondary btn-sm px-3" type="button" onclick="window.location.reload()">
+    <!-- <button class="btn btn-outline-secondary btn-sm px-3" type="button" onclick="window.location.reload()" style="border-radius: 60px; font-weight: var(--edvanto-fw-bold);">
+      <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+    </button> -->
+    <button class="btn btn-sm px-3 refresh-btn" type="button" onclick="window.location.reload()">
       <i class="bi bi-arrow-clockwise me-1"></i> Refresh
     </button>
     <div class="dropdown">
-      <button class="btn btn-sm px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown"
-              style="background: var(--edvanto-violet); color: white; border: none;">
+      <button class="btn btn-sm px-3 dropdown-toggle export-btn" type="button" data-bs-toggle="dropdown">
         <i class="bi bi-download me-1"></i> Export
       </button>
       <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">

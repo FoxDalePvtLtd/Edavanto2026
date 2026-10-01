@@ -18,6 +18,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.png' %}">
+
+  <!-- CSS here -->
+  
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+
   <style>
     /* ============================================================
        EDVANTO ADMIN – GLOBAL DESIGN SYSTEM
@@ -26,8 +33,12 @@
        ============================================================ */
 
     :root {
-      --edvanto-navy: #032A5A;
-      --edvanto-violet: #451CEE;
+
+       --edvanto-color-gradient-2: linear-gradient(66deg, rgba(255, 244, 201, 0.5) 5%, rgba(243, 229, 184, 0.5) 60%);
+
+       
+      --edvanto-navy: #000000;
+      --edvanto-violet: rgba(212, 166, 42, 0.82);
       --edvanto-cyan: #01DFFE;
       --edvanto-gold: #FFB303;
       --edvanto-white: #FFFFFF;
@@ -37,7 +48,7 @@
       --edvanto-gray-200: #E9EFF6;
       --edvanto-gray-300: #DCE5EF;
       --edvanto-gray-400: #B7C4D6;
-      --edvanto-gray-500: #8A9BB5;
+      --edvanto-gray-500: #777777;
       --edvanto-gray-600: #5A6E8A;
       --edvanto-gray-700: #3D4F6A;
       --edvanto-gray-800: #1F2E45;
@@ -111,7 +122,7 @@
       left: 0;
       bottom: 0;
       width: var(--edvanto-sidebar-width);
-      background: var(--edvanto-white);
+      background: #191D24;
       border-right: var(--edvanto-border-light);
       box-shadow: var(--edvanto-shadow-sidebar);
       display: flex;
@@ -201,7 +212,7 @@
       gap: 0.85rem;
       padding: 0.65rem 0.85rem;
       border-radius: var(--edvanto-radius-sm);
-      color: var(--edvanto-navy);
+      color: var(--edvanto-white);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -214,7 +225,7 @@
       width: 22px;
       text-align: center;
       flex-shrink: 0;
-      color: var(--edvanto-gray-600);
+      color: var(--edvanto-gold);
       transition: color 0.15s ease;
     }
     .edvanto-nav-link:hover {
@@ -336,7 +347,8 @@
       top: 0;
       z-index: 1030;
       height: var(--edvanto-header-height);
-      background: rgba(255, 255, 255, 0.92);
+      background:#191D24;
+;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: var(--edvanto-border-light);
@@ -415,7 +427,7 @@
       border-radius: 11px;
       border: none;
       background: transparent;
-      color: var(--edvanto-navy);
+      color: var(--edvanto-violet);
       font-size: 1.15rem;
       display: flex;
       align-items: center;
@@ -487,6 +499,8 @@
       width: 100%;
       max-width: 1600px;
       margin: 0 auto;
+      /* background-color: linear-gradient(66deg, rgba(255, 244, 201, 0.5) 5%, rgba(243, 229, 184, 0.5) 60%); */
+      background: var(--edvanto-color-gradient-2);
     }
 
     /* ---------- FOOTER ---------- */
@@ -551,14 +565,13 @@
       transition: all 0.15s ease;
     }
     .btn-edvanto-primary:hover {
-      background: #3815C9;
-      border-color: #3815C9;
+      background: rgba(198, 151, 24, 0.82);
       color: var(--edvanto-white);
-      box-shadow: 0 4px 14px rgba(69, 28, 238, 0.28);
+  
     }
     .btn-edvanto-outline {
-      background: transparent;
-      border: 1px solid var(--edvanto-gray-300);
+      background: #ffffff;
+      border: 2px solid black;
       color: var(--edvanto-navy);
       font-weight: 600;
       font-size: 0.85rem;
@@ -894,6 +907,23 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+
+    .site_logo {
+  padding: 18px 0;
+}
+
+.site_logo .logo {
+  display: inline-block;
+  max-width: 170px;
+  width: 100%;
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px), only screen and (min-width: 576px) and (max-width: 767px), (max-width: 575px) {
+  .site_logo .logo {
+    max-width: 150px;
+  }
+}
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -908,12 +938,24 @@
     <aside class="edvanto-sidebar" id="edvantoSidebar" aria-label="Edvanto admin navigation">
 
       <!-- Brand / Logo -->
-      <a href="{% url 'admin_panel:dashboard' %}" class="edvanto-sidebar-brand">
-        <span class="edvanto-logo-mark">E</span>
+      <!-- <a href="{% url 'admin_panel:dashboard' %}" class="edvanto-sidebar-brand">
+        -->
+        <div class="site_logo">
+
+                <a
+                  class="logo"
+                  href="{% url 'core:home' %}">
+
+                  <img
+                    src="{% static 'images/logos/logo.png' %}"
+                    alt="Edvanto Logo">
+
+                </a>
+        <!-- <span class="edvanto-logo-mark">E</span>
         <span class="edvanto-logo-text">
           <strong>Edvanto</strong>
           <span>Admin Panel</span>
-        </span>
+        </span> -->
       </a>
 
       <!-- Navigation -->
@@ -983,7 +1025,7 @@
             </a>
           </li>
           <li>
-            <a href="{% url 'admin_panel:assessment_list' %} "
+            <a href="{% url 'admin_panel:assessment_list' %}"
                class="edvanto-nav-link {% if 'assessment' in request.resolver_match.url_name %}active{% endif %}">
               <i class="bi bi-clipboard2-check-fill"></i>
               <span>Assessments</span>
@@ -1052,16 +1094,7 @@
 
       </nav>
 
-      <!-- Sidebar footer: current admin user -->
-      <div class="edvanto-sidebar-footer">
-        <div class="edvanto-sidebar-user">
-          <span class="edvanto-avatar">AD</span>
-          <span class="edvanto-sidebar-user-info">
-            <strong>{{ request.user.get_full_name|default:"Admin User" }}</strong>
-            <span>Super Administrator</span>
-          </span>
-        </div>
-      </div>
+      
     </aside>
 
     <!-- Mobile backdrop -->
