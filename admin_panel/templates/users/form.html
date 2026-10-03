@@ -1,864 +1,205 @@
 {% extends "admin_base.html" %}
 {% load static %}
 
-{% block title %}{% if user_obj %}Edit User{% else %}Add User{% endif %}{% endblock %}
+{% block title %}{% if user_obj %}Edit User{% else %}Add User{% endif %} | EDVANTO Admin{% endblock %}
 
 {% block content %}
-<!-- ============================================================
-     EDVANTO ADMIN – USER CREATE / EDIT
-     Personal · Account · Instructor Profile · Security
-     ============================================================ -->
+<link rel="stylesheet" href="{% static 'admin_panel/css/admin_user_form.css' %}">
 
 <style>
-  /* ---------- Form layout ---------- */
-  .edvanto-form-card {
+  .user-form-page { min-width: 0; }
+  .user-form-page .form-panel {
+    min-width: 0;
+    overflow: hidden;
     background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
     border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-card);
     box-shadow: var(--edvanto-shadow-card);
-    padding: 1.5rem 1.75rem 1.75rem;
-    margin-bottom: 1.25rem;
   }
-  .edvanto-form-section-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--edvanto-violet);
-    margin-bottom: 0.35rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .user-form-page .form-panel-head {
+    padding: clamp(.9rem, 2.5vw, 1.2rem) clamp(1rem, 3vw, 1.4rem);
+    border-bottom: var(--edvanto-border-light);
   }
-  .edvanto-form-section-title i {
-    font-size: 1rem;
-    color: var(--edvanto-violet);
+  .user-form-page .form-panel-body {
+    padding: clamp(1rem, 3vw, 1.4rem);
+    min-width: 0;
   }
-  .edvanto-form-section-desc {
-    font-size: 0.82rem;
+  .user-form-page .form-label {
+    display: inline-block;
+    margin-bottom: .4rem;
+    font-size: .82rem;
+    font-weight: 650;
+    color: var(--edvanto-navy);
+  }
+  .user-form-page .form-control,
+  .user-form-page .form-select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 42px;
+    border-radius: var(--edvanto-radius-sm);
+  }
+  .user-form-page textarea.form-control { min-height: 110px; resize: vertical; }
+  .user-form-page .help-text {
+    margin-top: .3rem;
+    font-size: .76rem;
     color: var(--edvanto-gray-600);
-    margin-bottom: 1.35rem;
-    font-weight: 400;
+    overflow-wrap: anywhere;
   }
-
-  /* ---------- Avatar uploader ---------- */
-  .edvanto-avatar-uploader {
+  .user-form-page .field-error {
+    margin-top: .3rem;
+    color: #b02a37;
+    font-size: .78rem;
+    overflow-wrap: anywhere;
+  }
+  .user-form-page .password-input-wrap {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    flex-wrap: wrap;
+    min-width: 0;
   }
-  .edvanto-avatar-preview {
-    width: 84px;
-    height: 84px;
-    border-radius: 22px;
-    background: linear-gradient(135deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
-    color: var(--edvanto-white);
-    display: flex;
+  .user-form-page .password-input-wrap .form-control {
+    padding-right: 3rem;
+    min-width: 0;
+  }
+  .user-form-page .password-toggle {
+    position: absolute;
+    right: .5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    font-size: 1.6rem;
-    letter-spacing: -0.03em;
-    flex-shrink: 0;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(69, 28, 238, 0.2);
-    position: relative;
-  }
-  .edvanto-avatar-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .edvanto-avatar-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .edvanto-avatar-actions .btn {
-    font-size: 0.78rem;
-    font-weight: 600;
-    border-radius: var(--edvanto-radius-xs);
-    padding: 0.35rem 0.8rem;
-  }
-  .edvanto-avatar-hint {
-    font-size: 0.72rem;
-    color: var(--edvanto-gray-500);
-    margin-top: 0.15rem;
-  }
-
-  /* ---------- Floating form controls (Edvanto skin) ---------- */
-  .form-floating > .form-control,
-  .form-floating > .form-select {
-    border-radius: var(--edvanto-radius-sm);
-    border: var(--edvanto-border-medium);
-    font-size: 0.9rem;
-    color: var(--edvanto-navy);
-    background-color: var(--edvanto-white);
-    height: calc(3.4rem + 2px);
-    padding: 1.1rem 0.9rem 0.4rem;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  .form-floating > .form-select {
-    padding-top: 1.35rem;
-    padding-bottom: 0.4rem;
-  }
-  .form-floating > .form-control:focus,
-  .form-floating > .form-select:focus {
-    border-color: var(--edvanto-violet);
-    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
-  }
-  .form-floating > label {
-    font-size: 0.85rem;
-    font-weight: 500;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
     color: var(--edvanto-gray-600);
-    padding: 0.9rem 0.9rem;
-  }
-  .form-floating > .form-control:focus ~ label,
-  .form-floating > .form-control:not(:placeholder-shown) ~ label,
-  .form-floating > .form-select ~ label {
-    color: var(--edvanto-violet);
-    font-weight: 600;
-    font-size: 0.75rem;
-    transform: scale(0.85) translateY(-0.6rem) translateX(0.15rem);
-  }
-
-  /* validation feedback */
-  .form-control.is-invalid,
-  .form-select.is-invalid {
-    border-color: #DC3545;
-    background-image: none;
-  }
-  .form-control.is-invalid:focus,
-  .form-select.is-invalid:focus {
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
-  }
-  .invalid-feedback {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #B02A37;
-    margin-top: 0.25rem;
-  }
-  .form-text {
-    font-size: 0.75rem;
-    color: var(--edvanto-gray-500);
-  }
-
-  /* ---------- Toggle switches (Edvanto skin) ---------- */
-  .edvanto-switch-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.85rem;
-    padding: 0.85rem 1rem;
-    border-radius: var(--edvanto-radius-sm);
-    border: var(--edvanto-border-light);
-    background: var(--edvanto-gray-50);
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-  .edvanto-switch-row:hover {
-    border-color: rgba(69, 28, 238, 0.2);
-    background: rgba(69, 28, 238, 0.02);
-  }
-  .edvanto-switch-row .form-check-input {
-    width: 2.4rem;
-    height: 1.3rem;
-    margin-top: 0.1rem;
     cursor: pointer;
-    border-radius: 999px;
-    border: 1px solid var(--edvanto-gray-300);
-    background-color: var(--edvanto-gray-200);
-    flex-shrink: 0;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
   }
-  .edvanto-switch-row .form-check-input:checked {
-    background-color: var(--edvanto-violet);
-    border-color: var(--edvanto-violet);
+  .user-form-page .btn-gold {
+    background: #D4A62A;
+    border-color: #D4A62A;
+    color: #171717;
+    font-weight: 700;
   }
-  .edvanto-switch-row .form-check-input:focus {
-    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.15);
-    border-color: var(--edvanto-violet);
-  }
-  .edvanto-switch-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--edvanto-navy);
-    margin: 0;
-    line-height: 1.3;
-  }
-  .edvanto-switch-help {
-    font-size: 0.75rem;
-    color: var(--edvanto-gray-600);
-    margin: 0.15rem 0 0;
-  }
+  .user-form-page .form-actions .btn { white-space: normal; }
 
-  /* ---------- Sticky action bar ---------- */
-  .edvanto-action-bar {
-    position: sticky;
-    bottom: 0;
-    z-index: 1020;
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-top: var(--edvanto-border-light);
-    border-radius: var(--edvanto-radius-card);
-    box-shadow: 0 -4px 20px rgba(3, 42, 90, 0.05);
-    padding: 0.9rem 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-  }
-  .edvanto-action-bar .btn {
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: var(--edvanto-radius-sm);
-    padding: 0.55rem 1.25rem;
-  }
   @media (max-width: 575.98px) {
-    .edvanto-action-bar .btn {
-      flex: 1;
+    .user-form-page .page-header {
+      align-items: stretch !important;
     }
-  }
-
-  /* ---------- Instructor-only section (highlighted) ---------- */
-  .edvanto-instructor-section {
-    border-left: 3px solid var(--edvanto-cyan);
-    background: linear-gradient(90deg, rgba(1, 223, 254, 0.035) 0%, rgba(1, 223, 254, 0) 60%);
-  }
-  .edvanto-instructor-section .edvanto-form-section-title {
-    color: #007A8F;
-  }
-  .edvanto-instructor-section .edvanto-form-section-title i {
-    color: #007A8F;
-  }
-
-  /* ---------- Password field note ---------- */
-  .edvanto-password-note {
-    background: rgba(255, 179, 3, 0.08);
-    border-left: 3px solid var(--edvanto-gold);
-    border-radius: var(--edvanto-radius-xs);
-    padding: 0.7rem 0.9rem;
-    font-size: 0.78rem;
-    color: #7A5600;
-    display: flex;
-    gap: 0.6rem;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-  }
-  .edvanto-password-note i {
-    color: var(--edvanto-gold);
-    font-size: 1rem;
-    margin-top: 0.05rem;
-    flex-shrink: 0;
+    .user-form-page .page-header > a {
+      align-self: flex-start;
+    }
+    .user-form-page .form-actions {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .user-form-page .form-actions .btn {
+      width: 100%;
+    }
   }
 </style>
 
-<!-- ============================================================
-     BREADCRUMB + PAGE HEADER
-     ============================================================ -->
-<div class="edvanto-breadcrumb mb-3">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
-      <li class="breadcrumb-item"><a href="#">Users</a></li>
-      <li class="breadcrumb-item active" aria-current="page">
-        {% if user_obj %}Edit User{% else %}Add User{% endif %}
-      </li>
-    </ol>
-  </nav>
-</div>
-
-<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-  <div>
-    <h1 class="edvanto-page-title mb-1">
-      {% if user_obj %}Edit User{% else %}Add User{% endif %}
-    </h1>
-    <p class="edvanto-page-subtitle">
-      {% if user_obj %}
-        Update account details, role and security settings for {{ user_obj.get_full_name|default:"this user" }}.
-      {% else %}
-        Create a new student, instructor, staff or administrator account.
-      {% endif %}
-    </p>
-  </div>
-  <a href="{% url 'admin_panel:user_list' %}" class="btn btn-edvanto-outline btn-sm px-3">
-    <i class="bi bi-arrow-left me-1"></i> Back to Users
-  </a>
-</div>
-
-<!-- ============================================================
-     FORM
-     ============================================================ -->
-<form method="post" enctype="multipart/form-data" novalidate id="edvantoUserForm"
-      action="{% if user_obj %}#user_edit' user_obj.pk %}{% else %}#{% endif %}">
-  {% csrf_token %}
-
-  {# Non-field errors #}
-  {% if form.non_field_errors %}
-    <div class="alert alert-danger d-flex align-items-start gap-2 border-0" role="alert"
-         style="border-radius: var(--edvanto-radius-sm); font-size: 0.85rem;">
-      <i class="bi bi-exclamation-triangle-fill" style="color: #B02A37; font-size: 1.1rem;"></i>
-      <div>
-        {% for error in form.non_field_errors %}
-          <div>{{ error }}</div>
-        {% endfor %}
+<div class="user-form-page">
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div class="min-w-0">
+      <div class="small mb-2">
+        <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+        <span class="mx-2">/</span>
+        <a href="{% url 'admin_panel:user_list' %}" class="text-decoration-none">Users</a>
+        <span class="mx-2">/</span>
+        {% if user_obj %}Edit{% else %}Add user{% endif %}
       </div>
+      <h1 class="h3 mb-1">{% if user_obj %}Edit user{% else %}Add user{% endif %}</h1>
+      <p class="text-secondary mb-0">Manage account details and assigned non-administrator role. Users sign in with their email and password.</p>
     </div>
+    <a href="{% url 'admin_panel:user_list' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to users
+    </a>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
   {% endif %}
 
-  <div class="row g-3 g-lg-4">
-    <!-- ============================================================
-         LEFT COLUMN (main form)
-         ============================================================ -->
-    <div class="col-12 col-lg-8">
+  <form method="post" enctype="multipart/form-data" id="admin-user-form">
+    {% csrf_token %}
 
-      <!-- ============ PERSONAL INFORMATION ============ -->
-      <div class="edvanto-form-card">
-        <div class="edvanto-form-section-title">
-          <i class="bi bi-person-vcard-fill"></i> Personal Information
-        </div>
-        <p class="edvanto-form-section-desc">
-          Basic identity details for this user. These appear across the Edvanto platform.
-        </p>
+    <section class="form-panel mb-3">
+      <div class="form-panel-head">
+        <h2 class="h6 mb-1">Personal information</h2>
+        <p class="small text-secondary mb-0">Email is the login ID. EDVANTO sets the internal username automatically.</p>
+      </div>
 
+      <div class="form-panel-body">
         <div class="row g-3">
-          <!-- First Name -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <input type="text" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
-                     id="id_first_name" name="first_name" placeholder="First Name"
-                     value="{{ form.first_name.value|default:'' }}" required>
-              <label for="id_first_name">First Name <span class="text-danger">*</span></label>
-              {% if form.first_name.errors %}
-                <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Last Name -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <input type="text" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
-                     id="id_last_name" name="last_name" placeholder="Last Name"
-                     value="{{ form.last_name.value|default:'' }}" required>
-              <label for="id_last_name">Last Name <span class="text-danger">*</span></label>
-              {% if form.last_name.errors %}
-                <div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Email -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}"
-                     id="id_email" name="email" placeholder="Email Address"
-                     value="{{ form.email.value|default:'' }}" required>
-              <label for="id_email">Email Address <span class="text-danger">*</span></label>
-              {% if form.email.errors %}
-                <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Phone -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <input type="tel" class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
-                     id="id_phone" name="phone" placeholder="Phone Number"
-                     value="{{ form.phone.value|default:'' }}">
-              <label for="id_phone">Phone Number</label>
-              {% if form.phone.errors %}
-                <div class="invalid-feedback">{{ form.phone.errors.0 }}</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Profile Photo -->
-          <div class="col-12">
-            <label class="form-label mb-2" style="font-size: 0.8rem; font-weight: 600; color: var(--edvanto-navy);">
-              Profile Photo
-            </label>
-            <div class="edvanto-avatar-uploader">
-              <div class="edvanto-avatar-preview" id="avatarPreview">
-                {% if user_obj and user_obj.profile_photo %}
-                  <img src="{{ user_obj.profile_photo.url }}" alt="{{ user_obj.get_full_name }}">
-                {% else %}
-                  <span id="avatarInitials">UN</span>
-                {% endif %}
-              </div>
-              <div class="edvanto-avatar-actions">
-                <label for="id_profile_photo" class="btn btn-edvanto-outline mb-0">
-                  <i class="bi bi-upload me-1"></i> Upload Photo
+          {% for field in form %}
+            {% if field.name != 'password1' and field.name != 'password2' %}
+              <div class="col-12 col-md-6">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                  {{ field.label }}{% if field.field.required %}<span class="text-danger"> *</span>{% endif %}
                 </label>
-                <input type="file" id="id_profile_photo" name="profile_photo"
-                       accept="image/png,image/jpeg,image/webp" class="d-none">
-                <button type="button" class="btn btn-edvanto-outline text-danger"
-                        onclick="clearAvatar()">
-                  <i class="bi bi-trash me-1"></i> Remove
-                </button>
-                <div class="edvanto-avatar-hint">JPG, PNG or WEBP · Max 2 MB</div>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="help-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="field-error" role="alert">{{ error }}</div>
+                {% endfor %}
               </div>
-            </div>
-            {% if form.profile_photo.errors %}
-              <div class="invalid-feedback d-block">{{ form.profile_photo.errors.0 }}</div>
             {% endif %}
-          </div>
+          {% endfor %}
         </div>
       </div>
+    </section>
 
-      <!-- ============ ACCOUNT ============ -->
-      <div class="edvanto-form-card">
-        <div class="edvanto-form-section-title">
-          <i class="bi bi-shield-lock-fill"></i> Account
+    {% if not user_obj %}
+      <section class="form-panel mb-3">
+        <div class="form-panel-head">
+          <h2 class="h6 mb-1">Initial password</h2>
+          <p class="small text-secondary mb-0">Password is validated and stored using Django's password hashing API.</p>
         </div>
-        <p class="edvanto-form-section-desc">
-          Login credentials, role assignment and account visibility settings.
-        </p>
-
-        <div class="row g-3">
-          <!-- Username -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}"
-                     id="id_username" name="username" placeholder="Username"
-                     value="{{ form.username.value|default:'' }}" required>
-              <label for="id_username">Username <span class="text-danger">*</span></label>
-              {% if form.username.errors %}
-                <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+        <div class="form-panel-body">
+          <div class="row g-3">
+            {% for field in form %}
+              {% if field.name == 'password1' or field.name == 'password2' %}
+                <div class="col-12 col-md-6">
+                  <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}{% if field.field.required %}<span class="text-danger"> *</span>{% endif %}
+                  </label>
+                  <div class="password-input-wrap">
+                    {{ field }}
+                    <button type="button" class="password-toggle"
+                            data-password-toggle="{{ field.id_for_label }}"
+                            aria-label="Show password" aria-pressed="false">
+                      <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                  {% if field.help_text %}
+                    <div class="help-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="field-error" role="alert">{{ error }}</div>
+                  {% endfor %}
+                </div>
               {% endif %}
-            </div>
-            <div class="form-text mt-1">Used for login. Letters, numbers and @/./+/-/_ only.</div>
-          </div>
-
-          <!-- Role -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <select class="form-select {% if form.role.errors %}is-invalid{% endif %}"
-                      id="id_role" name="role" required onchange="toggleInstructorFields()">
-                <option value="" disabled {% if not form.role.value %}selected{% endif %}>Select Role</option>
-                <option value="student" {% if form.role.value == 'student' %}selected{% endif %}>Student</option>
-                <option value="instructor" {% if form.role.value == 'instructor' %}selected{% endif %}>Instructor</option>
-                <option value="staff" {% if form.role.value == 'staff' %}selected{% endif %}>Staff</option>
-                <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Admin</option>
-              </select>
-              <label for="id_role">Role <span class="text-danger">*</span></label>
-              {% if form.role.errors %}
-                <div class="invalid-feedback">{{ form.role.errors.0 }}</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Active status -->
-          <div class="col-12 col-sm-6">
-            <div class="edvanto-switch-row h-100">
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" role="switch"
-                       id="id_is_active" name="is_active"
-                       {% if form.is_active.value|default:True %}checked{% endif %}>
-              </div>
-              <div>
-                <p class="edvanto-switch-label">Account Active</p>
-                <p class="edvanto-switch-help">Inactive users cannot log in to Edvanto.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Email verified -->
-          <div class="col-12 col-sm-6">
-            <div class="edvanto-switch-row h-100">
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" role="switch"
-                       id="id_email_verified" name="email_verified"
-                       {% if form.email_verified.value %}checked{% endif %}>
-              </div>
-              <div>
-                <p class="edvanto-switch-label">Email Verified</p>
-                <p class="edvanto-switch-help">Mark the email address as confirmed.</p>
-              </div>
-            </div>
+            {% endfor %}
           </div>
         </div>
-      </div>
+      </section>
+    {% endif %}
 
-      <!-- ============ INSTRUCTOR-ONLY FIELDS ============ -->
-      <div class="edvanto-form-card edvanto-instructor-section" id="instructorSection"
-           style="{% if form.role.value != 'instructor' %}display: none;{% endif %}">
-        <div class="edvanto-form-section-title">
-          <i class="bi bi-person-badge-fill"></i> Instructor Profile
-        </div>
-        <p class="edvanto-form-section-desc">
-          Additional information shown on the instructor's public Edvanto profile.
-        </p>
-
-        <div class="row g-3">
-          <!-- Designation -->
-          <div class="col-12 col-sm-6">
-            <div class="form-floating">
-              <input type="text" class="form-control {% if form.designation.errors %}is-invalid{% endif %}"
-                     id="id_designation" name="designation" placeholder="Designation"
-                     value="{{ form.designation.value|default:'' }}">
-              <label for="id_designation">Designation</label>
-              {% if form.designation.errors %}
-                <div class="invalid-feedback">{{ form.designation.errors.0 }}</div>
-              {% endif %}
-            </div>
-            <div class="form-text mt-1">e.g. Senior Data Science Instructor</div>
-          </div>
-
-          <!-- Bio -->
-          <div class="col-12">
-            <div class="form-floating">
-              <textarea class="form-control {% if form.bio.errors %}is-invalid{% endif %}"
-                        id="id_bio" name="bio" placeholder="Bio"
-                        style="height: 130px; padding-top: 1.4rem;">{{ form.bio.value|default:'' }}</textarea>
-              <label for="id_bio">Bio</label>
-              {% if form.bio.errors %}
-                <div class="invalid-feedback">{{ form.bio.errors.0 }}</div>
-              {% endif %}
-            </div>
-            <div class="form-text mt-1">A short professional summary. Max 500 characters.</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ============================================================
-         RIGHT COLUMN (Security + preview)
-         ============================================================ -->
-    <div class="col-12 col-lg-4">
-
-      <!-- ============ SECURITY ============ -->
-      <div class="edvanto-form-card">
-        <div class="edvanto-form-section-title">
-          <i class="bi bi-shield-check"></i> Security
-        </div>
-        <p class="edvanto-form-section-desc">
-          Control onboarding emails and password requirements.
-        </p>
-
-        {% if not user_obj %}
-          <div class="edvanto-password-note">
-            <i class="bi bi-info-circle-fill"></i>
-            <div>
-              A secure temporary password will be generated automatically.
-              The user will be prompted to set their own password on first login.
-            </div>
-          </div>
-        {% else %}
-          <div class="edvanto-password-note">
-            <i class="bi bi-shield-lock-fill"></i>
-            <div>
-              Passwords are never displayed or edited here.
-              Use <strong>Force Password Reset</strong> to send a secure reset link.
-            </div>
-          </div>
-        {% endif %}
-
-        <div class="d-flex flex-column gap-2">
-          <!-- Send welcome email -->
-          <div class="edvanto-switch-row">
-            <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" role="switch"
-                     id="id_send_welcome_email" name="send_welcome_email"
-                     {% if not user_obj %}checked{% endif %}>
-            </div>
-            <div>
-              <p class="edvanto-switch-label">Send Welcome Email</p>
-              <p class="edvanto-switch-help">Email login details and onboarding instructions.</p>
-            </div>
-          </div>
-
-          <!-- Force password reset -->
-          <div class="edvanto-switch-row">
-            <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" role="switch"
-                     id="id_force_password_reset" name="force_password_reset"
-                     {% if form.force_password_reset.value %}checked{% endif %}>
-            </div>
-            <div>
-              <p class="edvanto-switch-label">Force Password Reset</p>
-              <p class="edvanto-switch-help">User must change password on next login.</p>
-            </div>
-          </div>
-
-          <!-- Account active (duplicate for convenience) -->
-          <div class="edvanto-switch-row">
-            <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" role="switch"
-                     id="id_account_active_quick" name="is_active_quick"
-                     {% if form.is_active.value|default:True %}checked{% endif %}
-                     onchange="document.getElementById('id_is_active').checked = this.checked;">
-            </div>
-            <div>
-              <p class="edvanto-switch-label">Account Active</p>
-              <p class="edvanto-switch-help">Enable or disable this account immediately.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ============ SUMMARY PREVIEW ============ -->
-      <div class="edvanto-form-card">
-        <div class="edvanto-form-section-title">
-          <i class="bi bi-person-circle"></i> Preview
-        </div>
-        <p class="edvanto-form-section-desc">
-          A quick look at how this user will appear in the admin panel.
-        </p>
-
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div class="edvanto-avatar-preview" style="width: 56px; height: 56px; border-radius: 16px; font-size: 1.1rem;">
-            <span id="previewInitials">UN</span>
-          </div>
-          <div>
-            <div style="font-weight: 700; color: var(--edvanto-navy); font-size: 0.95rem;" id="previewName">
-              New User
-            </div>
-            <div style="font-size: 0.78rem; color: var(--edvanto-gray-600);" id="previewEmail">
-              user@example.com
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex flex-column gap-2" style="font-size: 0.82rem;">
-          <div class="d-flex justify-content-between">
-            <span style="color: var(--edvanto-gray-600);">Role</span>
-            <span class="edvanto-badge badge-soft-navy" id="previewRole">Not set</span>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span style="color: var(--edvanto-gray-600);">Status</span>
-            <span class="edvanto-badge badge-soft-green" id="previewStatus">Active</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ============================================================
-       STICKY ACTION BAR
-       ============================================================ -->
-  <div class="edvanto-action-bar">
-    <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
-      <i class="bi bi-info-circle"></i>
-      <span>
-        {% if user_obj %}Editing user <strong class="text-edvanto-navy">{{ user_obj.username }}</strong>{% else %}Creating a new user account{% endif %}
-      </span>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-      <a href="#" class="btn btn-edvanto-outline">
-        <i class="bi bi-x-lg me-1"></i> Cancel
-      </a>
-      <button type="submit" name="action" value="save_continue" class="btn btn-edvanto-outline">
-        <i class="bi bi-arrow-repeat me-1"></i> Save &amp; Continue
-      </button>
-      <button type="submit" name="action" value="save" class="btn btn-edvanto-primary">
-        <i class="bi bi-check-lg me-1"></i> Save User
+    <div class="form-actions d-flex flex-wrap justify-content-end gap-2">
+      <a href="{% url 'admin_panel:user_list' %}" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-gold">
+        <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+        {% if user_obj %}Save changes{% else %}Create user{% endif %}
       </button>
     </div>
-  </div>
+  </form>
+</div>
 
-</form>
-
-<!-- ============================================================
-     PAGE JAVASCRIPT
-     ============================================================ -->
-<script>
-  (function () {
-    'use strict';
-
-    /* ---------- Instructor-only field toggle ---------- */
-    window.toggleInstructorFields = function () {
-      var roleSelect = document.getElementById('id_role');
-      var section = document.getElementById('instructorSection');
-      if (!roleSelect || !section) return;
-      if (roleSelect.value === 'instructor') {
-        section.style.display = '';
-      } else {
-        section.style.display = 'none';
-      }
-    };
-
-    /* ---------- Avatar preview + initials ---------- */
-    var fileInput = document.getElementById('id_profile_photo');
-    var preview = document.getElementById('avatarPreview');
-    var initialsEl = document.getElementById('avatarInitials');
-    var previewInitials = document.getElementById('previewInitials');
-    var firstNameInput = document.getElementById('id_first_name');
-    var lastNameInput = document.getElementById('id_last_name');
-    var emailInput = document.getElementById('id_email');
-    var usernameInput = document.getElementById('id_username');
-
-    function computeInitials() {
-      var first = (firstNameInput && firstNameInput.value.trim()) || '';
-      var last = (lastNameInput && lastNameInput.value.trim()) || '';
-      var initials = (first.charAt(0) + last.charAt(0)).toUpperCase();
-      return initials || 'UN';
-    }
-
-    function updateInitials() {
-      var initials = computeInitials();
-      if (initialsEl) initialsEl.textContent = initials;
-      if (previewInitials) previewInitials.textContent = initials;
-    }
-
-    if (fileInput) {
-      fileInput.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            if (preview) {
-              preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
-            }
-          };
-          reader.readAsDataURL(this.files[0]);
-        }
-      });
-    }
-
-    /* ---------- Live preview updates ---------- */
-    function updatePreview() {
-      var nameEl = document.getElementById('previewName');
-      var emailEl = document.getElementById('previewEmail');
-      var roleEl = document.getElementById('previewRole');
-      var statusEl = document.getElementById('previewStatus');
-      var activeEl = document.getElementById('id_is_active');
-      var roleSelect = document.getElementById('id_role');
-
-      if (nameEl) {
-        var name = ((firstNameInput && firstNameInput.value) || '') + ' ' + ((lastNameInput && lastNameInput.value) || '');
-        nameEl.textContent = name.trim() || 'New User';
-      }
-      if (emailEl) {
-        emailEl.textContent = (emailInput && emailInput.value) || 'user@example.com';
-      }
-      if (roleEl && roleSelect) {
-        var roleMap = {
-          student: { label: 'Student', cls: 'badge-role-student' },
-          instructor: { label: 'Instructor', cls: 'badge-role-instructor' },
-          staff: { label: 'Staff', cls: 'badge-role-staff' },
-          admin: { label: 'Admin', cls: 'badge-role-admin' }
-        };
-        var r = roleMap[roleSelect.value];
-        if (r) {
-          roleEl.textContent = r.label;
-          roleEl.className = 'edvanto-badge ' + r.cls;
-        } else {
-          roleEl.textContent = 'Not set';
-          roleEl.className = 'edvanto-badge badge-soft-navy';
-        }
-      }
-      if (statusEl && activeEl) {
-        if (activeEl.checked) {
-          statusEl.textContent = 'Active';
-          statusEl.className = 'edvanto-badge badge-soft-green';
-        } else {
-          statusEl.textContent = 'Inactive';
-          statusEl.className = 'edvanto-badge badge-soft-navy';
-        }
-      }
-    }
-
-    [firstNameInput, lastNameInput, emailInput, usernameInput].forEach(function (el) {
-      if (el) {
-        el.addEventListener('input', function () {
-          updateInitials();
-          updatePreview();
-        });
-      }
-    });
-
-    var roleSelect = document.getElementById('id_role');
-    if (roleSelect) {
-      roleSelect.addEventListener('change', function () {
-        toggleInstructorFields();
-        updatePreview();
-      });
-    }
-
-    var activeCheckbox = document.getElementById('id_is_active');
-    if (activeCheckbox) {
-      activeCheckbox.addEventListener('change', function () {
-        var quick = document.getElementById('id_account_active_quick');
-        if (quick) quick.checked = this.checked;
-        updatePreview();
-      });
-    }
-
-    /* ---------- Clear avatar ---------- */
-    window.clearAvatar = function () {
-      if (fileInput) fileInput.value = '';
-      if (preview) {
-        preview.innerHTML = '<span id="avatarInitials">' + computeInitials() + '</span>';
-        initialsEl = document.getElementById('avatarInitials');
-      }
-      updateInitials();
-    };
-
-    /* ---------- Initialize on load ---------- */
-    document.addEventListener('DOMContentLoaded', function () {
-      toggleInstructorFields();
-      updateInitials();
-      updatePreview();
-    });
-
-    /* ---------- Client-side validation ---------- */
-    var form = document.getElementById('edvantoUserForm');
-    if (form) {
-      form.addEventListener('submit', function (e) {
-        var valid = true;
-
-        /* Required fields */
-        ['id_first_name', 'id_last_name', 'id_email', 'id_username', 'id_role'].forEach(function (id) {
-          var el = document.getElementById(id);
-          if (!el) return;
-          if (!el.value.trim()) {
-            el.classList.add('is-invalid');
-            valid = false;
-          } else {
-            el.classList.remove('is-invalid');
-          }
-        });
-
-        /* Email format */
-        var emailEl = document.getElementById('id_email');
-        if (emailEl && emailEl.value.trim()) {
-          var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailPattern.test(emailEl.value.trim())) {
-            emailEl.classList.add('is-invalid');
-            valid = false;
-          }
-        }
-
-        if (!valid) {
-          e.preventDefault();
-          e.stopPropagation();
-          /* Scroll to first invalid field */
-          var firstInvalid = form.querySelector('.is-invalid');
-          if (firstInvalid) {
-            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            firstInvalid.focus({ preventScroll: true });
-          }
-          edvantoToast('Please correct the highlighted fields.', 'error');
-        }
-      });
-
-      /* Remove invalid state on input */
-      form.querySelectorAll('input, select, textarea').forEach(function (el) {
-        el.addEventListener('input', function () {
-          if (this.value.trim()) this.classList.remove('is-invalid');
-        });
-        el.addEventListener('change', function () {
-          if (this.value.trim()) this.classList.remove('is-invalid');
-        });
-      });
-    }
-
-  })();
-</script>
-
+<script src="{% static 'admin_panel/js/admin_user_form.js' %}" defer></script>
 {% endblock %}

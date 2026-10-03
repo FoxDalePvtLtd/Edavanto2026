@@ -1,0 +1,19 @@
+.user-form-page .password-input-wrap { position: relative; }
+.user-form-page .password-input-wrap .form-control { padding-right: 3rem; }
+.user-form-page .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: .65rem;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--edvanto-gray-600);
+  padding: .25rem;
+  line-height: 1;
+}
+.user-form-page .password-toggle:focus-visible {
+  outline: 2px solid #D4A62A;
+  outline-offset: 2px;
+  border-radius: .25rem;
+}
+.user-form-page .field-error { color: #b42318; font-size: .82rem; margin-top: .3rem; }

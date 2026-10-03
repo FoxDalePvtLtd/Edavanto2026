@@ -137,7 +137,7 @@
 
                   {% elif user.role == "admin" %}
 
-                    <a href="{% url 'admin:index' %}" class="hamburger_user-link">
+                    <a href="{% url 'admin_panel:dashboard' %}" class="hamburger_user-link">
 
                   {% else %}
 
@@ -565,7 +565,7 @@
                           {% elif user.role == "admin" %}
 
                             <li>
-                              <a class="dropdown-item" href="{% url 'admin:index' %}">
+                              <a class="dropdown-item" href="{% url 'admin_panel:dashboard' %}">
                                 Dashboard
                               </a>
                             </li>
@@ -723,7 +723,7 @@
 
                             {% elif user.role == "admin" %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                    <a class="dropdown-item" href="{% url 'admin_panel:dashboard' %}">
                                         Dashboard
                                     </a>
                                 </li>
@@ -807,7 +807,7 @@
                         {% elif user.role == "admin" %}
 
                           <li>
-                            <a class="dropdown-item" href="{% url 'admin:index' %}">
+                            <a class="dropdown-item" href="{% url 'admin_panel:dashboard' %}">
                               Dashboard
                             </a>
                           </li>

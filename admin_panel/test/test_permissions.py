@@ -4,13 +4,13 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
-from django.test import RequestFactory, SimpleTestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 
 from admin_panel import views
 
 
 @override_settings(LOGIN_URL="/accounts/login/")
-class AdminAuthorizationTests(SimpleTestCase):
+class AdminAuthorizationTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 

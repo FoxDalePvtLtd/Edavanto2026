@@ -676,7 +676,32 @@ def login_view(request):
             status=403,
         )
 
+    # The current admin_panel.permissions policy is intentionally
+    # superuser-only. Do not silently grant admin-panel access to a user
+    # merely because their custom role field says "admin".
+    if user.role == User.Role.ADMIN and not user.is_superuser:
+        return render(
+            request,
+            "login.html",
+            {
+                "next": next_url,
+                "login_errors": {
+                    "email": (
+                        "This admin account is not authorized for the admin panel. "
+                        "Contact the system administrator."
+                    )
+                },
+                "login_data": {"email": email},
+            },
+            status=403,
+        )
+
     login(request, user)
+
+    # Send authorized administrators directly to the protected admin panel.
+    # Student enrollment-aware routing below remains unchanged.
+    if user.is_superuser:
+        return redirect("admin_panel:dashboard")
 
     if user.role == User.Role.STUDENT:
 

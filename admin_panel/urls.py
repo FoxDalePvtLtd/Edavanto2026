@@ -34,6 +34,16 @@ urlpatterns = [
         views.user_form,
         name="user_form",
     ),
+    path(
+        "users/<int:user_id>/edit/",
+        views.user_form,
+        name="user_edit",
+    ),
+    path(
+        "users/<int:user_id>/toggle-active/",
+        views.user_toggle_active,
+        name="user_toggle_active",
+    ),
 
 
     # ==================================================
