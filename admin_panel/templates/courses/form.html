@@ -83,6 +83,13 @@
     <div class="row g-3">
       {% for field in form %}
         {% if field.name == 'title' or field.name == 'slug' or field.name == 'description' or field.name == 'category' or field.name == 'mode' or field.name == 'instructor' or field.name == 'center' or field.name == 'price' or field.name == 'discounted_price' or field.name == 'duration_hours' or field.name == 'duration_weeks' or field.name == 'thumbnail' or field.name == 'requires_instructor_approval' %}
+          {% if field.name == 'description' %}<div class="col-12 course-field">{% elif field.name == 'title' or field.name == 'slug' %}<div class="col-12 col-lg-6 course-field">{% elif field.name == 'requires_instructor_approval' %}
+            <div class="col-12 course-field">
+              {% else %}
+              <div class="col-12 col-md-6 course-field">{% endif %}
+            {% if field.name == 'requires_instructor_approval' %}<div class="form-check mt-2">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>{% else %}<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>{{ field }}{% endif %}
+            {% if field.help_text %}<div class="course-help">{{ field.help_text }}</div>{% endif %}
+            {% for error in field.errors %}<div class="course-error">{{ error }}</div>{% endfor %}
 
           {% if field.name == 'description' %}
             <div class="col-12 course-field">
@@ -130,15 +137,14 @@
     <a href="{% url 'admin_panel:course_dashboard' %}" class="btn btn-edvanto-outline">Cancel</a>
     <div class="d-flex flex-wrap gap-2">
       <button type="submit" name="action" value="save_draft" class="btn btn-edvanto-outline">
-        <i class="bi bi-file-earmark me-1"></i> Save as draft
-      </button>
-      <button type="submit" name="action" value="save_continue" class="btn btn-edvanto-outline">
-        <i class="bi bi-arrow-repeat me-1"></i> Save &amp; continue
-      </button>
-      <button type="submit" name="action" value="publish" class="btn btn-edvanto-primary">
-        <i class="bi bi-cloud-arrow-up me-1"></i> Publish
-      </button>
-    </div>
+        <i class="bi bi-file-earmark me-1"></i>
+         Save as draft</button>
+         <button type="submit" name="action" value="save_continue" class="btn btn-edvanto-outline">
+          <i class="bi bi-arrow-repeat me-1"></i> 
+          Save &amp; continue</button>
+          <button type="submit" name="action" value="publish" class="btn btn-edvanto-primary">
+            <i class="bi bi-cloud-arrow-up me-1"></i>
+             Publish</button></div>
   </div>
 
 </form>

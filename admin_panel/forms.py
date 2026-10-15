@@ -2,8 +2,7 @@ from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
-
-from core.models import *
+from core.models import Center, Course, User
 
 
 class CourseAdminForm(forms.ModelForm):
@@ -19,7 +18,7 @@ class CourseAdminForm(forms.ModelForm):
             "slug": forms.TextInput(attrs={"class": "form-control", "placeholder": "course-slug"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 6, "placeholder": "Enter course description"}),
             # "category": forms.TextInput(attrs={"class": "form-control", "placeholder": "Course category"}),
-            "category": forms.Select(attrs={"class": "form-select"}),
+            "category": forms.Select(attrs={"class":"form-select"}),
             "mode": forms.Select(attrs={"class": "form-select"}),
             "instructor": forms.Select(attrs={"class": "form-select"}),
             "price": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0"}),

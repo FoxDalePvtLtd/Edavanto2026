@@ -3,7 +3,7 @@
 
 {% block content %}
       <div class="space-for-header"></div>
-        <!-- start: Banner Section -->
+              <!-- start: Banner Section -->
         <section class="tj-banner-section fix">
           <div class="container">
             <div class="row">
@@ -199,7 +199,7 @@
             <div class="row">
               <div class="col-12">
                 <div class="sec-heading">
-                  <span class="sec-subtitle tj-fade-anim" data-direction="top"><i class="tji-subtitle"></i> Chose
+                  <span class="sec-subtitle tj-fade-anim" data-direction="top"><i class="tji-subtitle"></i> Choose
                     categories</span>
                   <div class="sec-heading-inner">
                     <div class="sec-heading-inner-left">
@@ -359,16 +359,15 @@
         <!-- end: Categories Section -->
 
         <!-- start: Course Section -->
-        <section class="tj-course-section section-gap fix tj-theme-bg">
+        <section class="tj-course-section section-gap fix tj-theme-bg" id="courses">
           <div class="container">
             <div class="row">
               <div class="col-12">
                 <div class="sec-heading sec-heading-center">
-                  <span class="sec-subtitle tj-fade-anim" data-direction="top"><i class="tji-subtitle"></i> Top
-                    Courses</span>
+                  <span class="sec-subtitle tj-fade-anim" data-direction="top"><i class="tji-subtitle"></i> Top Courses</span>
                   <h2 class="sec-title tj-fade-anim" data-delay="0.3">Explore Courses Built For Success.</h2>
                 </div>
-                <div class="tj-filter-btn-wrap tj-fade-anim" data-delay="0.5">
+                 <div class="tj-filter-btn-wrap tj-fade-anim" data-delay="0.5">
                   <div class="tj_filter_btn_group">
                     <button data-filter="*" class="tj_filter_btn active">
                       <span>All</span>
@@ -390,288 +389,88 @@
                     </button>
                   </div>
                 </div>
+
               </div>
             </div>
-            <div class="row tj-course-filter tj_filter_item_wrapper tj-fade-anim" data-delay="0.5">
-              <div class="col-lg-4 col-md-6 tj_filter_item development design">
-                <div class="tj-course-item">
-                  <div class="tj-course-img">
-                    <a href="{% url 'core:courses' %}"><img src="{% static 'images/course/course-img-1.webp' %}\" alt="Course"></a>
-                    <div class="tj-product-badge">
-                      <span>Popular</span>
+            
+            <div class="row tj-course-wrapper rg-30 tj-fade-anim" data-delay="0.5" style="background-color: #F3EFE2 !important; border: 1px solid #e0e0e0 !important; border-radius: 16px !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important; padding: 40px 30px !important; margin: 0;">
+              {% for course in courses %}
+                <div class="col-lg-4 col-md-6 course-col {{ course.category }}">
+                  <div class="tj-course-item">
+                    <div class="tj-course-img">
+                      <a href="{% url 'core:course_detail' course.slug %}">
+                        <div class="tj-wishlist-btn">
+                          <button><i class="tji-heart"></i></button>
+                        </div>
+                        {% if course.thumbnail %}
+                          <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                        {% else %}
+                          <img src="{% static 'images/course/course-img-1.webp' %}" alt="{{ course.title }}">
+                        {% endif %}
+                      </a>
+                      <span class="tj-course-mode">
+                        <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %}"></i>
+                        {{ course.get_mode_display }}
+                      </span>
                     </div>
-                    <div class="tj-wishlist-btn">
-                      <button><i class="tji-heart"></i></button>
-                    </div>
-                  </div>
-                  <div class="tj-course-content">
-                    <div class="tj-cat-level-wrap">
-                      <div class="tj-categories">
-                        <a class="tj-cat" href="{% url 'core:courses' %}">Development</a>
+                    <div class="tj-course-content">
+                      <a class="tj-cat" href="{% url 'core:course_detail' course.slug %}">
+                        {{ course.category|default:"Course" }}
+                      </a>
+                      <h3 class="title tj-fs-h5">
+                        <a href="{% url 'core:course_detail' course.slug %}">{{ course.title }}</a>
+                      </h3>
+                      <div class="course-meta">
+                        {% if course.instructor %}
+                          <span><i class="tji-user"></i> {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+                        {% endif %}
+                        <span><i class="tji-layers"></i>{{ course.modules.all|length }} modules</span>
                       </div>
-                      <div class="tj-level">
-                        <span>Intermediate</span>
+                      <div class="tj-course-price-wrap">
+                        <div class="course-price tj-fs-h6">
+                          {% if course.discounted_price %}
+                            <del>₹{{ course.price|floatformat:"0" }}</del> ₹{{ course.discounted_price|floatformat:"0" }}
+                          {% else %}
+                            ₹{{ course.price|floatformat:"0" }}
+                          {% endif %}
+                        </div>
                       </div>
+                      <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap"
+                        href="{% url 'core:course_detail' course.slug %}">
+                        <span class="btn-text">View course</span>
+                        <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                      </a>
                     </div>
-                    <h3 class="title tj-fs-h5"><a href="{% url 'core:courses' %}">Professional full-stack web development
-                        course.</a></h3>
-                    <span class="author"><a href="instructor.html"><img src="{% static 'images/users/user-img-8.png' %}\" alt="">
-                        Emmielar Josan</a></span>
-                    <div class="course-meta">
-                      <span><i class="tji-book"></i>33 Lesson</span>
-                      <span><i class="tji-clock"></i>6h 30m</span>
-                      <span><i class="tji-user-duo"></i>2.1k</span>
-                    </div>
-                    <div class="tj-course-price-wrap">
-                      <div class="single-rating">
-                        <i class="tji-star"></i>
-                        <span class="label">4.9<span>(3K+)</span></span>
-                      </div>
-                      <div class="course-price tj-fs-h6"><del>$30.00</del> $20.00</div>
-                    </div>
-                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
-                      <span class="btn-text">Start learning</span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-4 col-md-6 tj_filter_item business ai-ml data-science">
-                <div class="tj-course-item">
-                  <div class="tj-course-img">
-                    <a href="{% url 'core:courses' %}"><img src="{% static 'images/course/course-img-2.webp' %}\" alt="Course"></a>
-                    <div class="tj-product-badge">
-                      <span>New</span>
-                    </div>
-                    <div class="tj-wishlist-btn">
-                      <button><i class="tji-heart"></i></button>
-                    </div>
-                  </div>
-                  <div class="tj-course-content">
-                    <div class="tj-cat-level-wrap">
-                      <div class="tj-categories">
-                        <a class="tj-cat" href="{% url 'core:courses' %}">Business</a>
-                      </div>
-                      <div class="tj-level">
-                        <span>Beginner</span>
-                      </div>
-                    </div>
-                    <h3 class="title tj-fs-h5"><a href="{% url 'core:courses' %}">Business growth and strategy masterclass
-                        2026.</a>
-                    </h3>
-                    <span class="author"><a href="instructor.html"><img src="{% static 'images/users/user-img-7.png' %}\" alt="">
-                        Ronald Richards</a></span>
-                    <div class="course-meta">
-                      <span><i class="tji-book"></i>26 Lesson</span>
-                      <span><i class="tji-clock"></i>3h 20m</span>
-                      <span><i class="tji-user-duo"></i>12.4K</span>
-                    </div>
-                    <div class="tj-course-price-wrap">
-                      <div class="single-rating">
-                        <i class="tji-star"></i>
-                        <span class="label">4.7<span>(2K+)</span></span>
-                      </div>
-                      <div class="course-price tj-fs-h6"><del>$20.00</del> $10.00</div>
-                    </div>
-                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
-                      <span class="btn-text">Start learning</span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
                   </div>
                 </div>
-              </div>
-              <div class="col-lg-4 col-md-6 tj_filter_item design ai-ml">
-                <div class="tj-course-item">
-                  <div class="tj-course-img">
-                    <a href="{% url 'core:courses' %}"><img src="{% static 'images/course/course-img-3.webp' %}\" alt="Course"></a>
-                    <div class="tj-product-badge">
-                      <span>Trending</span>
-                    </div>
-                    <div class="tj-wishlist-btn">
-                      <button><i class="tji-heart"></i></button>
-                    </div>
-                  </div>
-                  <div class="tj-course-content">
-                    <div class="tj-cat-level-wrap">
-                      <div class="tj-categories">
-                        <a class="tj-cat" href="{% url 'core:courses' %}">Design</a>
-                      </div>
-                      <div class="tj-level">
-                        <span>All levels</span>
-                      </div>
-                    </div>
-                    <h3 class="title tj-fs-h5"><a href="{% url 'core:courses' %}">Complete UI/UX Design with AI prompt in
-                        2026.</a>
-                    </h3>
-                    <span class="author"><a href="instructor.html"><img src="{% static 'images/users/user-img-4.png' %}\" alt="">
-                        Floyd Miles</a></span>
-                    <div class="course-meta">
-                      <span><i class="tji-book"></i>12 Lesson</span>
-                      <span><i class="tji-clock"></i>2h 30m</span>
-                      <span><i class="tji-user-duo"></i>30.1K</span>
-                    </div>
-                    <div class="tj-course-price-wrap">
-                      <div class="single-rating">
-                        <i class="tji-star"></i>
-                        <span class="label">4.8<span>(10K+)</span></span>
-                      </div>
-                      <div class="course-price tj-fs-h6"><del>$26.00</del> $18.00</div>
-                    </div>
-                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
-                      <span class="btn-text">Start learning</span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
+              {% empty %}
+                <!-- Server-side fallback if zero courses exist in the entire database -->
+                <div class="col-12">
+                  <div class="tj-course-details-box text-center" style="background-color: #f8f9fa !important; border: 2px dashed #cccccc !important; border-radius: 12px !important; margin: 30px 0 !important; padding: 50px 20px !important;">
+                    <div style="font-size: 35px; margin-bottom: 15px;"></div>
+                    <h3 class="title" style="font-size: 22px !important; font-weight: 600 !important; color: #1a1a1a !important; margin-bottom: 10px !important;">No courses available</h3>
+                    <p style="font-size: 15px !important; color: #666666 !important; margin-bottom: 0 !important;">Published Edvanto courses will appear here.</p>
                   </div>
                 </div>
-              </div>
-              <div class="col-lg-4 col-md-6 tj_filter_item business ai-ml data-science">
-                <div class="tj-course-item">
-                  <div class="tj-course-img">
-                    <a href="{% url 'core:courses' %}"><img src="{% static 'images/course/course-img-4.webp' %}\" alt="Course"></a>
-                    <div class="tj-product-badge">
-                      <span>Free</span>
-                    </div>
-                    <div class="tj-wishlist-btn">
-                      <button><i class="tji-heart"></i></button>
-                    </div>
-                  </div>
-                  <div class="tj-course-content">
-                    <div class="tj-cat-level-wrap">
-                      <div class="tj-categories">
-                        <a class="tj-cat" href="{% url 'core:courses' %}">AI & ML</a>
-                      </div>
-                      <div class="tj-level">
-                        <span>All levels</span>
-                      </div>
-                    </div>
-                    <h3 class="title tj-fs-h5"><a href="{% url 'core:courses' %}">AI & Machine learning course for
-                        beginner.</a>
-                    </h3>
-                    <span class="author"><a href="instructor.html"><img src="{% static 'images/users/user-img-3.png' %}\"
-                          alt="Instructor"> Devon Lane</a></span>
-                    <div class="course-meta">
-                      <span><i class="tji-book"></i>12 Lesson</span>
-                      <span><i class="tji-clock"></i>2h 30m</span>
-                      <span><i class="tji-user-duo"></i>30.6K</span>
-                    </div>
-                    <div class="tj-course-price-wrap">
-                      <div class="single-rating">
-                        <i class="tji-star"></i>
-                        <span class="label">4.9<span>(12K+)</span></span>
-                      </div>
-                      <div class="course-price tj-fs-h6">Free</div>
-                    </div>
-                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
-                      <span class="btn-text">Start learning</span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-4 col-md-6 tj_filter_item design development">
-                <div class="tj-course-item">
-                  <div class="tj-course-img">
-                    <a href="{% url 'core:courses' %}"><img src="{% static 'images/course/course-img-5.webp' %}\" alt="Course"></a>
-                    <div class="tj-product-badge">
-                      <span>Popular</span>
-                    </div>
-                    <div class="tj-wishlist-btn">
-                      <button><i class="tji-heart"></i></button>
-                    </div>
-                  </div>
-                  <div class="tj-course-content">
-                    <div class="tj-cat-level-wrap">
-                      <div class="tj-categories">
-                        <a class="tj-cat" href="{% url 'core:courses' %}">Design</a>
-                      </div>
-                      <div class="tj-level">
-                        <span>Advance</span>
-                      </div>
-                    </div>
-                    <h3 class="title tj-fs-h5"><a href="{% url 'core:courses' %}">Complete future graphic design
-                        masterclass.</a>
-                    </h3>
-                    <span class="author"><a href="instructor.html"><img src="{% static 'images/users/user-img-1.png' %}\" alt="">
-                        Annette Black</a></span>
-                    <div class="course-meta">
-                      <span><i class="tji-book"></i>18 Lesson</span>
-                      <span><i class="tji-clock"></i>5h 10m</span>
-                      <span><i class="tji-user-duo"></i>22.4K</span>
-                    </div>
-                    <div class="tj-course-price-wrap">
-                      <div class="single-rating">
-                        <i class="tji-star"></i>
-                        <span class="label">4.6<span>(16K+)</span></span>
-                      </div>
-                      <div class="course-price tj-fs-h6"><del>$30.00</del> $20.00</div>
-                    </div>
-                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
-                      <span class="btn-text">Start learning</span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-4 col-md-6 tj_filter_item data-science business">
-                <div class="tj-course-item">
-                  <div class="tj-course-img">
-                    <a href="{% url 'core:courses' %}"><img src="{% static 'images/course/course-img-6.webp' %}\" alt="Course"></a>
-                    <div class="tj-product-badge">
-                      <span>New</span>
-                    </div>
-                    <div class="tj-wishlist-btn">
-                      <button><i class="tji-heart"></i></button>
-                    </div>
-                  </div>
-                  <div class="tj-course-content">
-                    <div class="tj-cat-level-wrap">
-                      <div class="tj-categories">
-                        <a class="tj-cat" href="{% url 'core:courses' %}">Data Science</a>
-                      </div>
-                      <div class="tj-level">
-                        <span>Intermediate</span>
-                      </div>
-                    </div>
-                    <h3 class="title tj-fs-h5"><a href="{% url 'core:courses' %}">Complete data science training
-                        programming.</a>
-                    </h3>
-                    <span class="author"><a href="instructor.html"><img src="{% static 'images/users/user-img-2.png' %}\" alt="">
-                        Ralph Edwards</a></span>
-                    <div class="course-meta">
-                      <span><i class="tji-book"></i>12 Lesson</span>
-                      <span><i class="tji-clock"></i>2h 20m</span>
-                      <span><i class="tji-user-duo"></i>8.3K</span>
-                    </div>
-                    <div class="tj-course-price-wrap">
-                      <div class="single-rating">
-                        <i class="tji-star"></i>
-                        <span class="label">4.7<span>(2K+)</span></span>
-                      </div>
-                      <div class="course-price tj-fs-h6"><del>$20.00</del> $9.00</div>
-                    </div>
-                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
-                      <span class="btn-text">Start learning</span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
-                  </div>
+              {% endfor %}
+
+              <!-- Client-side empty state container for JavaScript filtering -->
+              <div class="col-8 mx-auto" id="dynamic-empty-box" style="display: none;">
+                <div class="tj-course-details-box text-center" style="background-color: #f8f9fa !important; border: 2px solid #D4A62A !important; border-radius: 12px !important; margin: 30px 0 !important; padding: 50px 20px !important;">
+                  <h3 class="title" style="font-size: 25px !important; font-weight: 900 !important; color: #1a1a1a !important; margin-bottom: 12px !important;">No courses available</h3>
+                  <p style="font-size: 18px !important; font-weight: 700 !important; color: #D4A62A !important; margin-bottom: 0 !important;">No courses found in this category.</p>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-12">
-                <div class="course-bottom-content">
-                  <span><img src="{% static 'images/icons/fire.svg' %}\" alt=""> Popular</span>
-                  <p>Learn with 200+ world-class courses.</p>
-                  <div>
-                    <a class="tj-text-btn-2" href="{% url 'core:courses' %}">
-                      <span class="btn-text"><span>Explore more courses</span></span>
-                      <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
-                    </a>
-                  </div>
+            <!-- ADD THIS EXTRA DYNAMIC EMPTY STATE BOX FOR JAVASCRIPT -->
+             <div class="col-8 mx-auto" id="dynamic-empty-box" style="display: none;">
+                <div class="tj-course-details-box text-center py-5" style="background-color: #f8f9fa !important; border: 2px solid #D4A62A !important; border-radius: 12px !important; margin: 30px 0 !important; padding: 50px 20px !important;">
+                  <h3 class="title" style="font-size: 28px !important; font-weight: 900 !important; color: #1a1a1a !important; margin-bottom: 12px !important;">No courses available</h3>
+                  <p style="font-size: 18px !important; font-weight: 700 !important; color: #D4A62A !important; margin-bottom: 0 !important;">No courses found in this category.</p>
                 </div>
               </div>
             </div>
-          </div>
+          
         </section>
         <!-- end: Course Section -->
 
@@ -1562,4 +1361,42 @@
           </div>
         </section>
         <!-- end: Blog Section -->
-{% endblock %}
+
+
+        
+
+
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const filterButtons = document.querySelectorAll(".tj_filter_btn");
+            const courseItems = document.querySelectorAll(".course-col");
+            const dynamicEmptyBox = document.getElementById("dynamic-empty-box");
+
+            filterButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    // Toggle active state on buttons
+                    filterButtons.forEach(btn => btn.classList.remove("active"));
+                    this.classList.add("active");
+
+                    const filterValue = this.getAttribute("data-filter");
+                    let visibleCount = 0;
+
+                    // Show / hide courses based on category class
+                    courseItems.forEach(item => {
+                        if (filterValue === "*" || item.classList.contains(filterValue.substring(1))) {
+                            item.style.display = "block";
+                            visibleCount++;
+                        } else {
+                            item.style.display = "none";
+                        }
+                    });
+
+                    // Show empty state if no courses match the filter
+                    if (dynamicEmptyBox) {
+                        dynamicEmptyBox.style.display = (visibleCount === 0) ? "block" : "none";
+                    }
+                });
+            });
+        });
+        </script>
+        {% endblock %}

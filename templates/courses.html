@@ -15,7 +15,25 @@
 
         <!-- start: Page Header Section -->
         <section class="tj-page-header">
+          
           <div class="container">
+            <!-- Django Messages Alert Area -->
+             {% if messages %}
+             <div class="container my-2">
+              <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                  {% for message in messages %}
+                  <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} alert-dismissible fade show text-center py-2 px-3 shadow-sm border-1 fw-bold custom-short-alert" role="alert">
+                    <span>{{ message }}</span>
+                    <button type="button" class="btn-close pt-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+
             <div class="row">
               <div class="col-12 col-lg-6">
                 <div class="tj-page-header-content">
@@ -459,7 +477,7 @@
                         </a>
                       </div>
                     </div>
-                  </div>
+                  </div>row tj-course-wrapper rg-30
                 </div>
                                   {% endcomment %}
 
@@ -521,7 +539,8 @@
                     {% endfor %}
                   </div>
 
-<div class="row">
+
+                  <div class="row">
                   <div class="col-12">
                     <div
                       class="course-pagination-area d-flex flex-wrap align-items-center justify-content-between gap-3 tj-fade-anim">
