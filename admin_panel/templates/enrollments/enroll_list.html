@@ -4,368 +4,10 @@
 {% block title %}Enrollments{% endblock %}
 
 {% block content %}
-<!-- ============================================================
-     EDVANTO ADMIN – ENROLLMENT MANAGEMENT
-     Approvals · Payments · Progress Tracking
-     ============================================================ -->
-
-<style>
-  /* ---------- Stat cards ---------- */
-  .edvanto-stat-card {
-    background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
-    border: var(--edvanto-border-light);
-    box-shadow: var(--edvanto-shadow-card);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-    padding: 1.4rem 1.5rem 1.2rem;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-  }
-  .edvanto-stat-card:hover {
-    box-shadow: var(--edvanto-shadow-hover);
-    transform: translateY(-2px);
-  }
-  .edvanto-stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
-    opacity: 0.85;
-  }
-  .edvanto-stat-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
-    margin-bottom: 0.9rem;
-  }
-  .edvanto-stat-icon.cyan   { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
-  .edvanto-stat-icon.gold   { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
-  .edvanto-stat-icon.navy   { background: rgba(3, 42, 90, 0.06); color: var(--edvanto-navy); }
-  .edvanto-stat-icon.green  { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
-  .edvanto-stat-icon.red    { background: rgba(220, 53, 69, 0.08); color: #DC3545; }
-
-  .edvanto-stat-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--edvanto-gray-600);
-    margin-bottom: 0.2rem;
-  }
-  .edvanto-stat-value {
-    font-size: 1.85rem;
-    font-weight: 700;
-    color: var(--edvanto-navy);
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-  }
-  .edvanto-stat-meta {
-    font-size: 0.78rem;
-    color: var(--edvanto-gray-600);
-    margin-top: 0.45rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-weight: 500;
-  }
-  .edvanto-stat-meta .positive { color: #0F9D58; font-weight: 600; }
-  .edvanto-stat-meta .warning  { color: var(--edvanto-gold); font-weight: 600; }
-  .edvanto-stat-meta .danger   { color: #DC3545; font-weight: 600; }
-
-  /* ---------- Filter bar ---------- */
-  .edvanto-filter-bar {
-    background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
-    border: var(--edvanto-border-light);
-    box-shadow: var(--edvanto-shadow-card);
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-  .edvanto-filter-bar .form-control,
-  .edvanto-filter-bar .form-select {
-    font-size: 0.85rem;
-    border-radius: var(--edvanto-radius-sm);
-    border: var(--edvanto-border-medium);
-    height: 42px;
-    color: var(--edvanto-navy);
-    background-color: var(--edvanto-gray-50);
-  }
-  .edvanto-filter-bar .form-control:focus,
-  .edvanto-filter-bar .form-select:focus {
-    border-color: var(--edvanto-violet);
-    background-color: var(--edvanto-white);
-    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
-  }
-  .edvanto-filter-bar .input-icon-wrapper {
-    position: relative;
-  }
-  .edvanto-filter-bar .input-icon-wrapper i {
-    position: absolute;
-    left: 0.9rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--edvanto-gray-500);
-    font-size: 0.95rem;
-    pointer-events: none;
-  }
-  .edvanto-filter-bar .input-icon-wrapper .form-control {
-    padding-left: 2.5rem;
-  }
-
-  /* ---------- Table avatars / cells ---------- */
-  .edvanto-user-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    min-width: 180px;
-  }
-  .edvanto-avatar-sm {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: var(--edvanto-white);
-    flex-shrink: 0;
-    letter-spacing: -0.02em;
-  }
-  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
-  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
-  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
-  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
-  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
-  .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
-
-  .edvanto-user-name {
-    font-weight: 600;
-    color: var(--edvanto-navy);
-    font-size: 0.88rem;
-    line-height: 1.25;
-  }
-  .edvanto-user-meta {
-    font-size: 0.72rem;
-    color: var(--edvanto-gray-600);
-    font-weight: 500;
-  }
-
-  .edvanto-course-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    min-width: 180px;
-  }
-  .edvanto-course-title {
-    font-weight: 600;
-    color: var(--edvanto-navy);
-    font-size: 0.85rem;
-    line-height: 1.3;
-  }
-  .edvanto-course-meta {
-    font-size: 0.7rem;
-    color: var(--edvanto-gray-600);
-    font-weight: 500;
-  }
-
-  /* ---------- Badges ---------- */
-  .edvanto-badge {
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.35rem 0.7rem;
-    border-radius: 999px;
-    letter-spacing: 0.01em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    white-space: nowrap;
-  }
-  .badge-mode-online  { background: rgba(1, 223, 254, 0.12); color: #007A8F; }
-  .badge-mode-offline { background: rgba(3, 42, 90, 0.07); color: var(--edvanto-navy); }
-
-  /* Payment */
-  .badge-pay-pending   { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
-  .badge-pay-partial   { background: rgba(69, 28, 238, 0.09); color: var(--edvanto-violet); }
-  .badge-pay-paid      { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
-  .badge-pay-failed    { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
-  .badge-pay-refunded  { background: rgba(138, 155, 181, 0.14); color: #5A6E8A; }
-
-  /* Approval */
-  .badge-appr-pending  { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
-  .badge-appr-accepted { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
-  .badge-appr-rejected { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
-
-  /* ---------- Progress bar ---------- */
-  .edvanto-progress {
-    width: 100%;
-    min-width: 110px;
-  }
-  .edvanto-progress-track {
-    width: 100%;
-    height: 6px;
-    background: var(--edvanto-gray-200);
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .edvanto-progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
-    transition: width 0.3s ease;
-  }
-  .edvanto-progress-fill.low    { background: linear-gradient(90deg, #FFB303 0%, #FFC93C 100%); }
-  .edvanto-progress-fill.high   { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
-  .edvanto-progress-fill.mid    { background: linear-gradient(90deg, var(--edvanto-violet) 0%, #6B4EFF 100%); }
-  .edvanto-progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    color: var(--edvanto-gray-600);
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
-  .edvanto-progress-label .pct {
-    color: var(--edvanto-navy);
-    font-weight: 700;
-  }
-
-  /* ---------- Table ---------- */
-  .edvanto-table {
-    width: 100%;
-    margin-bottom: 0;
-    font-size: 0.88rem;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-  .edvanto-table thead th {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--edvanto-gray-600);
-    background: var(--edvanto-gray-50);
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--edvanto-gray-200);
-    white-space: nowrap;
-  }
-  .edvanto-table tbody td {
-    padding: 0.8rem 1rem;
-    border-bottom: 1px solid var(--edvanto-gray-100);
-    vertical-align: middle;
-    color: var(--edvanto-navy);
-    font-weight: 500;
-  }
-  .edvanto-table tbody tr:last-child td { border-bottom: none; }
-  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
-  .table-responsive-edvanto {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -0.25rem;
-    padding: 0 0.25rem;
-  }
-
-  /* ---------- Action buttons ---------- */
-  .edvanto-action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--edvanto-gray-600);
-    font-size: 0.9rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    text-decoration: none;
-  }
-  .edvanto-action-btn:hover {
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
-  }
-  .edvanto-action-btn.success:hover {
-    background: rgba(15, 157, 88, 0.08);
-    color: #0F9D58;
-  }
-  .edvanto-action-btn.danger:hover {
-    background: rgba(220, 53, 69, 0.08);
-    color: #DC3545;
-  }
-  .edvanto-action-btn.gold:hover {
-    background: rgba(255, 179, 3, 0.10);
-    color: #9A6D00;
-  }
-
-  /* ---------- Mobile enrollment cards ---------- */
-  @media (max-width: 767.98px) {
-    .edvanto-enrollments-table-wrap { display: none; }
-    .edvanto-enrollments-cards { display: block; }
-  }
-  @media (min-width: 768px) {
-    .edvanto-enrollments-cards { display: none; }
-  }
-  .edvanto-enrollment-card {
-    background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
-    border: var(--edvanto-border-light);
-    box-shadow: var(--edvanto-shadow-card);
-    padding: 1rem 1.1rem;
-    margin-bottom: 0.75rem;
-  }
-  .edvanto-enrollment-card-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--edvanto-gray-100);
-  }
-  .edvanto-enrollment-card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid var(--edvanto-gray-100);
-    font-size: 0.8rem;
-  }
-  .edvanto-enrollment-card-row:last-child { border-bottom: none; }
-  .edvanto-enrollment-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
-  .edvanto-enrollment-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
-  .edvanto-enrollment-card-actions {
-    display: flex;
-    gap: 0.4rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--edvanto-gray-100);
-    flex-wrap: wrap;
-  }
-  .edvanto-enrollment-card-actions .btn {
-    flex: 1;
-    font-size: 0.72rem;
-    font-weight: 600;
-    border-radius: var(--edvanto-radius-xs);
-    padding: 0.4rem 0.5rem;
-  }
-</style>
-
-<!-- ============================================================
-     BREADCRUMB + PAGE HEADER
-     ============================================================ -->
 <div class="edvanto-breadcrumb mb-3">
   <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Edvanto</a></li>
       <li class="breadcrumb-item active" aria-current="page">Enrollments</li>
     </ol>
   </nav>
@@ -374,729 +16,163 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
   <div>
     <h1 class="edvanto-page-title mb-1">Enrollments</h1>
-    <p class="edvanto-page-subtitle">Manage student enrollments, approvals and payment status.</p>
-  </div>
-  <div class="d-flex flex-wrap gap-2">
-    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
-            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
-      <i class="bi bi-funnel me-1"></i> Filters
-    </button>
-    <div class="dropdown">
-      <button class="btn btn-edvanto-outline btn-sm px-3 dropdown-toggle" type="button"
-              data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-download me-1"></i> Export
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-csv me-2"></i>CSV</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i>PDF</a></li>
-      </ul>
-    </div>
-    <a href="#" class="btn btn-edvanto-primary btn-sm px-3">
-      <i class="bi bi-plus-lg me-1"></i> New Enrollment
-    </a>
+    <p class="edvanto-page-subtitle mb-0">Manage student enrollments, approvals and payment status.</p>
   </div>
 </div>
 
-<!-- ============================================================
-     STAT CARDS
-     ============================================================ -->
-<div class="row g-3 g-lg-4 mb-4">
-  <!-- Total Enrollments -->
-  <div class="col-6 col-lg">
-    <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon">
-        <i class="bi bi-people-fill"></i>
-      </div>
-      <div class="edvanto-stat-label">Total Enrollments</div>
-      <div class="edvanto-stat-value">1,284</div>
-      <div class="edvanto-stat-meta">
-        <i class="bi bi-arrow-up-short positive"></i>
-        <span class="positive">+58</span>
-        <span>this month</span>
-      </div>
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-card">
+      <div class="text-muted small fw-semibold text-uppercase">Total</div>
+      <div class="fs-3 fw-bold">{{ total_enrollments_count }}</div>
     </div>
   </div>
-
-  <!-- Pending Approval -->
-  <div class="col-6 col-lg">
-    <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon gold">
-        <i class="bi bi-hourglass-split"></i>
-      </div>
-      <div class="edvanto-stat-label">Pending Approval</div>
-      <div class="edvanto-stat-value">37</div>
-      <div class="edvanto-stat-meta">
-        <i class="bi bi-exclamation-triangle-fill warning"></i>
-        <span class="warning">Needs review</span>
-      </div>
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-card">
+      <div class="text-muted small fw-semibold text-uppercase">Pending Approval</div>
+      <div class="fs-3 fw-bold text-warning">{{ pending_approval_count }}</div>
     </div>
   </div>
-
-  <!-- Accepted -->
-  <div class="col-6 col-lg">
-    <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon green">
-        <i class="bi bi-check-circle-fill"></i>
-      </div>
-      <div class="edvanto-stat-label">Accepted</div>
-      <div class="edvanto-stat-value">1,124</div>
-      <div class="edvanto-stat-meta">
-        <i class="bi bi-circle-fill" style="color: #0F9D58; font-size: 0.5rem;"></i>
-        <span>87.5% acceptance</span>
-      </div>
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-card">
+      <div class="text-muted small fw-semibold text-uppercase">Accepted</div>
+      <div class="fs-3 fw-bold text-success">{{ accepted_count }}</div>
     </div>
   </div>
-
-  <!-- Rejected -->
-  <div class="col-6 col-lg">
-    <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon red">
-        <i class="bi bi-x-circle-fill"></i>
-      </div>
-      <div class="edvanto-stat-label">Rejected</div>
-      <div class="edvanto-stat-value">123</div>
-      <div class="edvanto-stat-meta">
-        <i class="bi bi-circle-fill" style="color: #DC3545; font-size: 0.5rem;"></i>
-        <span>9.6% rejection</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Active -->
-  <div class="col-6 col-lg">
-    <div class="edvanto-stat-card">
-      <div class="edvanto-stat-icon cyan">
-        <i class="bi bi-play-circle-fill"></i>
-      </div>
-      <div class="edvanto-stat-label">Active</div>
-      <div class="edvanto-stat-value">948</div>
-      <div class="edvanto-stat-meta">
-        <i class="bi bi-activity" style="color: #0099B5; font-size: 0.75rem;"></i>
-        <span>Currently learning</span>
-      </div>
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-card">
+      <div class="text-muted small fw-semibold text-uppercase">Paid</div>
+      <div class="fs-3 fw-bold">{{ paid_count }}</div>
     </div>
   </div>
 </div>
 
-<!-- ============================================================
-     FILTER BAR
-     ============================================================ -->
-<div class="collapse show" id="filterCollapse">
-  <div class="edvanto-filter-bar">
-    <form method="get" action="" id="enrollmentFilterForm">
-      <div class="row g-2 align-items-end">
-        <!-- Course -->
-        <div class="col-12 col-lg-3">
-          <label class="form-label mb-1" for="courseFilter">Course</label>
-          <select class="form-select" id="courseFilter" name="course">
-            <option value="">All Courses</option>
-            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Development</option>
-            <option value="datascience" {% if request.GET.course == 'datascience' %}selected{% endif %}>Data Science & AI Masterclass</option>
-            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design Masterclass</option>
-            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics Pro</option>
-            <option value="cloud" {% if request.GET.course == 'cloud' %}selected{% endif %}>Cloud Computing with AWS</option>
-          </select>
-        </div>
-
-        <!-- Student -->
-        <div class="col-12 col-lg-3">
-          <label class="form-label mb-1" for="studentSearch">Student</label>
-          <div class="input-icon-wrapper">
-            <i class="bi bi-search"></i>
-            <input type="search" class="form-control" id="studentSearch" name="student"
-                   placeholder="Search by name or email…"
-                   value="{{ request.GET.student|default:'' }}">
-          </div>
-        </div>
-
-        <!-- Mode -->
-        <div class="col-6 col-lg-2">
-          <label class="form-label mb-1" for="modeFilter">Mode</label>
-          <select class="form-select" id="modeFilter" name="mode">
-            <option value="">All Modes</option>
-            <option value="online" {% if request.GET.mode == 'online' %}selected{% endif %}>Online</option>
-            <option value="offline" {% if request.GET.mode == 'offline' %}selected{% endif %}>Offline</option>
-          </select>
-        </div>
-
-        <!-- Payment -->
-        <div class="col-6 col-lg-2">
-          <label class="form-label mb-1" for="paymentFilter">Payment</label>
-          <select class="form-select" id="paymentFilter" name="payment">
-            <option value="">All Payments</option>
-            <option value="pending" {% if request.GET.payment == 'pending' %}selected{% endif %}>Pending</option>
-            <option value="partial" {% if request.GET.payment == 'partial' %}selected{% endif %}>Partially Paid</option>
-            <option value="paid" {% if request.GET.payment == 'paid' %}selected{% endif %}>Paid</option>
-            <option value="failed" {% if request.GET.payment == 'failed' %}selected{% endif %}>Failed</option>
-            <option value="refunded" {% if request.GET.payment == 'refunded' %}selected{% endif %}>Refunded</option>
-          </select>
-        </div>
-
-        <!-- Approval -->
-        <div class="col-6 col-lg-2">
-          <label class="form-label mb-1" for="approvalFilter">Approval</label>
-          <select class="form-select" id="approvalFilter" name="approval">
-            <option value="">All Approvals</option>
-            <option value="pending" {% if request.GET.approval == 'pending' %}selected{% endif %}>Pending</option>
-            <option value="accepted" {% if request.GET.approval == 'accepted' %}selected{% endif %}>Accepted</option>
-            <option value="rejected" {% if request.GET.approval == 'rejected' %}selected{% endif %}>Rejected</option>
-          </select>
-        </div>
-
-        <!-- Date -->
-        <div class="col-6 col-lg-2">
-          <label class="form-label mb-1" for="dateFilter">Date</label>
-          <select class="form-select" id="dateFilter" name="date">
-            <option value="">Any Time</option>
-            <option value="today" {% if request.GET.date == 'today' %}selected{% endif %}>Today</option>
-            <option value="week" {% if request.GET.date == 'week' %}selected{% endif %}>This Week</option>
-            <option value="month" {% if request.GET.date == 'month' %}selected{% endif %}>This Month</option>
-            <option value="quarter" {% if request.GET.date == 'quarter' %}selected{% endif %}>This Quarter</option>
-          </select>
-        </div>
-
-        <!-- Apply / Reset -->
-        <div class="col-12 col-lg-2 d-flex gap-2">
-          <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
-            Apply
-          </button>
-          <a href="#" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
-             style="height: 42px;" title="Reset filters">
-            <i class="bi bi-arrow-counterclockwise"></i>
-          </a>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ============================================================
-     ENROLLMENTS TABLE / CARDS
-     ============================================================ -->
 <div class="edvanto-card">
-
-  <!-- Card header -->
-  <div class="edvanto-card-header">
-    <h2 class="edvanto-card-title">All Enrollments</h2>
-    <div class="d-flex align-items-center gap-2">
-      <span class="edvanto-badge badge-soft-navy">1,284 results</span>
-      <div class="dropdown">
-        <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
-          <i class="bi bi-sort-down"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-          <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
-          <li><a class="dropdown-item" href="?sort=oldest">Oldest First</a></li>
-          <li><a class="dropdown-item" href="?sort=progress">Progress (High–Low)</a></li>
-          <li><a class="dropdown-item" href="?sort=payment">Payment Status</a></li>
-        </ul>
+  <form method="get" class="p-3 border-bottom">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-lg-4">
+        <label for="enroll-search" class="form-label small fw-semibold">Search</label>
+        <input id="enroll-search" type="search" name="q" value="{{ search_query }}"
+               class="form-control" placeholder="Student name, email or course title">
+      </div>
+      <div class="col-6 col-lg-2">
+        <label for="enroll-approval" class="form-label small fw-semibold">Approval</label>
+        <select id="enroll-approval" name="approval" class="form-select">
+          <option value="">All</option>
+          {% for value, label in approval_choices %}
+            <option value="{{ value }}" {% if selected_approval == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-lg-2">
+        <label for="enroll-payment" class="form-label small fw-semibold">Payment</label>
+        <select id="enroll-payment" name="payment" class="form-select">
+          <option value="">All</option>
+          {% for value, label in payment_choices %}
+            <option value="{{ value }}" {% if selected_payment == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-lg-2">
+        <label for="enroll-mode" class="form-label small fw-semibold">Mode</label>
+        <select id="enroll-mode" name="mode" class="form-select">
+          <option value="">All</option>
+          {% for value, label in mode_choices %}
+            <option value="{{ value }}" {% if selected_mode == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-lg-2 d-flex gap-2">
+        <button class="btn btn-edvanto-primary flex-fill" type="submit">Apply</button>
+        <a class="btn btn-edvanto-outline" href="{% url 'admin_panel:enrollment_list' %}" title="Reset">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
       </div>
     </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="edvanto-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Course</th>
+          <th>Mode</th>
+          <th>Payment</th>
+          <th>Approval</th>
+          <th>Progress</th>
+          <th>Enrolled</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for enrollment in enrollments %}
+        <tr>
+          <td>
+            <div class="fw-semibold">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</div>
+            <div class="small text-muted">{{ enrollment.student.email }}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">{{ enrollment.course.title }}</div>
+            <div class="small text-muted">{{ enrollment.course.slug }}</div>
+          </td>
+          <td>{{ enrollment.course.get_mode_display }}</td>
+          <td>
+            <span class="edvanto-badge badge-soft-dark">{{ enrollment.get_payment_status_display }}</span>
+          </td>
+          <td>
+            {% if enrollment.approval_status == 'accepted' %}
+              <span class="edvanto-badge badge-soft-green">{{ enrollment.get_approval_status_display }}</span>
+            {% elif enrollment.approval_status == 'rejected' %}
+              <span class="edvanto-badge badge-soft-red">{{ enrollment.get_approval_status_display }}</span>
+            {% else %}
+              <span class="edvanto-badge badge-soft-gold">{{ enrollment.get_approval_status_display }}</span>
+            {% endif %}
+          </td>
+          <td>{{ enrollment.progress_percent }}%</td>
+          <td>{{ enrollment.enrolled_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <i class="bi bi-people fs-2 text-muted d-block mb-2"></i>
+            <div class="fw-semibold">No enrollments found</div>
+            <p class="text-muted small mb-3">Try changing your filters.</p>
+            <a class="btn btn-sm btn-edvanto-outline" href="{% url 'admin_panel:enrollment_list' %}">Clear filters</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
-  <!-- ---------- DESKTOP TABLE ---------- -->
-  <div class="edvanto-enrollments-table-wrap">
-    <div class="table-responsive-edvanto">
-      <table class="edvanto-table">
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Course</th>
-            <th>Mode</th>
-            <th>Payment</th>
-            <th>Approval</th>
-            <th>Progress</th>
-            <th>Enrolled</th>
-            <th class="text-end">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {# {% for enrollment in enrollments %} #}
-
-          <!-- Row 1: Paid, Accepted, Active -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v1">AK</span>
-                <div>
-                  <div class="edvanto-user-name">Ananya Kapoor</div>
-                  <div class="edvanto-user-meta">ananya.k@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">Full Stack Web Development</div>
-                <div class="edvanto-course-meta">CRS-1024</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-online"><i class="bi bi-globe2"></i> Online</span></td>
-            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
-            <td><span class="edvanto-badge badge-appr-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">68%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill mid" style="width: 68%;"></div>
-                </div>
-              </div>
-            </td>
-            <td>12 Jan 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <button class="edvanto-action-btn success" title="Accept" onclick="acceptEnrollment('Ananya Kapoor')"><i class="bi bi-check-circle"></i></button>
-                <a href="#" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-                <a href="#" class="edvanto-action-btn" title="View Progress"><i class="bi bi-graph-up"></i></a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 2: Paid, Pending Approval -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v2">RS</span>
-                <div>
-                  <div class="edvanto-user-name">Rohan Sharma</div>
-                  <div class="edvanto-user-meta">rohan.s@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">Data Science &amp; AI Masterclass</div>
-                <div class="edvanto-course-meta">CRS-1018</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-online"><i class="bi bi-globe2"></i> Online</span></td>
-            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
-            <td><span class="edvanto-badge badge-appr-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">0%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill low" style="width: 2%;"></div>
-                </div>
-              </div>
-            </td>
-            <td>21 Jun 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <button class="edvanto-action-btn success" title="Accept" onclick="acceptEnrollment('Rohan Sharma')"><i class="bi bi-check-circle"></i></button>
-                <button class="edvanto-action-btn danger" title="Reject" onclick="rejectEnrollment('Rohan Sharma')"><i class="bi bi-x-circle"></i></button>
-                <a href="#" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 3: Partial, Accepted -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v3">PM</span>
-                <div>
-                  <div class="edvanto-user-name">Priya Mehta</div>
-                  <div class="edvanto-user-meta">priya.m@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">UI/UX Design Masterclass</div>
-                <div class="edvanto-course-meta">CRS-1032</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-offline"><i class="bi bi-building"></i> Offline</span></td>
-            <td><span class="edvanto-badge badge-pay-partial"><i class="bi bi-circle-half"></i> Partial</span></td>
-            <td><span class="edvanto-badge badge-appr-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">45%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill mid" style="width: 45%;"></div>
-                </div>
-              </div>
-            </td>
-            <td>20 Jun 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <a href="#" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-                <a href="#progress_view' 3 %}" class="edvanto-action-btn" title="View Progress"><i class="bi bi-graph-up"></i></a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 4: Pending Payment, Pending Approval -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v4">AV</span>
-                <div>
-                  <div class="edvanto-user-name">Arjun Verma</div>
-                  <div class="edvanto-user-meta">arjun.v@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">Cloud Computing with AWS</div>
-                <div class="edvanto-course-meta">CRS-0987</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-online"><i class="bi bi-globe2"></i> Online</span></td>
-            <td><span class="edvanto-badge badge-pay-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
-            <td><span class="edvanto-badge badge-appr-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">0%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill low" style="width: 2%;"></div>
-                </div>
-              </div>
-            </td>
-            <td>19 Jun 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#enrollment_view' 4 %}" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <button class="edvanto-action-btn success" title="Accept" onclick="acceptEnrollment('Arjun Verma')"><i class="bi bi-check-circle"></i></button>
-                <button class="edvanto-action-btn danger" title="Reject" onclick="rejectEnrollment('Arjun Verma')"><i class="bi bi-x-circle"></i></button>
-                <a href="#payment_view' 4 %}" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 5: Failed Payment, Rejected -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v5">SN</span>
-                <div>
-                  <div class="edvanto-user-name">Sneha Nair</div>
-                  <div class="edvanto-user-meta">sneha.n@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">Digital Marketing Pro</div>
-                <div class="edvanto-course-meta">CRS-1055</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-online"><i class="bi bi-globe2"></i> Online</span></td>
-            <td><span class="edvanto-badge badge-pay-failed"><i class="bi bi-x-circle-fill"></i> Failed</span></td>
-            <td><span class="edvanto-badge badge-appr-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">0%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill" style="width: 0%; background: var(--edvanto-gray-300);"></div>
-                </div>
-              </div>
-            </td>
-            <td>18 Jun 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#enrollment_view' 5 %}" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <a href="#payment_view' 5 %}" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 6: Refunded, Accepted -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v6">KG</span>
-                <div>
-                  <div class="edvanto-user-name">Kavita Gupta</div>
-                  <div class="edvanto-user-meta">kavita.g@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">Business Analytics Pro</div>
-                <div class="edvanto-course-meta">CRS-1041</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-offline"><i class="bi bi-building"></i> Offline</span></td>
-            <td><span class="edvanto-badge badge-pay-refunded"><i class="bi bi-arrow-counterclockwise"></i> Refunded</span></td>
-            <td><span class="edvanto-badge badge-appr-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">100%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill high" style="width: 100%;"></div>
-                </div>
-              </div>
-            </td>
-            <td>10 Jun 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#enrollment_view' 6 %}" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <a href="#payment_view' 6 %}" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-                <a href="#progress_view' 6 %}" class="edvanto-action-btn" title="View Progress"><i class="bi bi-graph-up"></i></a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 7: Paid, Accepted, High Progress -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v1">RK</span>
-                <div>
-                  <div class="edvanto-user-name">Rohan Kumar</div>
-                  <div class="edvanto-user-meta">rohan.k@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-cell">
-                <div class="edvanto-course-title">Full Stack Web Development</div>
-                <div class="edvanto-course-meta">CRS-1024</div>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-mode-online"><i class="bi bi-globe2"></i> Online</span></td>
-            <td><span class="edvanto-badge badge-pay-paid"><i class="bi bi-check-circle-fill"></i> Paid</span></td>
-            <td><span class="edvanto-badge badge-appr-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
-            <td>
-              <div class="edvanto-progress">
-                <div class="edvanto-progress-label">
-                  <span>Progress</span>
-                  <span class="pct">92%</span>
-                </div>
-                <div class="edvanto-progress-track">
-                  <div class="edvanto-progress-fill high" style="width: 92%;"></div>
-                </div>
-              </div>
-            </td>
-            <td>03 Apr 2025</td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <a href="#enrollment_view' 7 %}" class="edvanto-action-btn" title="View Enrollment"><i class="bi bi-eye"></i></a>
-                <a href="#payment_view' 7 %}" class="edvanto-action-btn gold" title="View Payment"><i class="bi bi-credit-card"></i></a>
-                <a href="#progress_view' 7 %}" class="edvanto-action-btn" title="View Progress"><i class="bi bi-graph-up"></i></a>
-              </div>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
+    <small class="text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
+    <div class="btn-group btn-group-sm">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-secondary"
+           href="?q={{ search_query|urlencode }}&approval={{ selected_approval|urlencode }}&payment={{ selected_payment|urlencode }}&mode={{ selected_mode|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>
+      {% else %}
+        <span class="btn btn-outline-secondary disabled">Previous</span>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-secondary"
+           href="?q={{ search_query|urlencode }}&approval={{ selected_approval|urlencode }}&payment={{ selected_payment|urlencode }}&mode={{ selected_mode|urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+      {% else %}
+        <span class="btn btn-outline-secondary disabled">Next</span>
+      {% endif %}
     </div>
   </div>
-
-  <!-- ---------- MOBILE CARDS ---------- -->
-  <div class="edvanto-enrollments-cards">
-
-    <!-- Card 1 -->
-    <div class="edvanto-enrollment-card">
-      <div class="edvanto-enrollment-card-header">
-        <span class="edvanto-avatar-sm v1">AK</span>
-        <div>
-          <div class="edvanto-user-name">Ananya Kapoor</div>
-          <div class="edvanto-user-meta">ananya.k@example.com</div>
-        </div>
-      </div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Course</span><span class="value">Full Stack Web Development</span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Mode</span><span class="value"><span class="edvanto-badge badge-mode-online">Online</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Payment</span><span class="value"><span class="edvanto-badge badge-pay-paid">Paid</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Approval</span><span class="value"><span class="edvanto-badge badge-appr-accepted">Accepted</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Progress</span><span class="value">68%</span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Enrolled</span><span class="value">12 Jan 2025</span></div>
-      <div class="edvanto-enrollment-card-actions">
-        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
-        <button class="btn btn-edvanto-outline text-success" onclick="acceptEnrollment('Ananya Kapoor')"><i class="bi bi-check-circle me-1"></i>Accept</button>
-        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-credit-card me-1"></i>Payment</a>
-      </div>
-    </div>
-
-    <!-- Card 2 -->
-    <div class="edvanto-enrollment-card">
-      <div class="edvanto-enrollment-card-header">
-        <span class="edvanto-avatar-sm v2">RS</span>
-        <div>
-          <div class="edvanto-user-name">Rohan Sharma</div>
-          <div class="edvanto-user-meta">rohan.s@example.com</div>
-        </div>
-      </div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Course</span><span class="value">Data Science &amp; AI Masterclass</span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Mode</span><span class="value"><span class="edvanto-badge badge-mode-online">Online</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Payment</span><span class="value"><span class="edvanto-badge badge-pay-paid">Paid</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Approval</span><span class="value"><span class="edvanto-badge badge-appr-pending">Pending</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Progress</span><span class="value">0%</span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Enrolled</span><span class="value">21 Jun 2025</span></div>
-      <div class="edvanto-enrollment-card-actions">
-        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
-        <button class="btn btn-edvanto-outline text-success" onclick="acceptEnrollment('Rohan Sharma')"><i class="bi bi-check-circle me-1"></i>Accept</button>
-        <button class="btn btn-edvanto-outline text-danger" onclick="rejectEnrollment('Rohan Sharma')"><i class="bi bi-x-circle me-1"></i>Reject</button>
-      </div>
-    </div>
-
-    <!-- Card 3 -->
-    <div class="edvanto-enrollment-card">
-      <div class="edvanto-enrollment-card-header">
-        <span class="edvanto-avatar-sm v3">PM</span>
-        <div>
-          <div class="edvanto-user-name">Priya Mehta</div>
-          <div class="edvanto-user-meta">priya.m@example.com</div>
-        </div>
-      </div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Course</span><span class="value">UI/UX Design Masterclass</span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Mode</span><span class="value"><span class="edvanto-badge badge-mode-offline">Offline</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Payment</span><span class="value"><span class="edvanto-badge badge-pay-partial">Partial</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Approval</span><span class="value"><span class="edvanto-badge badge-appr-accepted">Accepted</span></span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Progress</span><span class="value">45%</span></div>
-      <div class="edvanto-enrollment-card-row"><span class="label">Enrolled</span><span class="value">20 Jun 2025</span></div>
-      <div class="edvanto-enrollment-card-actions">
-        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-eye me-1"></i>View</a>
-        <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-credit-card me-1"></i>Payment</a>
-        <a href="#progress_view' 3 %}" class="btn btn-edvanto-outline"><i class="bi bi-graph-up me-1"></i>Progress</a>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Pagination -->
-  <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–7 of 1,284 enrollments</span>
-    <ul class="pagination pagination-sm mb-0">
-      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
-      <li class="page-item active"><a class="page-link" href="#">1</a></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item disabled"><span class="page-link">…</span></li>
-      <li class="page-item"><a class="page-link" href="#">184</a></li>
-      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
-    </ul>
-  </nav>
-
+  {% endif %}
 </div>
-
-<!-- ============================================================
-     CONFIRM ACCEPT MODAL
-     ============================================================ -->
-<div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title" id="acceptModalLabel">
-          <i class="bi bi-check-circle-fill me-2" style="color: #0F9D58;"></i>
-          Confirm Accept
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray-600);">
-        Accept enrollment for <strong id="acceptStudentName" class="text-edvanto-navy"></strong>?
-        They will gain immediate access to the course.
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-sm text-white" style="background: #0F9D58;"
-                onclick="performAccept()">
-          Accept
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     CONFIRM REJECT MODAL
-     ============================================================ -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title" id="rejectModalLabel">
-          <i class="bi bi-x-circle-fill me-2" style="color: #DC3545;"></i>
-          Confirm Reject
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray-600);">
-        Reject enrollment for <strong id="rejectStudentName" class="text-edvanto-navy"></strong>?
-        They will be notified and will not gain access to the course.
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
-                onclick="performReject()">
-          Reject
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     PAGE JAVASCRIPT
-     ============================================================ -->
-<script>
-  (function () {
-    'use strict';
-
-    /* ---------- Accept flow ---------- */
-    window.acceptEnrollment = function (studentName) {
-      document.getElementById('acceptStudentName').textContent = studentName;
-      new bootstrap.Modal(document.getElementById('acceptModal')).show();
-    };
-
-    window.performAccept = function () {
-      var modalEl = document.getElementById('acceptModal');
-      var modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      edvantoToast('Enrollment accepted. Student notified.', 'success');
-      /* Replace with a real fetch() to your Django endpoint */
-    };
-
-    /* ---------- Reject flow ---------- */
-    window.rejectEnrollment = function (studentName) {
-      document.getElementById('rejectStudentName').textContent = studentName;
-      new bootstrap.Modal(document.getElementById('rejectModal')).show();
-    };
-
-    window.performReject = function () {
-      var modalEl = document.getElementById('rejectModal');
-      var modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      edvantoToast('Enrollment rejected. Student notified.', 'warning');
-      /* Replace with a real fetch() to your Django endpoint */
-    };
-
-    /* ---------- Auto-submit filter on select change (optional) ---------- */
-    document.querySelectorAll('#enrollmentFilterForm select').forEach(function (select) {
-      select.addEventListener('change', function () {
-        /* Uncomment to auto-apply filters */
-        /* document.getElementById('enrollmentFilterForm').submit(); */
-      });
-    });
-
-  })();
-</script>
-
 {% endblock %}

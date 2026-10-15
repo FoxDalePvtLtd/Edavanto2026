@@ -1,0 +1,99 @@
+{% extends "admin_base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <div class="text-muted small mb-1">
+      Edvanto / Curriculum /
+      <a href="{% url 'admin_panel:syllabus_curriculum' course_id=course.pk %}">{{ course.title }}</a>
+      / {{ module.title }} / {{ lesson.title }}
+    </div>
+    <h1 class="edvanto-page-title mb-1">{{ page_title }}</h1>
+    <p class="edvanto-page-subtitle mb-0">Upload study material — encrypted at rest, access-controlled on serve.</p>
+  </div>
+  <a href="{% url 'admin_panel:syllabus_media_lesson' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+     class="btn btn-edvanto-outline">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-9">
+    <div class="edvanto-card">
+      <div class="edvanto-card-header">
+        <h2 class="edvanto-card-title mb-0">Material Details</h2>
+      </div>
+      <div class="p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+            {% for e in form.title.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label for="{{ form.material_type.id_for_label }}" class="form-label">Type <span class="text-danger">*</span></label>
+              {{ form.material_type }}
+              {% for e in form.material_type.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="{{ form.file.id_for_label }}" class="form-label">File <span class="text-danger">*</span></label>
+              {{ form.file }}
+              <div class="form-text">Max 50 MB · PDF, PPT/PPTX, DOC/DOCX, XLS/XLSX, PNG/JPG/WEBP/GIF, TXT/MD/CSV</div>
+              {% for e in form.file.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label for="{{ form.original_filename.id_for_label }}" class="form-label">
+                Original filename <span class="text-muted small">(optional)</span>
+              </label>
+              {{ form.original_filename }}
+              <div class="form-text">Defaults to the uploaded file's name.</div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="{{ form.content_type.id_for_label }}" class="form-label">
+                MIME type <span class="text-muted small">(optional)</span>
+              </label>
+              {{ form.content_type }}
+              <div class="form-text">Auto-detected if left blank.</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.watermark_text.id_for_label }}" class="form-label">Watermark (optional)</label>
+            {{ form.watermark_text }}
+          </div>
+
+          <div class="form-check mb-3">
+            {{ form.allow_printing }}
+            <label class="form-check-label" for="{{ form.allow_printing.id_for_label }}">
+              Allow printing (still no download URL)
+            </label>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'admin_panel:syllabus_media_lesson' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+               class="btn btn-edvanto-outline">Cancel</a>
+            <button type="submit" class="btn btn-edvanto-primary">
+              <i class="bi bi-upload me-1"></i> Upload &amp; Encrypt
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

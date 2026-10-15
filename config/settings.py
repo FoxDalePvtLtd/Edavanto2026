@@ -5,22 +5,18 @@ Edvanto Education Platform
 Phase 1 — Foundation
 """
 
+import os
+import secrets
 from pathlib import Path
 
 import environ
 
 
-# ============================================================
-# BASE DIRECTORY
-# ============================================================
-
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# ============================================================
-# ENVIRONMENT
-# ============================================================
-
+# Environment
 env = environ.Env(
     DEBUG=(bool, True),
 )
@@ -28,10 +24,7 @@ env = environ.Env(
 environ.Env.read_env(BASE_DIR / ".env")
 
 
-# ============================================================
-# SECURITY
-# ============================================================
-
+# Security
 SECRET_KEY = env(
     "SECRET_KEY",
     default="django-insecure-change-this-in-production",
@@ -51,10 +44,7 @@ ALLOWED_HOSTS = env.list(
 )
 
 
-# ============================================================
-# APPLICATIONS
-# ============================================================
-
+# Applications
 INSTALLED_APPS = [
 
     # Django
@@ -72,12 +62,11 @@ INSTALLED_APPS = [
     "core",
     "admin_panel",
 ]
+
 AUTH_USER_MODEL = "core.User"
 
-# ============================================================
-# MIDDLEWARE
-# ============================================================
 
+# Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -89,17 +78,11 @@ MIDDLEWARE = [
 ]
 
 
-# ============================================================
-# URL CONFIGURATION
-# ============================================================
-
+# URLs
 ROOT_URLCONF = "config.urls"
 
 
-# ============================================================
-# TEMPLATES
-# ============================================================
-
+# Templates
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -121,28 +104,22 @@ TEMPLATES = [
 ]
 
 
-# ============================================================
 # WSGI / ASGI
-# ============================================================
-
 WSGI_APPLICATION = "config.wsgi.application"
 
 ASGI_APPLICATION = "config.asgi.application"
-#============================================================
-#DEFAULT DATABASES
-#============================================================
+
+
+# Default sqlite (kept for reference)
 # DATABASES = {
-#      "default": {
-#          "ENGINE": "django.db.backends.sqlite3",
-#          "NAME": BASE_DIR / "db.sqlite3",
-#      }   
-#  }
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 
-# ============================================================
-# DATABASE POSTGRESQL
-# ============================================================
-
+# PostgreSQL
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -175,10 +152,7 @@ DATABASES = {
 }
 
 
-# ============================================================
-# PASSWORD VALIDATION
-# ============================================================
-
+# Password validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
@@ -207,10 +181,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# ============================================================
-# INTERNATIONALIZATION
-# ============================================================
-
+# i18n
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Asia/Kolkata"
@@ -220,10 +191,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# ============================================================
-# STATIC FILES
-# ============================================================
-
+# Static files
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
@@ -233,39 +201,82 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-# ============================================================
-# MEDIA FILES
-# ============================================================
-
+# Media files
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 
 
-# ============================================================
-# DEFAULT PRIMARY KEY
-# ============================================================
+# Private media (encrypted lesson material)
+# Not exposed via URL. Read-only through core:serve_lesson_material.
+PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
 
+PRIVATE_MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+
+PRIVATE_MEDIA_URL = "/private-media/"   # reserved; not routed
+
+
+# AES-256-GCM key for lesson material.
+# MUST be 64 hex chars (32 bytes). Override via env in any real deployment.
+def _default_material_key() -> str:
+    """
+    If no env key is provided, generate a random one for this process.
+
+    WARNING: a per-process random key means material uploaded in one run
+    cannot be decrypted after a restart. Always set
+    LESSON_MATERIAL_ENCRYPTION_KEY in .env for real use.
+    """
+    return secrets.token_hex(32)
+
+
+LESSON_MATERIAL_ENCRYPTION_KEY = os.environ.get("LESSON_MATERIAL_ENCRYPTION_KEY")
+
+if not LESSON_MATERIAL_ENCRYPTION_KEY:
+    raise RuntimeError(
+        "LESSON_MATERIAL_ENCRYPTION_KEY is not set. "
+        "Generate one with:  python -c \"import secrets; print(secrets.token_hex(32))\"  "
+        "and add it to .env"
+    )
+
+if len(LESSON_MATERIAL_ENCRYPTION_KEY) != 64:
+    raise RuntimeError(
+        "LESSON_MATERIAL_ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)."
+    )
+
+
+# Storage backends
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+    "private_materials": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": PRIVATE_MEDIA_ROOT,
+            "base_url": None,
+        },
+    },
+}
+
+
+# Primary key
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# ============================================================
-# LOGIN / LOGOUT
-# ============================================================
-
+# Login / logout
 # LOGIN_URL = "login"
-
 # LOGIN_REDIRECT_URL = "/"
-
 # LOGOUT_REDIRECT_URL = "/"
 
 LOGIN_URL = "core:login"
 LOGIN_REDIRECT_URL = "core:dashboard"
 LOGOUT_REDIRECT_URL = "core:home"
-# ============================================================
-# EMAIL — DEVELOPMENT
-# ============================================================
 
+
+# Email — dev
 EMAIL_BACKEND = env(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend",
@@ -277,20 +288,14 @@ DEFAULT_FROM_EMAIL = env(
 )
 
 
-# ============================================================
-# REDIS
-# ============================================================
-
+# Redis
 REDIS_URL = env(
     "REDIS_URL",
     default="redis://127.0.0.1:6379/1",
 )
 
 
-# ============================================================
-# DJANGO-RQ
-# ============================================================
-
+# django-rq
 RQ_QUEUES = {
     "default": {
         "URL": REDIS_URL,
@@ -299,16 +304,10 @@ RQ_QUEUES = {
 }
 
 
-# ============================================================
-# LOGGING
-# ============================================================
-
+# Logging
 LOG_DIR = BASE_DIR / "logs"
 
-LOG_DIR.mkdir(
-    exist_ok=True
-)
-
+LOG_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -327,7 +326,6 @@ LOGGING = {
     },
 
     "handlers": {
-
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
@@ -350,11 +348,9 @@ LOGGING = {
 }
 
 
-# ============================================================
-# DEVELOPMENT SECURITY
-# ============================================================
-
-SECURE_BROWSER_XSS_FILTER = True
+# Development security
+# SECURE_BROWSER_XSS_FILTER is deprecated in modern Django — no effect.
+# SECURE_BROWSER_XSS_FILTER = True
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 

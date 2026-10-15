@@ -3,6 +3,21 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.core.files.storage import storages
+
+
+# =========================================================
+# Private storage helper (used by LessonMaterial.file)
+# =========================================================
+
+def _private_storage():
+    """
+    Storage backend for encrypted lesson material.
+
+    Configured in settings.STORAGES["private_materials"].
+    The directory is NOT served by Django staticfiles or MEDIA_URL.
+    """
+    return storages["private_materials"]
 
 
 # =========================================================
@@ -42,11 +57,9 @@ class User(AbstractUser):
         return self.get_full_name() or self.username
 
 
-
-
-# ============================================================
+# =========================================================
 # OTP VERIFICATION
-# ============================================================
+# =========================================================
 
 class OTPVerification(models.Model):
 
@@ -56,15 +69,7 @@ class OTPVerification(models.Model):
         EMAIL_CHANGE = "email_change", "Email Change"
         PHONE_VERIFICATION = "phone_verification", "Phone Verification"
 
-    # --------------------------------------------------------
-    # Verification destination
-    # --------------------------------------------------------
-
     email = models.EmailField()
-
-    # --------------------------------------------------------
-    # OTP security
-    # --------------------------------------------------------
 
     otp_hash = models.CharField(max_length=128)
 
@@ -73,19 +78,11 @@ class OTPVerification(models.Model):
         choices=Purpose.choices,
     )
 
-    # --------------------------------------------------------
-    # Verification state
-    # --------------------------------------------------------
-
     is_verified = models.BooleanField(default=False)
 
     attempts = models.PositiveIntegerField(default=0)
 
     max_attempts = models.PositiveIntegerField(default=5)
-
-    # --------------------------------------------------------
-    # Expiry / resend protection
-    # --------------------------------------------------------
 
     expires_at = models.DateTimeField()
 
@@ -94,10 +91,6 @@ class OTPVerification(models.Model):
     resend_count = models.PositiveIntegerField(default=0)
 
     max_resends = models.PositiveIntegerField(default=5)
-
-    # --------------------------------------------------------
-    # Security metadata
-    # --------------------------------------------------------
 
     ip_address = models.GenericIPAddressField(
         null=True,
@@ -118,16 +111,14 @@ class OTPVerification(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(
-                fields=["email", "purpose", "is_verified"]
-            ),
-            models.Index(
-                fields=["expires_at"]
-            ),
+            models.Index(fields=["email", "purpose", "is_verified"]),
+            models.Index(fields=["expires_at"]),
         ]
 
     def __str__(self):
         return f"{self.email} - {self.purpose}"
+
+
 # =========================================================
 # CENTER
 # =========================================================
@@ -136,45 +127,23 @@ class Center(models.Model):
 
     name = models.CharField(max_length=150)
 
-    address = models.TextField(
-        blank=True,
-    )
+    address = models.TextField(blank=True)
 
-    city = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    city = models.CharField(max_length=100, blank=True)
 
-    state = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    state = models.CharField(max_length=100, blank=True)
 
-    postal_code = models.CharField(
-        max_length=20,
-        blank=True,
-    )
+    postal_code = models.CharField(max_length=20, blank=True)
 
-    contact_number = models.CharField(
-        max_length=20,
-        blank=True,
-    )
+    contact_number = models.CharField(max_length=20, blank=True)
 
-    email = models.EmailField(
-        blank=True,
-    )
+    email = models.EmailField(blank=True)
 
-    is_active = models.BooleanField(
-        default=True,
-    )
+    is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -195,20 +164,13 @@ class Course(models.Model):
         PUBLISHED = "published", "Published"
         ARCHIVED = "archived", "Archived"
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
-    slug = models.SlugField(
-        unique=True,
-    )
+    slug = models.SlugField(unique=True)
 
     description = models.TextField()
 
-    category = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    category = models.CharField(max_length=100, blank=True)
 
     mode = models.CharField(
         max_length=20,
@@ -229,6 +191,7 @@ class Course(models.Model):
         blank=True,
         validators=[MinValueValidator(0)],
     )
+
     duration_hours = models.PositiveIntegerField(
         null=True,
         blank=True,
@@ -240,6 +203,7 @@ class Course(models.Model):
         blank=True,
         help_text="Total planned duration in weeks for offline courses.",
     )
+
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -269,17 +233,11 @@ class Course(models.Model):
         default=Status.DRAFT,
     )
 
-    requires_instructor_approval = models.BooleanField(
-        default=False,
-    )
+    requires_instructor_approval = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -297,17 +255,11 @@ class Syllabus(models.Model):
         related_name="syllabi",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
-    description = models.TextField(
-        blank=True,
-    )
+    description = models.TextField(blank=True)
 
-    order = models.PositiveIntegerField(
-        default=0,
-    )
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["order"]
@@ -328,13 +280,9 @@ class SyllabusTopic(models.Model):
         related_name="topics",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
-    order = models.PositiveIntegerField(
-        default=0,
-    )
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["order"]
@@ -355,17 +303,12 @@ class Module(models.Model):
         related_name="modules",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
-    description = models.TextField(
-        blank=True,
-    )
+    description = models.TextField(blank=True)
 
-    order = models.PositiveIntegerField(
-        default=0,
-    )
+    order = models.PositiveIntegerField(default=0)
+
     duration_hours = models.PositiveIntegerField(
         null=True,
         blank=True,
@@ -378,9 +321,7 @@ class Module(models.Model):
         help_text="Planned module duration in weeks for offline courses.",
     )
 
-    unlock_order = models.PositiveIntegerField(
-        default=0,
-    )
+    unlock_order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["order"]
@@ -406,25 +347,15 @@ class Lesson(models.Model):
         related_name="lessons",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
-    description = models.TextField(
-        blank=True,
-    )
+    description = models.TextField(blank=True)
 
-    order = models.PositiveIntegerField(
-        default=0,
-    )
+    order = models.PositiveIntegerField(default=0)
 
-    unlock_order = models.PositiveIntegerField(
-        default=0,
-    )
+    unlock_order = models.PositiveIntegerField(default=0)
 
-    duration_seconds = models.PositiveIntegerField(
-        default=0,
-    )
+    duration_seconds = models.PositiveIntegerField(default=0)
 
     status = models.CharField(
         max_length=20,
@@ -432,17 +363,11 @@ class Lesson(models.Model):
         default=Status.DRAFT,
     )
 
-    is_published = models.BooleanField(
-        default=False,
-    )
+    is_published = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["order"]
@@ -452,7 +377,7 @@ class Lesson(models.Model):
 
 
 # =========================================================
-# RESOURCE
+# RESOURCE (legacy — kept for backward compatibility)
 # =========================================================
 
 class Resource(models.Model):
@@ -470,9 +395,7 @@ class Resource(models.Model):
         related_name="resources",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
     resource_type = models.CharField(
         max_length=20,
@@ -484,15 +407,12 @@ class Resource(models.Model):
         upload_to="resources/",
         blank=True,
         null=True,
+        max_length=255,
     )
 
-    external_url = models.URLField(
-        blank=True,
-    )
+    external_url = models.URLField(blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -516,23 +436,13 @@ class VideoAsset(models.Model):
         related_name="video_asset",
     )
 
-    original_file = models.FileField(
-        upload_to="videos/original/",
-    )
+    original_file = models.FileField(upload_to="videos/original/",max_length=255,)
 
-    hls_manifest = models.CharField(
-        max_length=500,
-        blank=True,
-    )
+    hls_manifest = models.CharField(max_length=500, blank=True)
 
-    duration_seconds = models.PositiveIntegerField(
-        default=0,
-    )
+    duration_seconds = models.PositiveIntegerField(default=0)
 
-    resolution = models.CharField(
-        max_length=50,
-        blank=True,
-    )
+    resolution = models.CharField(max_length=50, blank=True)
 
     processing_status = models.CharField(
         max_length=20,
@@ -540,21 +450,145 @@ class VideoAsset(models.Model):
         default=ProcessingStatus.PENDING,
     )
 
-    processing_error = models.TextField(
-        blank=True,
-    )
+    processing_error = models.TextField(blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    processed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    processed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Video - {self.lesson.title}"
+
+
+# =========================================================
+# LESSON MATERIAL (encrypted study material)
+# =========================================================
+
+class LessonMaterial(models.Model):
+    """
+    Encrypted, non-downloadable study material attached to a lesson.
+
+    Files are stored under a private storage root that is NOT exposed
+    through MEDIA_URL or staticfiles. The only read path is the
+    authenticated `core:serve_lesson_material` view.
+    """
+
+    class MaterialType(models.TextChoices):
+        PDF = "pdf", "PDF"
+        PPT = "ppt", "PowerPoint"
+        DOCX = "docx", "Word Document"
+        XLSX = "xlsx", "Excel Workbook"
+        IMAGE = "image", "Image"
+        TEXT = "text", "Plain Text"
+        OTHER = "other", "Other"
+
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="materials",
+    )
+
+    title = models.CharField(max_length=200)
+
+    material_type = models.CharField(
+        max_length=20,
+        choices=MaterialType.choices,
+        default=MaterialType.OTHER,
+    )
+
+    # ---- Storage ----------------------------------------------------------
+    # Encrypted blob on private storage. Original filename kept separately.
+    file = models.FileField(
+        upload_to="lesson_materials/%Y/%m/",
+        storage=_private_storage,
+    )
+    original_filename = models.CharField(
+    max_length=255,
+    blank=True,
+    help_text="Auto-filled from the uploaded file if left blank.",
+)
+
+    # ---- Encryption -------------------------------------------------------
+    encryption_nonce = models.CharField(max_length=64, blank=True)
+    encryption_algorithm = models.CharField(
+        max_length=20,
+        default="AES-256-GCM",
+    )
+    content_sha256 = models.CharField(max_length=64, blank=True)
+
+    # ---- Metadata ---------------------------------------------------------
+    content_type = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Original MIME type (e.g. application/pdf).",
+    )
+    size_bytes = models.PositiveBigIntegerField(default=0)
+
+    # ---- Access control ---------------------------------------------------
+    is_active = models.BooleanField(default=True)
+    allow_printing = models.BooleanField(
+        default=False,
+        help_text="If False, serve inline only; printing is discouraged client-side.",
+    )
+    watermark_text = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional watermark, e.g. 'Edvanto — student@example.com'.",
+    )
+
+    # ---- Audit ------------------------------------------------------------
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="uploaded_materials",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["title", "pk"]
+        indexes = [
+            models.Index(fields=["lesson", "is_active"]),
+            models.Index(fields=["material_type"]),
+        ]
+
+    def __str__(self):
+        return f"{self.lesson.title} — {self.title}"
+
+
+# =========================================================
+# MATERIAL ACCESS LOG
+# =========================================================
+
+class MaterialAccessLog(models.Model):
+    """
+    One row per material serve. Auditable.
+    """
+
+    material = models.ForeignKey(
+        LessonMaterial,
+        on_delete=models.CASCADE,
+        related_name="access_logs",
+    )
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="material_accesses",
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    accessed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-accessed_at"]
+        indexes = [
+            models.Index(fields=["material", "-accessed_at"]),
+        ]
 
 
 # =========================================================
@@ -604,23 +638,14 @@ class Enrollment(models.Model):
         max_digits=5,
         decimal_places=2,
         default=0,
-        validators=[
-            MinValueValidator(0),
-        ],
+        validators=[MinValueValidator(0)],
     )
 
-    enrolled_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    enrolled_at = models.DateTimeField(auto_now_add=True)
 
-    accepted_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
 
-    access_paused = models.BooleanField(
-        default=False,
-    )
+    access_paused = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -671,23 +696,13 @@ class LearningProgress(models.Model):
         validators=[MinValueValidator(0)],
     )
 
-    last_position_seconds = models.PositiveIntegerField(
-        default=0,
-    )
+    last_position_seconds = models.PositiveIntegerField(default=0)
 
-    started_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    started_at = models.DateTimeField(null=True, blank=True)
 
-    completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    completed_at = models.DateTimeField(null=True, blank=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
@@ -750,14 +765,9 @@ class LearningEvent(models.Model):
         validators=[MinValueValidator(0)],
     )
 
-    metadata = models.JSONField(
-        default=dict,
-        blank=True,
-    )
+    metadata = models.JSONField(default=dict, blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -798,10 +808,7 @@ class Order(models.Model):
         related_name="orders",
     )
 
-    order_number = models.CharField(
-        max_length=50,
-        unique=True,
-    )
+    order_number = models.CharField(max_length=50, unique=True)
 
     total_amount = models.DecimalField(
         max_digits=10,
@@ -827,13 +834,9 @@ class Order(models.Model):
         default=Status.CREATED,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.order_number
@@ -863,20 +866,11 @@ class PaymentTransaction(models.Model):
         validators=[MinValueValidator(0)],
     )
 
-    razorpay_order_id = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
 
-    razorpay_payment_id = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
 
-    razorpay_signature = models.CharField(
-        max_length=255,
-        blank=True,
-    )
+    razorpay_signature = models.CharField(max_length=255, blank=True)
 
     status = models.CharField(
         max_length=20,
@@ -884,23 +878,13 @@ class PaymentTransaction(models.Model):
         default=Status.CREATED,
     )
 
-    failure_reason = models.TextField(
-        blank=True,
-    )
+    failure_reason = models.TextField(blank=True)
 
-    paid_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    paid_at = models.DateTimeField(null=True, blank=True)
 
-    metadata = models.JSONField(
-        default=dict,
-        blank=True,
-    )
+    metadata = models.JSONField(default=dict, blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 # =========================================================
@@ -917,9 +901,7 @@ class InstallmentPlan(models.Model):
 
     total_installments = models.PositiveIntegerField()
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 # =========================================================
@@ -956,20 +938,11 @@ class Installment(models.Model):
         default=Status.PENDING,
     )
 
-    razorpay_payment_id = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
 
-    paid_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    paid_at = models.DateTimeField(null=True, blank=True)
 
-    overdue_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    overdue_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -999,13 +972,9 @@ class Assessment(models.Model):
         related_name="assessments",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
-    description = models.TextField(
-        blank=True,
-    )
+    description = models.TextField(blank=True)
 
     assessment_type = models.CharField(
         max_length=20,
@@ -1013,39 +982,21 @@ class Assessment(models.Model):
         default=AssessmentType.QUIZ,
     )
 
-    unlock_order = models.PositiveIntegerField(
-        default=0,
-    )
+    unlock_order = models.PositiveIntegerField(default=0)
 
-    total_marks = models.PositiveIntegerField(
-        default=0,
-    )
+    total_marks = models.PositiveIntegerField(default=0)
 
-    pass_percentage = models.PositiveIntegerField(
-        default=50,
-    )
+    pass_percentage = models.PositiveIntegerField(default=50)
 
-    due_date = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    due_date = models.DateTimeField(null=True, blank=True)
 
-    time_limit_minutes = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-    )
+    time_limit_minutes = models.PositiveIntegerField(null=True, blank=True)
 
-    attempts_allowed = models.PositiveIntegerField(
-        default=1,
-    )
+    attempts_allowed = models.PositiveIntegerField(default=1)
 
-    is_published = models.BooleanField(
-        default=False,
-    )
+    is_published = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -1076,26 +1027,15 @@ class Question(models.Model):
         default=QuestionType.MCQ,
     )
 
-    options = models.JSONField(
-        default=list,
-        blank=True,
-    )
+    options = models.JSONField(default=list, blank=True)
 
-    correct_answer = models.TextField(
-        blank=True,
-    )
+    correct_answer = models.TextField(blank=True)
 
-    marks = models.PositiveIntegerField(
-        default=1,
-    )
+    marks = models.PositiveIntegerField(default=1)
 
-    explanation = models.TextField(
-        blank=True,
-    )
+    explanation = models.TextField(blank=True)
 
-    order = models.PositiveIntegerField(
-        default=0,
-    )
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["order"]
@@ -1124,15 +1064,13 @@ class Submission(models.Model):
         related_name="assessment_submissions",
     )
 
-    answers = models.JSONField(
-        default=dict,
-        blank=True,
-    )
+    answers = models.JSONField(default=dict, blank=True)
 
     uploaded_file = models.FileField(
         upload_to="submissions/",
         blank=True,
         null=True,
+        max_length=255,
     )
 
     score = models.DecimalField(
@@ -1156,14 +1094,9 @@ class Submission(models.Model):
         related_name="graded_submissions",
     )
 
-    graded_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    graded_at = models.DateTimeField(null=True, blank=True)
 
-    submitted_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
 
 
 # =========================================================
@@ -1199,9 +1132,7 @@ class DoubtThread(models.Model):
         related_name="doubt_threads",
     )
 
-    subject = models.CharField(
-        max_length=200,
-    )
+    subject = models.CharField(max_length=200)
 
     status = models.CharField(
         max_length=20,
@@ -1218,13 +1149,9 @@ class DoubtThread(models.Model):
         limit_choices_to={"role": User.Role.INSTRUCTOR},
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 # =========================================================
@@ -1251,11 +1178,10 @@ class DoubtMessage(models.Model):
         upload_to="doubts/",
         blank=True,
         null=True,
+        max_length=255,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 # =========================================================
@@ -1289,20 +1215,13 @@ class Batch(models.Model):
         limit_choices_to={"role": User.Role.INSTRUCTOR},
     )
 
-    name = models.CharField(
-        max_length=150,
-    )
+    name = models.CharField(max_length=150)
 
     start_date = models.DateField()
 
-    end_date = models.DateField(
-        null=True,
-        blank=True,
-    )
+    end_date = models.DateField(null=True, blank=True)
 
-    capacity = models.PositiveIntegerField(
-        default=0,
-    )
+    capacity = models.PositiveIntegerField(default=0)
 
     status = models.CharField(
         max_length=20,
@@ -1310,9 +1229,7 @@ class Batch(models.Model):
         default=Status.UPCOMING,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -1335,9 +1252,7 @@ class BatchSession(models.Model):
         related_name="sessions",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
     date = models.DateField()
 
@@ -1345,10 +1260,7 @@ class BatchSession(models.Model):
 
     end_time = models.TimeField()
 
-    room = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    room = models.CharField(max_length=100, blank=True)
 
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1357,9 +1269,7 @@ class BatchSession(models.Model):
         limit_choices_to={"role": User.Role.INSTRUCTOR},
     )
 
-    notes = models.TextField(
-        blank=True,
-    )
+    notes = models.TextField(blank=True)
 
     status = models.CharField(
         max_length=20,
@@ -1397,9 +1307,7 @@ class Attendance(models.Model):
         choices=Status.choices,
     )
 
-    remarks = models.TextField(
-        blank=True,
-    )
+    remarks = models.TextField(blank=True)
 
     marked_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1407,9 +1315,7 @@ class Attendance(models.Model):
         related_name="attendance_marked",
     )
 
-    marked_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    marked_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
@@ -1443,9 +1349,7 @@ class Notification(models.Model):
         related_name="notifications",
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
+    title = models.CharField(max_length=200)
 
     message = models.TextField()
 
@@ -1454,13 +1358,9 @@ class Notification(models.Model):
         choices=NotificationType.choices,
     )
 
-    is_read = models.BooleanField(
-        default=False,
-    )
+    is_read = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 # =========================================================
@@ -1495,22 +1395,13 @@ class NotificationDelivery(models.Model):
         default=Status.PENDING,
     )
 
-    attempts = models.PositiveIntegerField(
-        default=0,
-    )
+    attempts = models.PositiveIntegerField(default=0)
 
-    sent_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    sent_at = models.DateTimeField(null=True, blank=True)
 
-    error_message = models.TextField(
-        blank=True,
-    )
+    error_message = models.TextField(blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 # =========================================================
@@ -1526,24 +1417,15 @@ class ConsultationBooking(models.Model):
         COMPLETED = "completed", "Completed"
         CLOSED = "closed", "Closed"
 
-    name = models.CharField(
-        max_length=150,
-    )
+    name = models.CharField(max_length=150)
 
     email = models.EmailField()
 
-    phone = models.CharField(
-        max_length=20,
-    )
+    phone = models.CharField(max_length=20)
 
-    preferred_date = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    preferred_date = models.DateTimeField(null=True, blank=True)
 
-    message = models.TextField(
-        blank=True,
-    )
+    message = models.TextField(blank=True)
 
     status = models.CharField(
         max_length=20,
@@ -1559,17 +1441,11 @@ class ConsultationBooking(models.Model):
         related_name="consultations_assigned",
     )
 
-    internal_notes = models.TextField(
-        blank=True,
-    )
+    internal_notes = models.TextField(blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 # =========================================================
@@ -1594,24 +1470,17 @@ class Certificate(models.Model):
         related_name="certificates",
     )
 
-    certificate_number = models.CharField(
-        max_length=100,
-        unique=True,
-    )
+    certificate_number = models.CharField(max_length=100, unique=True)
 
-    verification_code = models.CharField(
-        max_length=100,
-        unique=True,
-    )
+    verification_code = models.CharField(max_length=100, unique=True)
 
-    issued_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    issued_at = models.DateTimeField(auto_now_add=True)
 
     certificate_file = models.FileField(
         upload_to="certificates/",
         blank=True,
         null=True,
+        max_length=255,
     )
 
     status = models.CharField(
@@ -1643,9 +1512,7 @@ class SecurityEvent(models.Model):
         related_name="security_events",
     )
 
-    event_type = models.CharField(
-        max_length=100,
-    )
+    event_type = models.CharField(max_length=100)
 
     severity = models.CharField(
         max_length=20,
@@ -1653,23 +1520,13 @@ class SecurityEvent(models.Model):
         default=Severity.INFO,
     )
 
-    ip_address = models.GenericIPAddressField(
-        null=True,
-        blank=True,
-    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
 
-    user_agent = models.TextField(
-        blank=True,
-    )
+    user_agent = models.TextField(blank=True)
 
-    metadata = models.JSONField(
-        default=dict,
-        blank=True,
-    )
+    metadata = models.JSONField(default=dict, blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -1689,41 +1546,25 @@ class AuditLog(models.Model):
         related_name="audit_logs",
     )
 
-    action = models.CharField(
-        max_length=100,
-    )
+    action = models.CharField(max_length=100)
 
-    model_name = models.CharField(
-        max_length=100,
-    )
+    model_name = models.CharField(max_length=100)
 
-    object_id = models.CharField(
-        max_length=100,
-        blank=True,
-    )
+    object_id = models.CharField(max_length=100, blank=True)
 
-    changes = models.JSONField(
-        default=dict,
-        blank=True,
-    )
+    changes = models.JSONField(default=dict, blank=True)
 
-    ip_address = models.GenericIPAddressField(
-        null=True,
-        blank=True,
-    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
 
 
-
-# ============================================================
+# =========================================================
 # INVOICE
-# ============================================================
+# =========================================================
 
 class Invoice(models.Model):
 
@@ -1733,10 +1574,7 @@ class Invoice(models.Model):
         PAID = "paid", "Paid"
         CANCELLED = "cancelled", "Cancelled"
 
-    invoice_number = models.CharField(
-        max_length=50,
-        unique=True,
-    )
+    invoice_number = models.CharField(max_length=50, unique=True)
 
     order = models.OneToOneField(
         Order,
@@ -1781,28 +1619,15 @@ class Invoice(models.Model):
         default=Status.DRAFT,
     )
 
-    issued_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    issued_at = models.DateTimeField(null=True, blank=True)
 
-    paid_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    paid_at = models.DateTimeField(null=True, blank=True)
 
-    metadata = models.JSONField(
-        default=dict,
-        blank=True,
-    )
+    metadata = models.JSONField(default=dict, blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.invoice_number

@@ -1,5 +1,7 @@
 from django.urls import path
 
+from core.views_materials import serve_lesson_material
+
 from . import views
 
 app_name = "core"
@@ -29,4 +31,7 @@ urlpatterns = [
     path("dashboard/lesson/<int:lesson_id>/", views.lesson_view, name="lesson"),
     path("api/lesson/<int:lesson_id>/progress/", views.lesson_progress_api, name="lesson_progress_api"),
     path("api/lesson/<int:lesson_id>/complete/", views.lesson_complete_api, name="lesson_complete_api"),
+    path(
+        "materials/<int:material_id>/view/", serve_lesson_material,name="serve_lesson_material",
+    ),
 ]

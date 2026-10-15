@@ -1,1286 +1,692 @@
 {% extends "admin_base.html" %}
 {% load static %}
 
-{% block title %}Lesson Media{% endblock %}
+{% block title %}Lesson Media – {{ lesson.title }}{% endblock %}
 
-{% block content %}
-<!-- ============================================================
-     EDVANTO ADMIN – LESSON MEDIA MANAGER
-     Video · Resources · Secure Playback
-     ============================================================ -->
-
+{% block extra_css %}
 <style>
-  /* ---------- Lesson header banner ---------- */
-  .edvanto-lesson-banner {
-    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 55%, #0D4E96 100%);
-    border-radius: var(--edvanto-radius-card);
-    padding: 1.5rem 1.75rem;
-    color: var(--edvanto-white);
+  /* -----------------------------------------------------------
+     Lesson media workspace (scoped)
+     ----------------------------------------------------------- */
+  .lm-page .lm-header {
+    background: linear-gradient(120deg, #121212 0%, #1B1B1B 100%);
+    border-radius: 1rem;
+    color: #FFFDF7;
+    padding: 1.35rem 1.5rem;
+    margin-bottom: 1.25rem;
     position: relative;
     overflow: hidden;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 28px rgba(3, 42, 90, 0.14);
   }
-  .edvanto-lesson-banner::after {
-    content: '';
+  .lm-page .lm-header::after {
+    content: "";
     position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 240px;
-    height: 240px;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, rgba(1, 223, 254, 0) 70%);
+    background: radial-gradient(circle, rgba(212,166,42,0.25) 0%, rgba(212,166,42,0) 70%);
     pointer-events: none;
   }
-  .edvanto-lesson-banner::before {
-    content: '';
-    position: absolute;
-    bottom: -70px;
-    right: 100px;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(69, 28, 238, 0.22) 0%, rgba(69, 28, 238, 0) 70%);
-    pointer-events: none;
+  .lm-page .lm-header h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 0.35rem;
+    color: #FFFDF7;
+    letter-spacing: -0.02em;
+    word-break: break-word;
   }
-  .edvanto-lesson-banner-inner {
-    position: relative;
-    z-index: 1;
+  .lm-page .lm-header .lm-meta {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
+    gap: 0.4rem 1rem;
+    font-size: 0.82rem;
+    color: rgba(255,253,247,0.75);
   }
-  .edvanto-lesson-banner-icon {
-    width: 62px;
-    height: 62px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+  .lm-page .lm-header .lm-meta i {
+    color: #D4A62A;
+    margin-right: 0.25rem;
+  }
+  .lm-page .lm-header-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    color: var(--edvanto-cyan);
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
-  .edvanto-lesson-banner-label {
+  @media (min-width: 768px) {
+    .lm-page .lm-header-actions { margin-top: 0; }
+  }
+
+  /* Tabs */
+  .lm-page .lm-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: #F7F3E8;
+    border-radius: 0.75rem;
+    padding: 0.35rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .lm-page .lm-tabs::-webkit-scrollbar { display: none; }
+  .lm-page .lm-tab {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #4a4a4a;
+    background: transparent;
+    border: none;
+    border-radius: 0.55rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .lm-page .lm-tab:hover { background: rgba(212,166,42,0.12); color: #121212; }
+  .lm-page .lm-tab.active {
+    background: #FFFDF7;
+    color: #121212;
+    box-shadow: 0 1px 3px rgba(18,18,18,0.08);
+  }
+  .lm-page .lm-tab .lm-tab-count {
     font-size: 0.68rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.55);
-    margin-bottom: 0.25rem;
-  }
-  .edvanto-lesson-banner-title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    margin: 0 0 0.4rem;
-    color: var(--edvanto-white);
-    line-height: 1.25;
-  }
-  .edvanto-lesson-banner-breadcrumb {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.82);
-  }
-  .edvanto-lesson-banner-breadcrumb span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .edvanto-lesson-banner-breadcrumb i {
-    color: var(--edvanto-cyan);
-    font-size: 0.85rem;
-  }
-  .edvanto-lesson-banner-breadcrumb .sep {
-    color: rgba(255, 255, 255, 0.35);
-  }
-  .edvanto-lesson-banner-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  /* ---------- Status badges (on dark banner) ---------- */
-  .edvanto-banner-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.35rem 0.75rem;
+    padding: 0.1rem 0.45rem;
     border-radius: 999px;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
+    background: rgba(18,18,18,0.08);
+    color: #121212;
   }
-  .edvanto-banner-badge.ready {
-    background: rgba(15, 157, 88, 0.22);
-    color: #7EE2AC;
-  }
-  .edvanto-banner-badge.processing {
-    background: rgba(255, 179, 3, 0.22);
-    color: #FFD477;
-  }
-  .edvanto-banner-badge.waiting {
-    background: rgba(255, 255, 255, 0.14);
-    color: rgba(255, 255, 255, 0.85);
-  }
-  .edvanto-banner-badge.failed {
-    background: rgba(220, 53, 69, 0.25);
-    color: #FF9BA6;
+  .lm-page .lm-tab.active .lm-tab-count {
+    background: #D4A62A;
+    color: #121212;
   }
 
-  /* ---------- Generic panel ---------- */
-  .edvanto-panel {
-    background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-card);
-    border: var(--edvanto-border-light);
-    box-shadow: var(--edvanto-shadow-card);
+  /* Panel */
+  .lm-page .lm-panel {
+    background: #ffffff;
+    border: 1px solid rgba(18,18,18,0.06);
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(18,18,18,0.05);
     overflow: hidden;
-    margin-bottom: 1.5rem;
   }
-  .edvanto-panel-header {
+  .lm-page .lm-panel-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding: 1.1rem 1.5rem;
-    border-bottom: var(--edvanto-border-light);
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(18,18,18,0.06);
+  }
+  .lm-page .lm-panel-head h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #121212;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .lm-page .lm-panel-head h2 i { color: #D4A62A; }
+  .lm-page .lm-panel-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     flex-wrap: wrap;
   }
-  .edvanto-panel-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--edvanto-navy);
-    letter-spacing: -0.02em;
-    margin: 0;
+  .lm-page .lm-panel-body { padding: 1rem 1.25rem 1.25rem; }
+  .lm-page .lm-panel[hidden] { display: none; }
+
+  /* Info banner */
+  .lm-page .lm-info {
     display: flex;
-    align-items: center;
-    gap: 0.55rem;
-  }
-  .edvanto-panel-title i {
-    color: var(--edvanto-violet);
-    font-size: 1.1rem;
-  }
-  .edvanto-panel-body {
-    padding: 1.25rem 1.5rem 1.5rem;
-  }
-
-  /* ---------- Video panel ---------- */
-  .edvanto-video-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: start;
-  }
-  @media (max-width: 991.98px) {
-    .edvanto-video-grid { grid-template-columns: 1fr; }
-  }
-
-  /* Video player / uploader mock */
-  .edvanto-video-stage {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    border-radius: var(--edvanto-radius-sm);
-    background: linear-gradient(135deg, #061A33 0%, #0A2547 60%, #0E2F5C 100%);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--edvanto-white);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-  }
-  .edvanto-video-stage::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 25% 25%, rgba(1, 223, 254, 0.12) 0%, transparent 55%);
-    pointer-events: none;
-  }
-  .edvanto-video-stage-inner {
-    text-align: center;
-    padding: 1.5rem;
-    position: relative;
-    z-index: 1;
-    max-width: 380px;
-  }
-  .edvanto-video-stage-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 22px;
-    background: rgba(69, 28, 238, 0.28);
-    border: 1px solid rgba(1, 223, 254, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: var(--edvanto-cyan);
-    margin: 0 auto 1rem;
-    box-shadow: 0 6px 24px rgba(69, 28, 238, 0.35);
-  }
-  .edvanto-video-stage h4 {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--edvanto-white);
-    margin-bottom: 0.4rem;
-    letter-spacing: -0.01em;
-  }
-  .edvanto-video-stage p {
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.65);
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
-  /* upload button */
-  .edvanto-upload-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.65rem 1.35rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--edvanto-white);
-    background: var(--edvanto-violet);
-    border: 1px solid var(--edvanto-violet);
-    border-radius: var(--edvanto-radius-sm);
-    transition: all 0.15s ease;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .edvanto-upload-btn:hover {
-    background: #3815C9;
-    border-color: #3815C9;
-    color: var(--edvanto-white);
-    box-shadow: 0 4px 14px rgba(69, 28, 238, 0.35);
-  }
-
-  /* ---------- Secure playback badge ---------- */
-  .edvanto-secure-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: var(--edvanto-radius-sm);
-    background: linear-gradient(90deg, rgba(15, 157, 88, 0.08) 0%, rgba(1, 223, 254, 0.06) 100%);
-    border: 1px solid rgba(15, 157, 88, 0.2);
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.6rem;
+    background: rgba(15,157,88,0.06);
+    border: 1px solid rgba(15,157,88,0.18);
     color: #0F6B3E;
     font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    margin-top: 0.85rem;
+    line-height: 1.45;
+    margin-bottom: 1rem;
   }
-  .edvanto-secure-badge i {
-    color: #0F9D58;
-    font-size: 1rem;
-  }
+  .lm-page .lm-info i { font-size: 1rem; margin-top: 0.05rem; }
 
-  /* ---------- Video meta tiles ---------- */
-  .edvanto-video-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-  }
-  .edvanto-video-meta-tile {
-    background: var(--edvanto-gray-50);
-    border: var(--edvanto-border-light);
-    border-radius: var(--edvanto-radius-sm);
-    padding: 0.85rem 1rem;
-  }
-  .edvanto-video-meta-tile .lbl {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--edvanto-gray-500);
-    margin-bottom: 0.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .edvanto-video-meta-tile .lbl i {
-    font-size: 0.75rem;
-    color: var(--edvanto-violet);
-  }
-  .edvanto-video-meta-tile .val {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--edvanto-navy);
-    letter-spacing: -0.01em;
-  }
-
-  /* ---------- Processing states timeline ---------- */
-  .edvanto-process-steps {
+  /* Material list */
+  .lm-page .lm-list {
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
-    margin-top: 1.25rem;
+    gap: 0.6rem;
   }
-  .edvanto-process-step {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    padding: 0.7rem 0.9rem;
-    border-radius: var(--edvanto-radius-sm);
-    border: 1px solid var(--edvanto-gray-200);
-    background: var(--edvanto-white);
-    transition: all 0.15s ease;
-  }
-  .edvanto-process-step.current {
-    border-color: rgba(69, 28, 238, 0.3);
-    background: rgba(69, 28, 238, 0.03);
-    box-shadow: 0 2px 10px rgba(69, 28, 238, 0.06);
-  }
-  .edvanto-process-step.done {
-    border-color: rgba(15, 157, 88, 0.25);
-    background: rgba(15, 157, 88, 0.03);
-  }
-  .edvanto-process-step.failed-step {
-    border-color: rgba(220, 53, 69, 0.25);
-    background: rgba(220, 53, 69, 0.03);
-  }
-
-  .edvanto-process-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    background: var(--edvanto-gray-100);
-    color: var(--edvanto-gray-500);
-  }
-  .edvanto-process-step.done .edvanto-process-dot {
-    background: #0F9D58;
-    color: var(--edvanto-white);
-  }
-  .edvanto-process-step.current .edvanto-process-dot {
-    background: var(--edvanto-violet);
-    color: var(--edvanto-white);
-    box-shadow: 0 0 0 4px rgba(69, 28, 238, 0.15);
-  }
-  .edvanto-process-step.failed-step .edvanto-process-dot {
-    background: #DC3545;
-    color: var(--edvanto-white);
-  }
-
-  .edvanto-process-info {
-    flex: 1;
-    min-width: 0;
-  }
-  .edvanto-process-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--edvanto-navy);
-    margin: 0 0 0.1rem;
-  }
-  .edvanto-process-desc {
-    font-size: 0.72rem;
-    color: var(--edvanto-gray-600);
-    margin: 0;
-    font-weight: 500;
-  }
-  .edvanto-process-step.failed-step .edvanto-process-desc {
-    color: #B02A37;
-    font-weight: 600;
-  }
-  .edvanto-process-time {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--edvanto-gray-500);
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  /* ============================================================
-     RESOURCE AREA
-     ============================================================ */
-  .edvanto-upload-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0.85rem;
-  }
-  .edvanto-upload-tile {
+  .lm-page .lm-item {
     display: flex;
     align-items: flex-start;
     gap: 0.85rem;
-    padding: 1rem 1.1rem;
-    border: 1.5px dashed var(--edvanto-gray-300);
-    border-radius: var(--edvanto-radius-sm);
-    background: var(--edvanto-white);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    color: inherit;
-    position: relative;
+    padding: 0.85rem 0.95rem;
+    background: #FFFDF7;
+    border: 1px solid rgba(18,18,18,0.06);
+    border-radius: 0.7rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .edvanto-upload-tile:hover {
-    border-color: var(--edvanto-violet);
-    background: rgba(69, 28, 238, 0.02);
-    color: inherit;
+  .lm-page .lm-item:hover {
+    border-color: rgba(212,166,42,0.4);
+    box-shadow: 0 3px 12px rgba(212,166,42,0.10);
   }
-  .edvanto-upload-tile:hover .edvanto-upload-icon {
-    background: var(--edvanto-violet);
-    color: var(--edvanto-white);
-  }
-  .edvanto-upload-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
+  .lm-page .lm-item-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 0.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
-    background: rgba(69, 28, 238, 0.07);
-    color: var(--edvanto-violet);
-    flex-shrink: 0;
-    transition: all 0.15s ease;
+    font-size: 1.1rem;
+    background: rgba(212,166,42,0.12);
+    color: #8B6D0F;
   }
-  .edvanto-upload-tile.pdf .edvanto-upload-icon {
-    background: rgba(220, 53, 69, 0.08);
-    color: #DC3545;
-  }
-  .edvanto-upload-tile.pdf:hover {
-    border-color: #DC3545;
-    background: rgba(220, 53, 69, 0.02);
-  }
-  .edvanto-upload-tile.pdf:hover .edvanto-upload-icon {
-    background: #DC3545;
-    color: var(--edvanto-white);
-  }
-  .edvanto-upload-tile.notes .edvanto-upload-icon {
-    background: rgba(255, 179, 3, 0.1);
-    color: #9A6D00;
-  }
-  .edvanto-upload-tile.notes:hover {
-    border-color: var(--edvanto-gold);
-    background: rgba(255, 179, 3, 0.02);
-  }
-  .edvanto-upload-tile.notes:hover .edvanto-upload-icon {
-    background: var(--edvanto-gold);
-    color: var(--edvanto-white);
-  }
-  .edvanto-upload-tile.tutorial .edvanto-upload-icon {
-    background: rgba(1, 223, 254, 0.12);
-    color: #007A8F;
-  }
-  .edvanto-upload-tile.tutorial:hover {
-    border-color: var(--edvanto-cyan);
-    background: rgba(1, 223, 254, 0.02);
-  }
-  .edvanto-upload-tile.tutorial:hover .edvanto-upload-icon {
-    background: #00B8D4;
-    color: var(--edvanto-white);
-  }
-  .edvanto-upload-tile.reference .edvanto-upload-icon {
-    background: rgba(3, 42, 90, 0.07);
-    color: var(--edvanto-navy);
-  }
-  .edvanto-upload-tile.reference:hover {
-    border-color: var(--edvanto-navy);
-    background: rgba(3, 42, 90, 0.02);
-  }
-  .edvanto-upload-tile.reference:hover .edvanto-upload-icon {
-    background: var(--edvanto-navy);
-    color: var(--edvanto-white);
-  }
+  .lm-page .lm-item-icon.type-pdf   { background: rgba(220,53,69,0.09);  color: #B02A37; }
+  .lm-page .lm-item-icon.type-ppt   { background: rgba(255,102,0,0.10);  color: #B34700; }
+  .lm-page .lm-item-icon.type-docx  { background: rgba(43,87,154,0.10);  color: #2B579A; }
+  .lm-page .lm-item-icon.type-xlsx  { background: rgba(15,157,88,0.10);  color: #0F6B3E; }
+  .lm-page .lm-item-icon.type-image { background: rgba(69,28,238,0.08);  color: #451CEE; }
+  .lm-page .lm-item-icon.type-text  { background: rgba(74,74,74,0.08);   color: #4a4a4a; }
+  .lm-page .lm-item-icon.type-video { background: rgba(69,28,238,0.08);  color: #451CEE; }
+  .lm-page .lm-item-icon.type-link  { background: rgba(1,223,254,0.12);  color: #007A8F; }
 
-  .edvanto-upload-title {
-    font-size: 0.88rem;
+  .lm-page .lm-item-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .lm-page .lm-item-title {
+    font-size: 0.9rem;
     font-weight: 700;
-    color: var(--edvanto-navy);
-    margin: 0 0 0.15rem;
-  }
-  .edvanto-upload-desc {
-    font-size: 0.72rem;
-    color: var(--edvanto-gray-600);
-    margin: 0;
-    line-height: 1.4;
-  }
-
-  /* ---------- Resource table ---------- */
-  .edvanto-table {
-    width: 100%;
-    margin-bottom: 0;
-    font-size: 0.88rem;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-  .edvanto-table thead th {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--edvanto-gray-600);
-    background: var(--edvanto-gray-50);
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--edvanto-gray-200);
-    white-space: nowrap;
-  }
-  .edvanto-table tbody td {
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid var(--edvanto-gray-100);
-    vertical-align: middle;
-    color: var(--edvanto-navy);
-    font-weight: 500;
-  }
-  .edvanto-table tbody tr:last-child td { border-bottom: none; }
-  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
-
-  .edvanto-resource-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 220px;
-  }
-  .edvanto-resource-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-    background: rgba(69, 28, 238, 0.07);
-    color: var(--edvanto-violet);
-  }
-  .edvanto-resource-icon.pdf { background: rgba(220, 53, 69, 0.08); color: #DC3545; }
-  .edvanto-resource-icon.notes { background: rgba(255, 179, 3, 0.1); color: #9A6D00; }
-  .edvanto-resource-icon.tutorial { background: rgba(1, 223, 254, 0.12); color: #007A8F; }
-  .edvanto-resource-icon.reference { background: rgba(3, 42, 90, 0.07); color: var(--edvanto-navy); }
-
-  .edvanto-resource-name {
-    font-weight: 600;
-    color: var(--edvanto-navy);
-    font-size: 0.88rem;
-    line-height: 1.25;
+    color: #121212;
+    margin: 0 0 0.2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 280px;
   }
-  .edvanto-resource-meta {
+  .lm-page .lm-item-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.7rem;
     font-size: 0.72rem;
-    color: var(--edvanto-gray-600);
-    font-weight: 500;
+    color: #4a4a4a;
   }
-
-  .edvanto-pill {
+  .lm-page .lm-item-sub .lm-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 0.28rem 0.65rem;
+    gap: 0.25rem;
+    padding: 0.15rem 0.5rem;
     border-radius: 999px;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
+    background: rgba(18,18,18,0.05);
+    font-weight: 600;
+    color: #121212;
   }
-  .pill-type-pdf       { background: rgba(220, 53, 69, 0.09); color: #B02A37; }
-  .pill-type-notes     { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
-  .pill-type-tutorial  { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
-  .pill-type-reference { background: rgba(3, 42, 90, 0.07); color: var(--edvanto-navy); }
+  .lm-page .lm-item-sub .lm-chip.green  { background: rgba(15,157,88,0.10);   color: #0F6B3E; }
+  .lm-page .lm-item-sub .lm-chip.gray   { background: rgba(74,74,74,0.08);    color: #4a4a4a; }
+  .lm-page .lm-item-sub .lm-chip.gold   { background: rgba(212,166,42,0.14);  color: #8B6D0F; }
+  .lm-page .lm-item-sub .lm-chip.red    { background: rgba(220,53,69,0.10);   color: #B02A37; }
+  .lm-page .lm-item-filename {
+    font-size: 0.72rem;
+    color: #6E6A62;
+    margin: 0.15rem 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .lm-page .lm-item-filename a { color: #4a4a4a; text-decoration: none; }
+  .lm-page .lm-item-filename a:hover { color: #D4A62A; text-decoration: underline; }
 
-  .pill-status-ready      { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
-  .pill-status-processing { background: rgba(255, 179, 3, 0.15); color: #9A6D00; }
-  .pill-status-failed     { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
-
-  .edvanto-action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--edvanto-gray-600);
-    font-size: 0.9rem;
+  .lm-page .lm-item-actions {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+  .lm-page .lm-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(18,18,18,0.08);
+    background: #ffffff;
+    color: #4a4a4a;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s ease;
     text-decoration: none;
+    padding: 0;
   }
-  .edvanto-action-btn:hover {
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
+  .lm-page .lm-icon-btn:hover {
+    background: rgba(212,166,42,0.10);
+    border-color: #D4A62A;
+    color: #121212;
   }
-  .edvanto-action-btn.danger:hover {
-    background: rgba(220, 53, 69, 0.08);
-    color: #DC3545;
-  }
-
-  .table-responsive-edvanto {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -0.25rem;
-    padding: 0 0.25rem;
+  .lm-page .lm-icon-btn.danger:hover {
+    background: rgba(220,53,69,0.10);
+    border-color: #DC3545;
+    color: #B02A37;
   }
 
-  /* ---------- Mobile cards ---------- */
-  @media (max-width: 767.98px) {
-    .edvanto-resources-table-wrap { display: none; }
-    .edvanto-resource-cards { display: block; }
+  /* Empty state */
+  .lm-page .lm-empty {
+    text-align: center;
+    padding: 2.5rem 1.25rem;
+    color: #6E6A62;
   }
-  @media (min-width: 768px) {
-    .edvanto-resource-cards { display: none; }
+  .lm-page .lm-empty i {
+    font-size: 2.5rem;
+    color: #C9C2B5;
+    display: block;
+    margin-bottom: 0.85rem;
   }
-  .edvanto-resource-card {
-    background: var(--edvanto-white);
-    border-radius: var(--edvanto-radius-sm);
-    border: var(--edvanto-border-light);
-    padding: 0.9rem 1rem;
-    margin-bottom: 0.6rem;
+  .lm-page .lm-empty h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #121212;
+    margin: 0 0 0.35rem;
   }
-  .edvanto-resource-card-header {
-    display: flex;
-    align-items: center;
+  .lm-page .lm-empty p {
+    font-size: 0.82rem;
+    margin: 0 0 0.85rem;
+  }
+
+  /* Video metadata tiles */
+  .lm-page .lm-video-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 0.75rem;
-    margin-bottom: 0.6rem;
   }
-  .edvanto-resource-card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.35rem 0;
-    border-bottom: 1px solid var(--edvanto-gray-100);
-    font-size: 0.8rem;
+  .lm-page .lm-meta-tile {
+    background: #FFFDF7;
+    border: 1px solid rgba(18,18,18,0.06);
+    border-radius: 0.6rem;
+    padding: 0.75rem 0.9rem;
   }
-  .edvanto-resource-card-row:last-child { border-bottom: none; }
-  .edvanto-resource-card-row .label { color: var(--edvanto-gray-600); font-weight: 500; }
-  .edvanto-resource-card-row .value { color: var(--edvanto-navy); font-weight: 600; }
-  .edvanto-resource-card-actions {
-    display: flex;
-    gap: 0.4rem;
-    margin-top: 0.65rem;
-    padding-top: 0.65rem;
-    border-top: 1px solid var(--edvanto-gray-100);
+  .lm-page .lm-meta-tile .lbl {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6E6A62;
+    margin-bottom: 0.2rem;
   }
-  .edvanto-resource-card-actions .btn {
-    flex: 1;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: var(--edvanto-radius-xs);
-    padding: 0.4rem;
+  .lm-page .lm-meta-tile .val {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #121212;
+    word-break: break-word;
   }
 
-  /* ---------- Empty / footer ---------- */
-  .edvanto-resources-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.9rem 1.5rem;
-    border-top: var(--edvanto-border-light);
-    background: var(--edvanto-gray-50);
-    font-size: 0.78rem;
-    color: var(--edvanto-gray-600);
+  /* Mobile tweaks */
+  @media (max-width: 575.98px) {
+    .lm-page .lm-header { padding: 1.1rem 1.15rem; }
+    .lm-page .lm-header h1 { font-size: 1.1rem; }
+    .lm-page .lm-item { flex-wrap: wrap; }
+    .lm-page .lm-item-actions {
+      width: 100%;
+      justify-content: flex-end;
+      margin-top: 0.25rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed rgba(18,18,18,0.08);
+    }
+    .lm-page .lm-panel-head { padding: 0.85rem 1rem; }
+    .lm-page .lm-panel-body { padding: 0.85rem 1rem 1rem; }
   }
 </style>
+{% endblock %}
 
-<!-- ============================================================
-     BREADCRUMB
-     ============================================================ -->
-<div class="edvanto-breadcrumb mb-3">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
-      <li class="breadcrumb-item"><a href="#">Courses</a></li>
-      <li class="breadcrumb-item"><a href="#">Full Stack Web Development</a></li>
-      <li class="breadcrumb-item"><a href="#">Curriculum</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Lesson Media</li>
-    </ol>
-  </nav>
-</div>
+{% block content %}
+<div class="lm-page">
 
-<!-- ============================================================
-     LESSON HEADER
-     ============================================================ -->
-<div class="edvanto-lesson-banner">
-  <div class="edvanto-lesson-banner-inner">
-    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
-      <div class="edvanto-lesson-banner-icon">
-        <i class="bi bi-play-btn-fill"></i>
-      </div>
-      <div style="min-width: 0;">
-        <div class="edvanto-lesson-banner-label">Lesson Media · LESSON-103</div>
-        <h1 class="edvanto-lesson-banner-title">Introduction to HTML5 Structure</h1>
-        <div class="edvanto-lesson-banner-breadcrumb">
-          <span><i class="bi bi-journal-bookmark-fill"></i> Full Stack Web Development</span>
-          <span class="sep">·</span>
-          <span><i class="bi bi-collection-fill"></i> Module 1: Introduction to Web Development</span>
+  {# ========================= HEADER ========================= #}
+  <div class="lm-header">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="min-w-0">
+        <h1 class="text-truncate">{{ lesson.title }}</h1>
+        <div class="lm-meta">
+          <span><i class="bi bi-journal-bookmark-fill"></i>{{ course.title }}</span>
+          <span><i class="bi bi-collection-fill"></i>{{ module.title }}</span>
+          <span><i class="bi bi-hash"></i>Lesson {{ lesson.order }}</span>
         </div>
       </div>
-    </div>
-    <div class="edvanto-lesson-banner-actions">
-      <span class="edvanto-banner-badge processing">
-        <i class="bi bi-arrow-repeat"></i> Video Processing
-      </span>
-      <a href="{% url 'admin_panel:syllabus_curriculum' %}" class="btn btn-sm" style="background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); font-size: 0.8rem; font-weight: 600; border-radius: var(--edvanto-radius-sm); padding: 0.5rem 1rem;">
-        <i class="bi bi-arrow-left me-1"></i> Back to Curriculum
-      </a>
+      <div class="lm-header-actions">
+        <a href="{% url 'admin_panel:syllabus_curriculum' course_id=course.pk %}"
+           class="btn btn-sm btn-edvanto-outline">
+          <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <a href="{% url 'admin_panel:lesson_material_create' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+           class="btn btn-sm btn-edvanto-primary">
+          <i class="bi bi-upload me-1"></i> Upload Material
+        </a>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ============================================================
-     VIDEO AREA
-     ============================================================ -->
-<div class="edvanto-panel">
-  <div class="edvanto-panel-header">
-    <h2 class="edvanto-panel-title">
-      <i class="bi bi-camera-video-fill"></i> Lesson Video
-    </h2>
-    <span class="edvanto-badge" style="font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(255,179,3,0.14); color: #9A6D00;">
-      <i class="bi bi-arrow-repeat me-1"></i> Processing
-    </span>
+  {# ========================= MESSAGES ========================= #}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {# ========================= TABS ========================= #}
+  <div class="lm-tabs" role="tablist" aria-label="Lesson media sections">
+    <button type="button" class="lm-tab active" data-lm-tab="materials"
+            role="tab" aria-selected="true" aria-controls="lm-panel-materials" id="lm-tab-materials">
+      <i class="bi bi-file-earmark-lock2"></i>
+      <span>Study Material</span>
+      <span class="lm-tab-count">{{ resource_count }}</span>
+    </button>
+    <button type="button" class="lm-tab" data-lm-tab="video"
+            role="tab" aria-selected="false" aria-controls="lm-panel-video" id="lm-tab-video">
+      <i class="bi bi-camera-video"></i>
+      <span>Video</span>
+      {% if video_asset %}<span class="lm-tab-count">1</span>{% endif %}
+    </button>
+    <button type="button" class="lm-tab" data-lm-tab="links"
+            role="tab" aria-selected="false" aria-controls="lm-panel-links" id="lm-tab-links">
+      <i class="bi bi-link-45deg"></i>
+      <span>Links</span>
+      <span class="lm-tab-count">{{ resources|length }}</span>
+    </button>
   </div>
 
-  <div class="edvanto-panel-body">
-    <div class="edvanto-video-grid">
+  {# ========================= PANEL 1 — STUDY MATERIAL ========================= #}
+  <section class="lm-panel" id="lm-panel-materials" role="tabpanel" aria-labelledby="lm-tab-materials">
+    <div class="lm-panel-head">
+      <h2><i class="bi bi-file-earmark-lock2-fill"></i> Encrypted Study Material</h2>
+      <div class="lm-panel-head-actions">
+        <span class="edvanto-badge badge-soft-dark">{{ resource_count }} file{{ resource_count|pluralize }}</span>
+        <a href="{% url 'admin_panel:lesson_material_create' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+           class="btn btn-sm btn-edvanto-primary">
+          <i class="bi bi-upload me-1"></i> Upload
+        </a>
+      </div>
+    </div>
+    <div class="lm-panel-body">
 
-      <!-- LEFT: Upload stage + secure playback -->
-      <div>
-        <div class="edvanto-video-stage">
-          <div class="edvanto-video-stage-inner">
-            <div class="edvanto-video-stage-icon">
-              <i class="bi bi-cloud-arrow-up-fill"></i>
-            </div>
-            <h4>Upload Lesson Video</h4>
-            <p>
-              Drag and drop your video file here, or click below to browse.
-              Supported formats: MP4, MOV, WebM · Max 2 GB.
-            </p>
-            <label for="videoUpload" class="edvanto-upload-btn mb-0">
-              <i class="bi bi-upload"></i> Choose Video File
-            </label>
-            <input type="file" id="videoUpload" accept="video/mp4,video/webm,video/quicktime" class="d-none">
-          </div>
+      <div class="lm-info">
+        <i class="bi bi-shield-lock-fill"></i>
+        <div>
+          Files are <strong>encrypted at rest</strong>, served only to <strong>approved &amp; paid</strong> enrolled
+          students, and streamed with <strong>no-cache / no-frame</strong> headers. Direct URL access is blocked.
         </div>
+      </div>
 
-        <!-- Secure playback badge (replaces raw HLS URLs) -->
-        <div class="edvanto-secure-badge">
-          <i class="bi bi-shield-lock-fill"></i>
-          <span>Secure playback enabled</span>
-          <span style="color: var(--edvanto-gray-500); font-weight: 500; margin-left: 0.35rem;">
-            · Streamed via encrypted delivery
+      {% if materials %}
+        <div class="lm-list">
+          {% for m in materials %}
+            <article class="lm-item">
+              <div class="lm-item-icon type-{{ m.material_type }}">
+                {% if m.material_type == 'pdf' %}<i class="bi bi-file-earmark-pdf-fill"></i>
+                {% elif m.material_type == 'ppt' %}<i class="bi bi-file-earmark-ppt-fill"></i>
+                {% elif m.material_type == 'docx' %}<i class="bi bi-file-earmark-word-fill"></i>
+                {% elif m.material_type == 'xlsx' %}<i class="bi bi-file-earmark-excel-fill"></i>
+                {% elif m.material_type == 'image' %}<i class="bi bi-file-earmark-image-fill"></i>
+                {% elif m.material_type == 'text' %}<i class="bi bi-file-earmark-text-fill"></i>
+                {% else %}<i class="bi bi-file-earmark-fill"></i>{% endif %}
+              </div>
+
+              <div class="lm-item-main">
+                <h3 class="lm-item-title" title="{{ m.title }}">{{ m.title }}</h3>
+                <div class="lm-item-sub">
+                  <span class="lm-chip">{{ m.get_material_type_display }}</span>
+                  <span class="lm-chip">{{ m.size_bytes|filesizeformat }}</span>
+                  <span class="lm-chip">{{ m.created_at|date:"d M Y" }}</span>
+                  {% if m.is_active %}
+                    <span class="lm-chip green"><i class="bi bi-check-circle-fill"></i>Active</span>
+                  {% else %}
+                    <span class="lm-chip gray"><i class="bi bi-pause-circle-fill"></i>Disabled</span>
+                  {% endif %}
+                </div>
+                <p class="lm-item-filename" title="{{ m.original_filename }}">
+                  {{ m.original_filename|default:"—" }}
+                </p>
+              </div>
+
+              <div class="lm-item-actions">
+                <a class="lm-icon-btn"
+                   href="{% url 'core:serve_lesson_material' material_id=m.pk %}"
+                   target="_blank" rel="noopener"
+                   title="Preview" aria-label="Preview {{ m.title }}">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <form method="post"
+                      action="{% url 'admin_panel:lesson_material_delete' course_id=course.pk module_id=module.pk lesson_id=lesson.pk material_id=m.pk %}"
+                      onsubmit="return confirm('Delete material &quot;{{ m.title|escapejs }}&quot;?');"
+                      class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="lm-icon-btn danger"
+                          title="Delete" aria-label="Delete {{ m.title }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="lm-empty">
+          <i class="bi bi-file-earmark-lock"></i>
+          <h4>No study material yet</h4>
+          <p>PDF, PPT/PPTX, DOC/DOCX, XLS/XLSX, PNG/JPG/WEBP/GIF, TXT/MD/CSV — up to 50&nbsp;MB each.</p>
+          <a href="{% url 'admin_panel:lesson_material_create' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+             class="btn btn-edvanto-primary btn-sm">
+            <i class="bi bi-upload me-1"></i> Upload first material
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  {# ========================= PANEL 2 — VIDEO ========================= #}
+  <section class="lm-panel" id="lm-panel-video" role="tabpanel" aria-labelledby="lm-tab-video" hidden>
+    <div class="lm-panel-head">
+      <h2><i class="bi bi-camera-video-fill"></i> Lesson Video</h2>
+      <div class="lm-panel-head-actions">
+        {% if video_asset %}
+          <span class="edvanto-badge
+            {% if video_asset.processing_status == 'ready' %}badge-soft-green
+            {% elif video_asset.processing_status == 'failed' %}badge-soft-red
+            {% else %}badge-soft-gold{% endif %}">
+            {{ video_asset.get_processing_status_display }}
           </span>
-        </div>
-
-        <!-- Video meta tiles -->
-        <div class="edvanto-video-meta">
-          <div class="edvanto-video-meta-tile">
-            <div class="lbl"><i class="bi bi-clock-history"></i> Duration</div>
-            <div class="val" id="videoDuration">22 min 14 sec</div>
-          </div>
-          <div class="edvanto-video-meta-tile">
-            <div class="lbl"><i class="bi bi-aspect-ratio"></i> Resolution</div>
-            <div class="val" id="videoResolution">1920 × 1080 (Full HD)</div>
-          </div>
-          <div class="edvanto-video-meta-tile">
-            <div class="lbl"><i class="bi bi-hdd-network"></i> Format</div>
-            <div class="val">MP4 → HLS (adaptive)</div>
-          </div>
-          <div class="edvanto-video-meta-tile">
-            <div class="lbl"><i class="bi bi-broadcast"></i> HLS Status</div>
-            <div class="val" style="color: #9A6D00;">
-              <i class="bi bi-arrow-repeat" style="color: #9A6D00;"></i> Packaging segments…
-            </div>
-          </div>
-        </div>
+        {% endif %}
+        <a href="{% url 'admin_panel:lesson_video_upload' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+           class="btn btn-sm btn-edvanto-primary">
+          <i class="bi bi-upload me-1"></i> {% if video_asset %}Replace{% else %}Upload Video{% endif %}
+        </a>
       </div>
-
-      <!-- RIGHT: Processing timeline -->
-      <div>
-        <h3 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--edvanto-gray-600); margin-bottom: 0.5rem;">
-          Processing States
-        </h3>
-
-        <div class="edvanto-process-steps">
-
-          <!-- Step 1: Waiting – done -->
-          <div class="edvanto-process-step done">
-            <div class="edvanto-process-dot">
-              <i class="bi bi-check-lg"></i>
-            </div>
-            <div class="edvanto-process-info">
-              <p class="edvanto-process-label">Waiting</p>
-              <p class="edvanto-process-desc">File received and queued for processing.</p>
-            </div>
-            <span class="edvanto-process-time">3 min ago</span>
-          </div>
-
-          <!-- Step 2: Processing – current -->
-          <div class="edvanto-process-step current">
-            <div class="edvanto-process-dot">
-              <i class="bi bi-arrow-repeat"></i>
-            </div>
-            <div class="edvanto-process-info">
-              <p class="edvanto-process-label">Processing</p>
-              <p class="edvanto-process-desc">Transcoding and packaging HLS segments…</p>
-            </div>
-            <span class="edvanto-process-time">In progress</span>
-          </div>
-
-          <!-- Step 3: Ready – pending -->
-          <div class="edvanto-process-step">
-            <div class="edvanto-process-dot">
-              <i class="bi bi-hourglass-split"></i>
-            </div>
-            <div class="edvanto-process-info">
-              <p class="edvanto-process-label">Ready</p>
-              <p class="edvanto-process-desc">Video will be available for secure playback.</p>
-            </div>
-            <span class="edvanto-process-time">Pending</span>
-          </div>
-
-          <!-- Step 4: Failed – not triggered -->
-          <div class="edvanto-process-step">
-            <div class="edvanto-process-dot">
-              <i class="bi bi-x-lg"></i>
-            </div>
-            <div class="edvanto-process-info">
-              <p class="edvanto-process-label">Failed</p>
-              <p class="edvanto-process-desc">No errors detected.</p>
-            </div>
-            <span class="edvanto-process-time">—</span>
-          </div>
-
-        </div>
-      </div>
-
     </div>
-  </div>
+    <div class="lm-panel-body">
+      {% if video_asset %}
+        <div class="lm-video-meta">
+          <div class="lm-meta-tile">
+            <div class="lbl">File</div>
+            <div class="val text-break">{{ video_asset.original_file.name }}</div>
+          </div>
+          <div class="lm-meta-tile">
+            <div class="lbl">Duration</div>
+            <div class="val">{{ video_asset.duration_seconds }}s</div>
+          </div>
+          <div class="lm-meta-tile">
+            <div class="lbl">Resolution</div>
+            <div class="val">{{ video_asset.resolution|default:"—" }}</div>
+          </div>
+          <div class="lm-meta-tile">
+            <div class="lbl">Status</div>
+            <div class="val">{{ video_asset.get_processing_status_display }}</div>
+          </div>
+          {% if video_asset.hls_manifest %}
+            <div class="lm-meta-tile" style="grid-column: 1 / -1;">
+              <div class="lbl">HLS Manifest</div>
+              <div class="val text-break">{{ video_asset.hls_manifest }}</div>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if video_asset.processing_error %}
+          <div class="alert alert-danger mt-3 mb-0 small">
+            <strong>Processing error:</strong> {{ video_asset.processing_error }}
+          </div>
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a href="{% url 'admin_panel:lesson_video_upload' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+             class="btn btn-sm btn-edvanto-outline">
+            <i class="bi bi-pencil-square me-1"></i> Edit details / Replace
+          </a>
+          <form method="post"
+                action="{% url 'admin_panel:lesson_video_delete' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+                onsubmit="return confirm('Delete this video? The file will be removed from storage.');"
+                class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash me-1"></i> Delete video
+            </button>
+          </form>
+        </div>
+      {% else %}
+        <div class="lm-empty">
+          <i class="bi bi-cloud-arrow-up"></i>
+          <h4>No video uploaded</h4>
+          <p>Attach a video file to this lesson. It will be stored under <code>videos/original/</code> and marked Processing until it is transcoded.</p>
+          <a href="{% url 'admin_panel:lesson_video_upload' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+             class="btn btn-edvanto-primary btn-sm">
+            <i class="bi bi-upload me-1"></i> Upload Video
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  {# ========================= PANEL 3 — LINKS ========================= #}
+  <section class="lm-panel" id="lm-panel-links" role="tabpanel" aria-labelledby="lm-tab-links" hidden>
+    <div class="lm-panel-head">
+      <h2><i class="bi bi-link-45deg"></i> Resource Links</h2>
+      <div class="lm-panel-head-actions">
+        <span class="edvanto-badge badge-soft-dark">{{ resources|length }} link{{ resources|length|pluralize }}</span>
+        <a href="{% url 'admin_panel:lesson_resource_create' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+           class="btn btn-sm btn-edvanto-primary">
+          <i class="bi bi-plus-lg me-1"></i> Add Link
+        </a>
+      </div>
+    </div>
+    <div class="lm-panel-body">
+      {% if resources %}
+        <div class="lm-list">
+          {% for r in resources %}
+            <article class="lm-item">
+              <div class="lm-item-icon type-link">
+                {% if r.resource_type == 'link' %}<i class="bi bi-link-45deg"></i>
+                {% elif r.resource_type == 'pdf' %}<i class="bi bi-file-earmark-pdf-fill"></i>
+                {% elif r.resource_type == 'image' %}<i class="bi bi-file-earmark-image-fill"></i>
+                {% elif r.resource_type == 'document' %}<i class="bi bi-file-earmark-text-fill"></i>
+                {% else %}<i class="bi bi-paperclip"></i>{% endif %}
+              </div>
+
+              <div class="lm-item-main">
+                <h3 class="lm-item-title" title="{{ r.title }}">{{ r.title }}</h3>
+                <div class="lm-item-sub">
+                  <span class="lm-chip">{{ r.get_resource_type_display }}</span>
+                  <span class="lm-chip">{{ r.created_at|date:"d M Y" }}</span>
+                </div>
+                <p class="lm-item-filename">
+                  {% if r.file %}
+                    <a href="{{ r.file.url }}" target="_blank" rel="noopener">{{ r.file.name }}</a>
+                  {% elif r.external_url %}
+                    <a href="{{ r.external_url }}" target="_blank" rel="noopener">{{ r.external_url }}</a>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </p>
+              </div>
+
+              <div class="lm-item-actions">
+                {% if r.file %}
+                  <a class="lm-icon-btn" href="{{ r.file.url }}" target="_blank" rel="noopener"
+                     title="Open file" aria-label="Open {{ r.title }}">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                  </a>
+                {% elif r.external_url %}
+                  <a class="lm-icon-btn" href="{{ r.external_url }}" target="_blank" rel="noopener"
+                     title="Open link" aria-label="Open {{ r.title }}">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                  </a>
+                {% endif %}
+                <form method="post"
+                      action="{% url 'admin_panel:lesson_resource_delete' course_id=course.pk module_id=module.pk lesson_id=lesson.pk resource_id=r.pk %}"
+                      onsubmit="return confirm('Delete resource &quot;{{ r.title|escapejs }}&quot;?');"
+                      class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="lm-icon-btn danger"
+                          title="Delete" aria-label="Delete {{ r.title }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="lm-empty">
+          <i class="bi bi-link-45deg"></i>
+          <h4>No links attached</h4>
+          <p>External documentation, reference URLs, and small files can be attached here.</p>
+          <a href="{% url 'admin_panel:lesson_resource_create' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+             class="btn btn-edvanto-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add first link
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
 </div>
 
-<!-- ============================================================
-     RESOURCE AREA
-     ============================================================ -->
-<div class="edvanto-panel">
-  <div class="edvanto-panel-header">
-    <h2 class="edvanto-panel-title">
-      <i class="bi bi-paperclip"></i> Lesson Resources
-    </h2>
-    <span class="edvanto-badge" style="font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(69,28,238,0.08); color: var(--edvanto-violet);">
-      4 resources
-    </span>
-  </div>
-
-  <div class="edvanto-panel-body">
-
-    <!-- Upload tiles -->
-    <div class="edvanto-upload-grid mb-4">
-
-      <!-- Upload PDF -->
-      <label for="pdfUpload" class="edvanto-upload-tile pdf mb-0">
-        <span class="edvanto-upload-icon"><i class="bi bi-file-earmark-pdf-fill"></i></span>
-        <div>
-          <p class="edvanto-upload-title">Upload PDF</p>
-          <p class="edvanto-upload-desc">Lesson slides, handouts or worksheets (max 50 MB).</p>
-        </div>
-        <input type="file" id="pdfUpload" accept="application/pdf" class="d-none">
-      </label>
-
-      <!-- Upload Notes -->
-      <label for="notesUpload" class="edvanto-upload-tile notes mb-0">
-        <span class="edvanto-upload-icon"><i class="bi bi-journal-text"></i></span>
-        <div>
-          <p class="edvanto-upload-title">Upload Notes</p>
-          <p class="edvanto-upload-desc">Markdown, DOCX or TXT notes for students.</p>
-        </div>
-        <input type="file" id="notesUpload" accept=".md,.txt,.doc,.docx" class="d-none">
-      </label>
-
-      <!-- Upload Tutorial -->
-      <label for="tutorialUpload" class="edvanto-upload-tile tutorial mb-0">
-        <span class="edvanto-upload-icon"><i class="bi bi-file-earmark-code-fill"></i></span>
-        <div>
-          <p class="edvanto-upload-title">Upload Tutorial</p>
-          <p class="edvanto-upload-desc">Code walkthroughs or step-by-step guides.</p>
-        </div>
-        <input type="file" id="tutorialUpload" accept=".pdf,.md,.zip" class="d-none">
-      </label>
-
-      <!-- Add External Reference -->
-      <button type="button" class="edvanto-upload-tile reference text-start"
-              onclick="openExternalReference()">
-        <span class="edvanto-upload-icon"><i class="bi bi-link-45deg"></i></span>
-        <div>
-          <p class="edvanto-upload-title">Add External Reference</p>
-          <p class="edvanto-upload-desc">Link to documentation, articles or videos.</p>
-        </div>
-      </button>
-
-    </div>
-
-    <!-- ---------- RESOURCE TABLE (desktop) ---------- -->
-    <div class="edvanto-resources-table-wrap">
-      <div class="table-responsive-edvanto">
-        <table class="edvanto-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Size</th>
-              <th>Uploaded</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {# {% for resource in resources %} #}
-
-            <!-- PDF – Ready -->
-            <tr>
-              <td>
-                <div class="edvanto-resource-cell">
-                  <span class="edvanto-resource-icon pdf"><i class="bi bi-file-earmark-pdf-fill"></i></span>
-                  <div>
-                    <div class="edvanto-resource-name">HTML5-Structure-Slides.pdf</div>
-                    <div class="edvanto-resource-meta">18 pages</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="edvanto-pill pill-type-pdf"><i class="bi bi-file-earmark-pdf"></i> PDF</span></td>
-              <td>2.4 MB</td>
-              <td>12 Jun 2025, 10:42</td>
-              <td><span class="edvanto-pill pill-status-ready"><i class="bi bi-check-circle-fill"></i> Ready</span></td>
-              <td class="text-end">
-                <div class="d-inline-flex gap-1">
-                  <a href="#" class="edvanto-action-btn" title="Download"><i class="bi bi-download"></i></a>
-                  <a href="#" class="edvanto-action-btn" title="Replace"><i class="bi bi-arrow-repeat"></i></a>
-                  <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteResource('HTML5-Structure-Slides.pdf')"><i class="bi bi-trash"></i></button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Notes – Ready -->
-            <tr>
-              <td>
-                <div class="edvanto-resource-cell">
-                  <span class="edvanto-resource-icon notes"><i class="bi bi-journal-text"></i></span>
-                  <div>
-                    <div class="edvanto-resource-name">html5-cheatsheet-notes.md</div>
-                    <div class="edvanto-resource-meta">Markdown</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="edvanto-pill pill-type-notes"><i class="bi bi-journal-text"></i> Notes</span></td>
-              <td>38 KB</td>
-              <td>12 Jun 2025, 10:44</td>
-              <td><span class="edvanto-pill pill-status-ready"><i class="bi bi-check-circle-fill"></i> Ready</span></td>
-              <td class="text-end">
-                <div class="d-inline-flex gap-1">
-                  <a href="#" class="edvanto-action-btn" title="Download"><i class="bi bi-download"></i></a>
-                  <a href="#" class="edvanto-action-btn" title="Replace"><i class="bi bi-arrow-repeat"></i></a>
-                  <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteResource('html5-cheatsheet-notes.md')"><i class="bi bi-trash"></i></button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Tutorial – Processing -->
-            <tr>
-              <td>
-                <div class="edvanto-resource-cell">
-                  <span class="edvanto-resource-icon tutorial"><i class="bi bi-file-earmark-code-fill"></i></span>
-                  <div>
-                    <div class="edvanto-resource-name">build-your-first-page-tutorial.zip</div>
-                    <div class="edvanto-resource-meta">Code archive</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="edvanto-pill pill-type-tutorial"><i class="bi bi-file-earmark-code"></i> Tutorial</span></td>
-              <td>8.7 MB</td>
-              <td>12 Jun 2025, 10:50</td>
-              <td><span class="edvanto-pill pill-status-processing"><i class="bi bi-arrow-repeat"></i> Processing</span></td>
-              <td class="text-end">
-                <div class="d-inline-flex gap-1">
-                  <button class="edvanto-action-btn" title="Downloading…" disabled style="opacity:0.4;cursor:not-allowed;"><i class="bi bi-download"></i></button>
-                  <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteResource('build-your-first-page-tutorial.zip')"><i class="bi bi-trash"></i></button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- External Reference – Ready -->
-            <tr>
-              <td>
-                <div class="edvanto-resource-cell">
-                  <span class="edvanto-resource-icon reference"><i class="bi bi-link-45deg"></i></span>
-                  <div>
-                    <div class="edvanto-resource-name">MDN – HTML5 Elements Reference</div>
-                    <div class="edvanto-resource-meta">developer.mozilla.org</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="edvanto-pill pill-type-reference"><i class="bi bi-link-45deg"></i> Reference</span></td>
-              <td>—</td>
-              <td>12 Jun 2025, 10:52</td>
-              <td><span class="edvanto-pill pill-status-ready"><i class="bi bi-check-circle-fill"></i> Ready</span></td>
-              <td class="text-end">
-                <div class="d-inline-flex gap-1">
-                  <a href="#" class="edvanto-action-btn" title="Open"><i class="bi bi-box-arrow-up-right"></i></a>
-                  <a href="#" class="edvanto-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
-                  <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteResource('MDN – HTML5 Elements Reference')"><i class="bi bi-trash"></i></button>
-                </div>
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ---------- RESOURCE CARDS (mobile) ---------- -->
-    <div class="edvanto-resource-cards">
-
-      <div class="edvanto-resource-card">
-        <div class="edvanto-resource-card-header">
-          <span class="edvanto-resource-icon pdf"><i class="bi bi-file-earmark-pdf-fill"></i></span>
-          <div style="min-width:0;">
-            <div class="edvanto-resource-name">HTML5-Structure-Slides.pdf</div>
-            <div class="edvanto-resource-meta">PDF · 18 pages</div>
-          </div>
-        </div>
-        <div class="edvanto-resource-card-row"><span class="label">Type</span><span class="value"><span class="edvanto-pill pill-type-pdf">PDF</span></span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Size</span><span class="value">2.4 MB</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Uploaded</span><span class="value">12 Jun 2025</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-pill pill-status-ready">Ready</span></span></div>
-        <div class="edvanto-resource-card-actions">
-          <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-download me-1"></i>Download</a>
-          <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-arrow-repeat me-1"></i>Replace</a>
-          <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeleteResource('HTML5-Structure-Slides.pdf')"><i class="bi bi-trash"></i></button>
-        </div>
-      </div>
-
-      <div class="edvanto-resource-card">
-        <div class="edvanto-resource-card-header">
-          <span class="edvanto-resource-icon notes"><i class="bi bi-journal-text"></i></span>
-          <div style="min-width:0;">
-            <div class="edvanto-resource-name">html5-cheatsheet-notes.md</div>
-            <div class="edvanto-resource-meta">Notes · Markdown</div>
-          </div>
-        </div>
-        <div class="edvanto-resource-card-row"><span class="label">Type</span><span class="value"><span class="edvanto-pill pill-type-notes">Notes</span></span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Size</span><span class="value">38 KB</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Uploaded</span><span class="value">12 Jun 2025</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-pill pill-status-ready">Ready</span></span></div>
-        <div class="edvanto-resource-card-actions">
-          <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-download me-1"></i>Download</a>
-          <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-arrow-repeat me-1"></i>Replace</a>
-          <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeleteResource('html5-cheatsheet-notes.md')"><i class="bi bi-trash"></i></button>
-        </div>
-      </div>
-
-      <div class="edvanto-resource-card">
-        <div class="edvanto-resource-card-header">
-          <span class="edvanto-resource-icon tutorial"><i class="bi bi-file-earmark-code-fill"></i></span>
-          <div style="min-width:0;">
-            <div class="edvanto-resource-name">build-your-first-page-tutorial.zip</div>
-            <div class="edvanto-resource-meta">Tutorial · Code archive</div>
-          </div>
-        </div>
-        <div class="edvanto-resource-card-row"><span class="label">Type</span><span class="value"><span class="edvanto-pill pill-type-tutorial">Tutorial</span></span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Size</span><span class="value">8.7 MB</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Uploaded</span><span class="value">12 Jun 2025</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-pill pill-status-processing">Processing</span></span></div>
-        <div class="edvanto-resource-card-actions">
-          <button class="btn btn-edvanto-outline" disabled><i class="bi bi-download me-1"></i>Download</button>
-          <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeleteResource('build-your-first-page-tutorial.zip')"><i class="bi bi-trash"></i></button>
-        </div>
-      </div>
-
-      <div class="edvanto-resource-card">
-        <div class="edvanto-resource-card-header">
-          <span class="edvanto-resource-icon reference"><i class="bi bi-link-45deg"></i></span>
-          <div style="min-width:0;">
-            <div class="edvanto-resource-name">MDN – HTML5 Elements Reference</div>
-            <div class="edvanto-resource-meta">Reference · External</div>
-          </div>
-        </div>
-        <div class="edvanto-resource-card-row"><span class="label">Type</span><span class="value"><span class="edvanto-pill pill-type-reference">Reference</span></span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Size</span><span class="value">—</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Uploaded</span><span class="value">12 Jun 2025</span></div>
-        <div class="edvanto-resource-card-row"><span class="label">Status</span><span class="value"><span class="edvanto-pill pill-status-ready">Ready</span></span></div>
-        <div class="edvanto-resource-card-actions">
-          <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-box-arrow-up-right me-1"></i>Open</a>
-          <a href="#" class="btn btn-edvanto-outline"><i class="bi bi-pencil me-1"></i>Edit</a>
-          <button class="btn btn-edvanto-outline text-danger" onclick="confirmDeleteResource('MDN – HTML5 Elements Reference')"><i class="bi bi-trash"></i></button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Resources footer -->
-  <div class="edvanto-resources-footer">
-    <span>
-      <i class="bi bi-info-circle me-1"></i>
-      Resources are stored securely and delivered only to enrolled students.
-    </span>
-    <span>4 of 20 resources used</span>
-  </div>
-</div>
-
-<!-- ============================================================
-     EXTERNAL REFERENCE MODAL
-     ============================================================ -->
-<div class="modal fade" id="externalRefModal" tabindex="-1" aria-labelledby="externalRefModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="externalRefModalLabel">
-          <i class="bi bi-link-45deg me-2" style="color: var(--edvanto-violet);"></i>
-          Add External Reference
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="refTitle" class="form-label">Reference Title <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="refTitle" placeholder="e.g. MDN – HTML5 Elements Reference">
-        </div>
-        <div class="mb-3">
-          <label for="refUrl" class="form-label">URL <span class="text-danger">*</span></label>
-          <input type="url" class="form-control" id="refUrl" placeholder="https://developer.mozilla.org/...">
-        </div>
-        <div class="mb-0">
-          <label for="refDescription" class="form-label">Short Description</label>
-          <textarea class="form-control" id="refDescription" rows="2"
-                    placeholder="Brief note about what students will find here."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="saveExternalReference()">
-          <i class="bi bi-plus-lg me-1"></i> Add Reference
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     CONFIRM DELETE MODAL
-     ============================================================ -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title" id="deleteModalLabel">
-          <i class="bi bi-exclamation-triangle-fill me-2" style="color: #DC3545;"></i>
-          Confirm Delete
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pt-2" style="font-size: 0.9rem; color: var(--edvanto-gray-600);">
-        <span id="deleteModalMessage">Are you sure?</span>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
-                onclick="performDelete()">
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     PAGE JAVASCRIPT
-     ============================================================ -->
+{# ========================= TABS SCRIPT ========================= #}
 <script>
-  (function () {
-    'use strict';
+(function () {
+  'use strict';
 
-    /* ---------- Video upload simulation ---------- */
-    var videoUpload = document.getElementById('videoUpload');
-    if (videoUpload) {
-      videoUpload.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-          var file = this.files[0];
-          edvantoToast('Uploading "' + file.name + '"…', 'info');
+  var tabs = document.querySelectorAll('.lm-tab');
+  var panels = document.querySelectorAll('.lm-panel');
+  if (!tabs.length || !panels.length) return;
 
-          /* Simulated progress — replace with a real upload call */
-          setTimeout(function () {
-            edvantoToast('Video uploaded. Processing has started.', 'success');
-          }, 1600);
-        }
-      });
+  function show(name) {
+    tabs.forEach(function (t) {
+      var active = t.dataset.lmTab === name;
+      t.classList.toggle('active', active);
+      t.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    panels.forEach(function (p) {
+      p.hidden = p.id !== ('lm-panel-' + name);
+    });
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () {
+      show(t.dataset.lmTab);
+      try { sessionStorage.setItem('lm-active-tab', t.dataset.lmTab); } catch (e) {}
+    });
+  });
+
+  // Restore the last active tab (if any) after redirects from uploads.
+  try {
+    var saved = sessionStorage.getItem('lm-active-tab');
+    if (saved && document.getElementById('lm-panel-' + saved)) {
+      show(saved);
     }
-
-    /* ---------- Resource uploads ---------- */
-    function wireUpload(inputId, label) {
-      var input = document.getElementById(inputId);
-      if (!input) return;
-      input.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-          edvantoToast(label + ': "' + this.files[0].name + '" uploaded.', 'success');
-        }
-      });
-    }
-    wireUpload('pdfUpload', 'PDF');
-    wireUpload('notesUpload', 'Notes');
-    wireUpload('tutorialUpload', 'Tutorial');
-
-    /* ---------- External reference modal ---------- */
-    window.openExternalReference = function () {
-      var modal = new bootstrap.Modal(document.getElementById('externalRefModal'));
-      modal.show();
-    };
-
-    window.saveExternalReference = function () {
-      var title = document.getElementById('refTitle').value.trim();
-      var url = document.getElementById('refUrl').value.trim();
-
-      if (!title || !url) {
-        edvantoToast('Please provide both a title and a URL.', 'error');
-        return;
-      }
-
-      var modalEl = document.getElementById('externalRefModal');
-      var modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      edvantoToast('External reference added.', 'success');
-
-      /* Reset form */
-      document.getElementById('refTitle').value = '';
-      document.getElementById('refUrl').value = '';
-      document.getElementById('refDescription').value = '';
-    };
-
-    /* ---------- Delete resource confirmation ---------- */
-    var pendingResourceName = '';
-
-    window.confirmDeleteResource = function (resourceName) {
-      pendingResourceName = resourceName;
-      document.getElementById('deleteModalMessage').innerHTML =
-        'Delete resource <strong class="text-edvanto-navy">' + resourceName + '</strong>? ' +
-        'Students will no longer have access to it. This cannot be undone.';
-      new bootstrap.Modal(document.getElementById('deleteModal')).show();
-    };
-
-    window.performDelete = function () {
-      var modalEl = document.getElementById('deleteModal');
-      var modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      edvantoToast('Resource "' + pendingResourceName + '" deleted.', 'warning');
-      /* Replace with a real fetch() to your Django endpoint */
-    };
-
-  })();
+  } catch (e) {}
+})();
 </script>
-
 {% endblock %}
