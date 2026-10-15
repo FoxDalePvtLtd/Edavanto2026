@@ -1133,74 +1133,101 @@ def dashboard(request):
 def lesson_view(request, lesson_id):
 
     if request.user.role != User.Role.STUDENT:
-        messages.error(
-            request,
-            "Only students can access lessons."
-        )
+        messages.error(request, "Only students can access lessons.")
         return redirect("core:dashboard")
 
     lesson = get_object_or_404(
-        Lesson.objects
-        .select_related(
-            "module",
-            "module__course",
-        ),
+        Lesson.objects.select_related("module", "module__course"),
         pk=lesson_id,
     )
 
-    enrollment = get_student_enrollment(
-        request.user,
-        lesson.module.course,
-    )
+    course = lesson.module.course
+    enrollment = get_student_enrollment(request.user, course)
 
     if enrollment is None:
-        messages.error(
-            request,
-            "You are not enrolled in this course."
-        )
+        messages.error(request, "You are not enrolled in this course.")
         return redirect("core:courses")
 
     if not enrollment_has_access(enrollment):
-        messages.warning(
-            request,
-            "You do not currently have access to this course."
-        )
+        messages.warning(request, "You do not currently have access to this course.")
         return redirect("core:dashboard")
 
-    if not lesson_is_accessible(
-        enrollment,
-        lesson,
-    ):
-        messages.warning(
-            request,
-            "This lesson is currently locked."
-        )
+    if not lesson_is_accessible(enrollment, lesson):
+        messages.warning(request, "This lesson is currently locked.")
         return redirect("core:dashboard")
 
-    record_lesson_opened(
-        enrollment,
-        lesson,
+    record_lesson_opened(enrollment, lesson)
+    progress = get_learning_progress(enrollment, lesson)
+
+    # Study material, video, resources
+    materials = lesson.materials.filter(is_active=True).order_by("title", "pk")
+    video_asset = getattr(lesson, "video_asset", None)
+    resources = lesson.resources.order_by("title", "pk")
+
+    # All published lessons of this course, in curriculum order
+    all_lessons = list(
+        Lesson.objects
+        .filter(module__course=course, is_published=True, status=Lesson.Status.PUBLISHED)
+        .select_related("module")
+        .order_by(
+            "module__unlock_order", "module__order",
+            "unlock_order", "order", "pk",
+        )
     )
 
-    progress = get_learning_progress(
-        enrollment,
-        lesson,
-    )
+    # Build ONE list of rows — lesson + its progress — no dict needed
+    progress_by_lesson_id = {
+        row.lesson_id: row
+        for row in enrollment.lesson_progress.all()
+    }
+    sidebar_rows = [
+        {
+            "lesson": l,
+            "progress": progress_by_lesson_id.get(l.pk),
+        }
+        for l in all_lessons
+    ]
 
+    # Next lesson (the one right after the current lesson in that list)
     next_lesson = None
+    for i, l in enumerate(all_lessons):
+        if l.pk == lesson.pk and i + 1 < len(all_lessons):
+            next_lesson = all_lessons[i + 1]
+            break
 
-    return render(
+        return render(
         request,
         "dashboard/student/lesson.html",
         {
             "lesson": lesson,
+            "course": course,
+            "module": lesson.module,
+
+            # base_dashboard.html expects `active_enrollment`
+            "active_enrollment": enrollment,
+            # ...and uses `enrollment` in the lesson body — keep both
             "enrollment": enrollment,
+
             "progress": progress,
             "next_lesson": next_lesson,
+
+            "materials": materials,
+            "video_asset": video_asset,
+            "resources": resources,
+            "sidebar_rows": sidebar_rows,
+
+            # Sidebar / header bits the base template reads:
+            "current_lesson": lesson,
+            "dash_section": "lesson",
+            "student_name": (
+                request.user.get_full_name() or request.user.username
+            ),
+            "student_initials": (
+                (request.user.first_name[:1] if request.user.first_name else "")
+                + (request.user.last_name[:1] if request.user.last_name else "")
+            ).upper() or "S",
         },
     )
-
-
 
 
 

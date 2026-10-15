@@ -1,0 +1,92 @@
+{% extends "admin_base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <div class="text-muted small mb-1">
+      Edvanto / Curriculum /
+      <a href="{% url 'admin_panel:syllabus_curriculum' course_id=course.pk %}">{{ course.title }}</a>
+      / {{ module.title }} / {{ lesson.title }}
+    </div>
+    <h1 class="edvanto-page-title mb-1">{{ page_title }}</h1>
+    <p class="edvanto-page-subtitle mb-0">Attach a link or file reference to this lesson.</p>
+  </div>
+  <a href="{% url 'admin_panel:syllabus_media_lesson' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+     class="btn btn-edvanto-outline">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-9">
+    <div class="edvanto-card">
+      <div class="edvanto-card-header">
+        <h2 class="edvanto-card-title mb-0">Link / Resource Details</h2>
+      </div>
+
+      <div class="p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">
+              Title <span class="text-danger">*</span>
+            </label>
+            {{ form.title }}
+            {% for e in form.title.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.resource_type.id_for_label }}" class="form-label">
+              Type <span class="text-danger">*</span>
+            </label>
+            {{ form.resource_type }}
+            {% for e in form.resource_type.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label for="{{ form.external_url.id_for_label }}" class="form-label">
+                External URL <span class="text-muted small">(or upload a file below)</span>
+              </label>
+              {{ form.external_url }}
+              {% for e in form.external_url.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="{{ form.file.id_for_label }}" class="form-label">
+                Upload a file <span class="text-muted small">(or paste a URL above)</span>
+              </label>
+              {{ form.file }}
+              <div class="form-text">
+                PDF, PPT/PPTX, DOC/DOCX, XLS/XLSX, CSV, TXT, MD, ZIP, images · Max 50 MB.
+              </div>
+              {% for e in form.file.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="alert alert-light border small mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Provide <strong>either</strong> an external URL <strong>or</strong> a file upload, not both.
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'admin_panel:syllabus_media_lesson' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+               class="btn btn-edvanto-outline">Cancel</a>
+            <button type="submit" class="btn btn-edvanto-primary">
+              <i class="bi bi-plus-lg me-1"></i> Add Resource
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

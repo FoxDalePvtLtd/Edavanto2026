@@ -1,0 +1,168 @@
+{% extends "admin_base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <div class="text-muted small mb-1">
+      Edvanto / Curriculum /
+      <a href="{% url 'admin_panel:syllabus_curriculum' course_id=course.pk %}">{{ course.title }}</a>
+      / {{ module.title }} / {{ lesson.title }}
+    </div>
+    <h1 class="edvanto-page-title mb-1">{{ page_title }}</h1>
+    <p class="edvanto-page-subtitle mb-0">
+      {% if video_asset %}
+        Replace the current video file or update its processing status.
+      {% else %}
+        Attach a video to this lesson. Duration and resolution are detected automatically.
+      {% endif %}
+    </p>
+  </div>
+  <a href="{% url 'admin_panel:syllabus_media_lesson' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+     class="btn btn-edvanto-outline">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-9">
+    <div class="edvanto-card">
+      <div class="edvanto-card-header">
+        <h2 class="edvanto-card-title mb-0">Video Details</h2>
+        {% if video_asset %}
+          <span class="edvanto-badge
+            {% if video_asset.processing_status == 'ready' %}badge-soft-green
+            {% elif video_asset.processing_status == 'failed' %}badge-soft-red
+            {% else %}badge-soft-gold{% endif %}">
+            {{ video_asset.get_processing_status_display }}
+          </span>
+        {% endif %}
+      </div>
+
+      <div class="p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          {# ---------------- File upload ---------------- #}
+          <div class="mb-4">
+            <label for="{{ form.original_file.id_for_label }}" class="form-label">
+              Video file {% if not video_asset %}<span class="text-danger">*</span>{% endif %}
+            </label>
+            {{ form.original_file }}
+            <div class="form-text">MP4, MOV, WEBM, MKV, AVI · Max 2 GB.</div>
+            {% for e in form.original_file.errors %}
+              <div class="text-danger small mt-1">{{ e }}</div>
+            {% endfor %}
+            {% if video_asset and video_asset.original_file %}
+              <div class="small text-muted mt-2">
+                Current file: <code>{{ video_asset.original_file.name }}</code>
+              </div>
+            {% endif %}
+          </div>
+
+          {# ---------------- Auto-extracted metadata (read-only) ---------------- #}
+          {% if video_asset %}
+            <div class="mb-4">
+              <div class="form-label">Detected metadata</div>
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <div class="border rounded-3 p-3 bg-light">
+                    <div class="text-muted text-uppercase small fw-semibold mb-1">Duration</div>
+                    <div class="fw-bold">
+                      {% if video_asset.duration_seconds %}
+                        {{ video_asset.duration_seconds }}s
+                        <span class="text-muted small fw-normal">
+                          ({{ video_asset.duration_seconds|divisibleby:60|yesno:"multi-minute,under a minute" }})
+                        </span>
+                      {% else %}
+                        <span class="text-muted">Not detected</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="border rounded-3 p-3 bg-light">
+                    <div class="text-muted text-uppercase small fw-semibold mb-1">Resolution</div>
+                    <div class="fw-bold">
+                      {% if video_asset.resolution %}
+                        {{ video_asset.resolution }}
+                      {% else %}
+                        <span class="text-muted">Not detected</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-text mt-2">
+                These values are set by <code>ffprobe</code> when you upload a new file.
+                They cannot be edited manually.
+              </div>
+            </div>
+          {% else %}
+            <div class="alert alert-light border small mb-4">
+              <i class="bi bi-magic me-1"></i>
+              Duration and resolution will be detected automatically after upload.
+            </div>
+          {% endif %}
+
+          {# ---------------- Processing status ---------------- #}
+          <div class="mb-3">
+            <label for="{{ form.processing_status.id_for_label }}" class="form-label">
+              Processing status
+            </label>
+            {{ form.processing_status }}
+            <div class="form-text">
+              New uploads default to <strong>Processing</strong>. Mark as <strong>Ready</strong>
+              once the HLS manifest is built, or <strong>Failed</strong> if transcoding fails.
+            </div>
+            {% for e in form.processing_status.errors %}
+              <div class="text-danger small mt-1">{{ e }}</div>
+            {% endfor %}
+          </div>
+
+          {# ---------------- Error text ---------------- #}
+          <div class="mb-3">
+            <label for="{{ form.processing_error.id_for_label }}" class="form-label">
+              Processing error <span class="text-muted small">(optional)</span>
+            </label>
+            {{ form.processing_error }}
+            <div class="form-text">
+              Fill this in only when status is <strong>Failed</strong> so the reason is recorded.
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap justify-content-end gap-2">
+            <a href="{% url 'admin_panel:syllabus_media_lesson' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+               class="btn btn-edvanto-outline">Cancel</a>
+            {% if video_asset %}
+              <button type="submit" form="videoDeleteForm" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Delete video
+              </button>
+            {% endif %}
+            <button type="submit" class="btn btn-edvanto-primary">
+              <i class="bi bi-upload me-1"></i>
+              {% if video_asset %}Replace / Save{% else %}Upload Video{% endif %}
+            </button>
+          </div>
+        </form>
+
+        {% if video_asset %}
+          <form id="videoDeleteForm" method="post"
+                action="{% url 'admin_panel:lesson_video_delete' course_id=course.pk module_id=module.pk lesson_id=lesson.pk %}"
+                onsubmit="return confirm('Delete this video? The file will be removed.');"
+                class="d-none">
+            {% csrf_token %}
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

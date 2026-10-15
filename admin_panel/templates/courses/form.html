@@ -1,30 +1,85 @@
 {% extends "admin_base.html" %}
+
 {% block title %}{% if course %}Edit Course{% else %}Create Course{% endif %}{% endblock %}
+
 {% block content %}
+
 <style>
-  .course-form-card{background:var(--edvanto-white);border:var(--edvanto-border-light);border-radius:var(--edvanto-radius-card);box-shadow:var(--edvanto-shadow-card);padding:clamp(1rem,2.5vw,1.75rem)}
-  .course-form-heading{font-size:.76rem;font-weight:750;text-transform:uppercase;letter-spacing:.08em;color:var(--edvanto-violet);margin:1.25rem 0 .9rem}
-  .course-form-heading:first-child{margin-top:0}.course-field label{font-size:.82rem;font-weight:650;color:var(--edvanto-navy);margin-bottom:.35rem}.course-field .form-control,.course-field .form-select{min-height:42px}
-  .course-error{font-size:.78rem;color:#b02a37;margin-top:.25rem}.course-help{font-size:.76rem;color:var(--edvanto-gray-600)}
+  .course-form-card {
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-card);
+    box-shadow: var(--edvanto-shadow-card);
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+  }
+  .course-form-heading {
+    font-size: .76rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--edvanto-violet);
+    margin: 1.25rem 0 .9rem;
+  }
+  .course-form-heading:first-child {
+    margin-top: 0;
+  }
+  .course-field label {
+    font-size: .82rem;
+    font-weight: 650;
+    color: var(--edvanto-navy);
+    margin-bottom: .35rem;
+  }
+  .course-field .form-control,
+  .course-field .form-select {
+    min-height: 42px;
+  }
+  .course-error {
+    font-size: .78rem;
+    color: #b02a37;
+    margin-top: .25rem;
+  }
+  .course-help {
+    font-size: .76rem;
+    color: var(--edvanto-gray-600);
+  }
 </style>
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"><div>
-  <div class="small text-muted mb-1">
-    <a href="{% url 'admin_panel:course_dashboard' %}">
-      Courses
-    </a>
-     / {% if course %}Edit{% else %}Create{% endif %}</div>
-     <h1 class="edvanto-page-title mb-1">
-      {% if course %}Edit course{% else %}Create course{% endif %}</h1>
-      <p class="edvanto-page-subtitle mb-0">Course details are saved to the existing course record.</p></div><a class="btn btn-edvanto-outline" href="{% url 'admin_panel:course_dashboard' %}"><i class="bi bi-arrow-left me-1"></i> Back to courses</a></div>
-{% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}{% endif %}
 
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+          <div class="small text-muted mb-1">
+        <a href="{% url 'admin_panel:course_dashboard' %}">Courses</a>
+        <span class="mx-1">/</span>
+        {% if course %}Edit{% else %}Create{% endif %}
+      </div>
+    <h1 class="edvanto-page-title mb-1">
+      {% if course %}Edit course{% else %}Create course{% endif %}
+    </h1>
+    <p class="edvanto-page-subtitle mb-0">Course details are saved to the existing course record.</p>
+  </div>
+  <a class="btn btn-edvanto-outline" href="{% url 'admin_panel:course_dashboard' %}">
+    <i class="bi bi-arrow-left me-1"></i> Back to courses
+  </a>
+</div>
 
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
 
 <form method="post" enctype="multipart/form-data" novalidate>
   {% csrf_token %}
-  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
   <div class="course-form-card">
     <div class="course-form-heading">Course information</div>
+
     <div class="row g-3">
       {% for field in form %}
         {% if field.name == 'title' or field.name == 'slug' or field.name == 'description' or field.name == 'category' or field.name == 'mode' or field.name == 'instructor' or field.name == 'center' or field.name == 'price' or field.name == 'discounted_price' or field.name == 'duration_hours' or field.name == 'duration_weeks' or field.name == 'thumbnail' or field.name == 'requires_instructor_approval' %}
@@ -35,12 +90,49 @@
             {% if field.name == 'requires_instructor_approval' %}<div class="form-check mt-2">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>{% else %}<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>{{ field }}{% endif %}
             {% if field.help_text %}<div class="course-help">{{ field.help_text }}</div>{% endif %}
             {% for error in field.errors %}<div class="course-error">{{ error }}</div>{% endfor %}
+
+          {% if field.name == 'description' %}
+            <div class="col-12 course-field">
+          {% elif field.name == 'title' or field.name == 'slug' %}
+            <div class="col-12 col-lg-6 course-field">
+          {% elif field.name == 'requires_instructor_approval' %}
+            <div class="col-12 course-field">
+          {% else %}
+            <div class="col-12 col-md-6 course-field">
+          {% endif %}
+
+            {% if field.name == 'requires_instructor_approval' %}
+              <div class="form-check mt-2">
+                {{ field }}
+                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              </div>
+            {% else %}
+              <label for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ field }}
+            {% endif %}
+
+            {% if field.help_text %}
+              <div class="course-help">{{ field.help_text }}</div>
+            {% endif %}
+
+            {% for error in field.errors %}
+              <div class="course-error">{{ error }}</div>
+            {% endfor %}
+
           </div>
         {% endif %}
       {% endfor %}
     </div>
-    <div class="alert alert-light border mt-4 mb-0 small"><i class="bi bi-info-circle me-1"></i> New courses default to Draft. Use <strong>Publish</strong> only when the course is ready for public display. Saving and continuing does not publish a draft.</div>
+
+    <div class="alert alert-light border mt-4 mb-0 small">
+      <i class="bi bi-info-circle me-1"></i>
+      New courses default to Draft. Use <strong>Publish</strong> only when the course is ready for public display.
+      Saving and continuing does not publish a draft.
+    </div>
   </div>
+
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4">
     <a href="{% url 'admin_panel:course_dashboard' %}" class="btn btn-edvanto-outline">Cancel</a>
     <div class="d-flex flex-wrap gap-2">
@@ -54,5 +146,7 @@
             <i class="bi bi-cloud-arrow-up me-1"></i>
              Publish</button></div>
   </div>
+
 </form>
+
 {% endblock %}
