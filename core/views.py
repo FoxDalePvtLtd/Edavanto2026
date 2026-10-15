@@ -35,10 +35,31 @@ User = get_user_model()
 # PUBLIC PAGES
 # ============================================================
 
+# views.py
+
 def home(request):
-    return render(request, "home.html")
+    selected_category = request.GET.get("category", "").strip()
 
+    courses_queryset = (
+        Course.objects
+        .filter(status=Course.Status.PUBLISHED)
+        .select_related("instructor", "center")
+    )
 
+    # Filter by category if one is selected and it's not "all"
+    if selected_category and selected_category != "all":
+        courses_queryset = courses_queryset.filter(category=selected_category)
+        
+    courses_queryset = courses_queryset.order_by("-created_at")[:6]
+
+    return render(
+        request, 
+        "home.html", 
+        {
+            "courses": courses_queryset,
+            "selected_category": selected_category,
+        },
+    )
 def courses(request):
     courses_queryset = (
         Course.objects
@@ -978,7 +999,6 @@ def payment(request, slug):
             "course": course,
         },
     )
-
 @login_required
 def dashboard(request):
 
@@ -1002,6 +1022,7 @@ def dashboard(request):
         .order_by("-enrolled_at")
     )
 
+    # INITIALIZE THESE VARIABLES EXPLICITLY HERE:
     active_enrollment = None
     current_lesson = None
     learning_progress = []
@@ -1083,8 +1104,12 @@ def dashboard(request):
                 "core:course_detail",
                 slug=rejected_enrollment.course.slug,
             )
+        
 
+        # ADDED MESSAGE:
+        messages.warning(request, "Please select a course to access your student dashboard.")
         return redirect("core:courses")
+    
 
     return render(
         request,
@@ -1103,7 +1128,6 @@ def dashboard(request):
             "dashboard_welcome": True,
         },
     )
-
 
 @login_required
 def lesson_view(request, lesson_id):

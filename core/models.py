@@ -195,6 +195,13 @@ class Course(models.Model):
         PUBLISHED = "published", "Published"
         ARCHIVED = "archived", "Archived"
 
+    class Category(models.TextChoices):
+        DESIGN ="design", "Design"
+        DEVELOPMENT = "development", "Development"
+        BUSINESS = "business", "Business"
+        AI_ML = "ai-ml", "AI & ML"
+        DATA_SCIENCE = "data-science", "Data science"
+
     title = models.CharField(
         max_length=200,
     )
@@ -206,7 +213,8 @@ class Course(models.Model):
     description = models.TextField()
 
     category = models.CharField(
-        max_length=100,
+        max_length=50,
+        choices=Category.choices, 
         blank=True,
     )
 

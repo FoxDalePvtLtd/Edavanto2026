@@ -17377,7 +17377,7 @@ START: Newsletter CSS
 START: Breadcrumb CSS
 ----------------------------------------*/
 .tj-page-header {
- padding-top: 50px !important;
+ padding-top: 20px !important;
   padding-bottom: 80px !important;
   background-position: center;
   background-size: cover;
@@ -22026,4 +22026,32 @@ START: Coming soon CSS
     width: 130px;
     right: -4px;
   }
+}
+
+
+/* Custom styling for compact, vibrant alert messages */
+.custom-short-alert {
+  font-size: 0.9rem;
+  border-radius: 60px;
+  color: #212529 !important;
+  padding-right: 4rem !important;
+  position: relative;
+}
+
+/* Vibrant background colors based on message type */
+.custom-short-alert.alert-warning {
+  background-color: #f5a614 !important;
+}
+
+.custom-short-alert.alert-danger {
+  background-color: #ff6b6b !important;
+}
+
+.custom-short-alert.alert-info {
+  background-color: #4dabf7 !important;
+}
+
+/* Adjust close button alignment for thin alerts */
+.custom-short-alert .btn-close {
+  padding: 0.75rem 1rem;
 }
