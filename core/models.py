@@ -164,18 +164,27 @@ class Course(models.Model):
         PUBLISHED = "published", "Published"
         ARCHIVED = "archived", "Archived"
 
+    class Category(models.TextChoices):
+        DESIGN ="design", "Design"
+        DEVELOPMENT = "development", "Development"
+        BUSINESS = "business", "Business"
+        AI_ML = "ai-ml", "AI & ML"
+        DATA_SCIENCE = "data-science", "Data science"
+
+
     title = models.CharField(max_length=200)
 
     slug = models.SlugField(unique=True)
 
     description = models.TextField()
 
-    category = models.CharField(max_length=100, blank=True)
+    category = models.CharField( max_length=50,choices=Category.choices,blank=True,)
 
     mode = models.CharField(
         max_length=20,
         choices=Mode.choices,
         default=Mode.ONLINE,
+        
     )
 
     price = models.DecimalField(
