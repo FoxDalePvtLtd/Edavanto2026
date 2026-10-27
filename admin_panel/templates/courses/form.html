@@ -42,6 +42,12 @@
     font-size: .76rem;
     color: var(--edvanto-gray-600);
   }
+
+  .tj-course-thumb img{
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+  }
 </style>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
@@ -144,5 +150,41 @@
   </div>
 
 </form>
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function (){
+    const thumbnailInput = document.querySelector('input[name="thumbnail"]');
+
+    if(thumbnailInput) {
+      thumbnailInput.addEventListener('change', function (event){
+        const file = event.target.files[0];
+        if (!file) return;
+
+
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = function () {
+          const width = img.width;
+          const height = img.height;
+
+          if (width !== requiredWidth || height !== requiredHeight){
+            alert(
+              'Warning: Invalid image dimensions!\n\nYour image is ${width}x${height}px.\nRequired size is exactly ${requiredWidth}x{requiredHeight}px.'
+            );
+            //Clear out the file input field 
+            thumbnailInput.value = '';
+
+          }
+          URL.revokeObjectURL(objectUrl);
+
+        };
+        img.src = objectUrl;
+      });
+    }
+  })
+</script>
 
 {% endblock %}
