@@ -1321,7 +1321,7 @@
           </li>
 
           {# ---------- Learning (curriculum + media + module/lesson CRUD) ---------- #}
-          <li>
+          {% comment %} <li>
             <a href="{% url 'admin_panel:syllabus_course_list' %}"
               class="edvanto-nav-link {% if request.resolver_match.url_name|csv_contains:'syllabus_curriculum,module_create,module_edit,module_delete,lesson_create,lesson_edit,lesson_delete,syllabus_media_lesson' %}active{% endif %}"
               title="Learning"
@@ -1329,7 +1329,7 @@
               <i class="bi bi-mortarboard-fill"></i>
               <span>Learning</span>
             </a>
-          </li>
+          </li> {% endcomment %}
 
           {# ---------- Enrollments ---------- #}
           <li>
