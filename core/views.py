@@ -3,6 +3,10 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.urls import reverse
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
@@ -24,6 +28,8 @@ from .auth_services import (
 
 from .models import *
 from decimal import Decimal
+from core.services.material_crypto import decrypt_bytes
+from core.services.doc_converter import convert_material_to_note_html
 from core.forms import CareerConsultationForm, StudentDoubtThreadForm, DoubtMessageForm
 
 from .registration_services import (
@@ -802,7 +808,173 @@ def sign_in(request):
 
 
 def forgot_password(request):
-    return render(request, "forgot-password.html")
+    """
+    Initiates password reset by verifying email and sending a secure one-time reset link.
+    """
+    if request.method == "GET":
+        return render(request, "forgot-password.html")
+
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip().lower()
+        if not email:
+            return render(
+                request,
+                "forgot-password.html",
+                {"error": "Please enter your email address.", "email": email},
+                status=400,
+            )
+
+        # Look up user by email or username
+        user = User.objects.filter(Q(email__iexact=email) | Q(username__iexact=email)).first()
+
+        # Send reset email if user exists and is active
+        if user and user.is_active:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = request.build_absolute_uri(
+                reverse("core:password_reset_confirm", kwargs={"uidb64": uid, "token": token})
+            )
+
+            # Generate OTP code for extra verification convenience
+            otp = None
+            try:
+                _, otp = create_otp(
+                    email=user.email or email,
+                    purpose=OTPVerification.Purpose.PASSWORD_RESET,
+                    ip_address=request.META.get("REMOTE_ADDR"),
+                    user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                )
+            except Exception:
+                pass
+
+            user_display_name = user.get_full_name() or user.username
+            subject = "Reset your Edvanto password"
+            message_body = (
+                f"Hello {user_display_name},\n\n"
+                f"We received a request to reset the password for your Edvanto account.\n\n"
+                f"Click the link below to set a new password:\n"
+                f"{reset_url}\n\n"
+            )
+            if otp:
+                message_body += f"Your password reset verification code is: {otp}\n\n"
+
+            message_body += (
+                "This link expires in 30 minutes.\n\n"
+                "If you did not request a password reset, you can safely ignore this email.\n\n"
+                "Regards,\n"
+                "Edvanto Team"
+            )
+
+            try:
+                send_mail(
+                    subject=subject,
+                    message=message_body,
+                    from_email=None,
+                    recipient_list=[user.email or email],
+                    fail_silently=False,
+                )
+                print(f"[EDVANTO PASSWORD RESET] Sent reset link to {user.email or email}: {reset_url}")
+            except Exception as exc:
+                print(f"[EDVANTO PASSWORD RESET] Email sending error: {exc}")
+
+        return render(
+            request,
+            "forgot-password.html",
+            {
+                "success": True,
+                "sent_email": email,
+            },
+        )
+
+
+def password_reset_confirm(request, uidb64, token):
+    """
+    Validates the password reset token and allows user to specify a new password.
+    """
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    # Check token validity
+    if user is None or not default_token_generator.check_token(user, token):
+        return render(
+            request,
+            "reset-password.html",
+            {
+                "validlink": False,
+                "error": "This password reset link is invalid or has expired. Please request a new link.",
+            },
+        )
+
+    if request.method == "GET":
+        return render(
+            request,
+            "reset-password.html",
+            {
+                "validlink": True,
+                "uidb64": uidb64,
+                "token": token,
+                "user_name": user.get_full_name() or user.username,
+            },
+        )
+
+    if request.method == "POST":
+        new_password = request.POST.get("new_password", "").strip()
+        confirm_password = request.POST.get("confirm_password", "").strip()
+
+        if not new_password or not confirm_password:
+            return render(
+                request,
+                "reset-password.html",
+                {
+                    "validlink": True,
+                    "uidb64": uidb64,
+                    "token": token,
+                    "user_name": user.get_full_name() or user.username,
+                    "error": "Both password fields are required.",
+                },
+                status=400,
+            )
+
+        if len(new_password) < 8:
+            return render(
+                request,
+                "reset-password.html",
+                {
+                    "validlink": True,
+                    "uidb64": uidb64,
+                    "token": token,
+                    "user_name": user.get_full_name() or user.username,
+                    "error": "Password must be at least 8 characters long.",
+                },
+                status=400,
+            )
+
+        if new_password != confirm_password:
+            return render(
+                request,
+                "reset-password.html",
+                {
+                    "validlink": True,
+                    "uidb64": uidb64,
+                    "token": token,
+                    "user_name": user.get_full_name() or user.username,
+                    "error": "Passwords do not match.",
+                },
+                status=400,
+            )
+
+        # Set new password and save
+        user.set_password(new_password)
+        user.save()
+
+        messages.success(
+            request,
+            "Your password has been reset successfully! You can now log in with your new password.",
+        )
+        return redirect("core:login")
 
 @login_required
 def course_detail(request, slug):
@@ -1163,7 +1335,23 @@ def lesson_view(request, lesson_id):
     progress = get_learning_progress(enrollment, lesson)
 
     # Study material, video, resources
-    materials = lesson.materials.filter(is_active=True).order_by("title", "pk")
+    materials_list = list(lesson.materials.filter(is_active=True).order_by("title", "pk"))
+    for m in materials_list:
+        fname = (m.original_filename or m.title or "").lower()
+        m.is_doc = m.material_type in ("docx", "text", "doc") or fname.endswith((".docx", ".txt", ".md", ".doc"))
+        m.is_pdf = m.material_type == "pdf" or fname.endswith(".pdf")
+        m.is_image = m.material_type == "image" or fname.endswith((".png", ".jpg", ".jpeg", ".webp", ".gif"))
+        if m.is_doc:
+            try:
+                m.file.open("rb")
+                blob = m.file.read()
+                m.file.close()
+                m.note_html = convert_material_to_note_html(decrypt_bytes(blob), m.original_filename or m.title, m.material_type)
+            except Exception:
+                m.note_html = "<p class='text-muted'><em>Study note preview is currently unavailable.</em></p>"
+        else:
+            m.note_html = None
+    materials = materials_list
     video_asset = getattr(lesson, "video_asset", None)
     resources = lesson.resources.order_by("title", "pk")
 
