@@ -22,7 +22,7 @@ class CourseManagementTests(TestCase):
     def payload(self, **overrides):
         data = {
             "title": "Django Fundamentals", "slug": "django-fundamentals",
-            "description": "A complete introduction to Django.", "category": "Development",
+            "description": "A complete introduction to Django.", "category": Course.Category.DEVELOPMENT,
             "mode": Course.Mode.ONLINE, "instructor": str(self.instructor.pk), "center": "",
             "price": "1000.00", "discounted_price": "800.00", "duration_hours": "24",
             "duration_weeks": "", "requires_instructor_approval": "",
@@ -31,8 +31,8 @@ class CourseManagementTests(TestCase):
         return data
 
     def test_course_list_uses_database_and_filters(self):
-        Course.objects.create(title="Django Fundamentals", slug="django-fundamentals", description="Django", category="Development", mode=Course.Mode.ONLINE, price=Decimal("1000"), status=Course.Status.DRAFT)
-        Course.objects.create(title="Excel Basics", slug="excel-basics", description="Excel", category="Business", mode=Course.Mode.OFFLINE, price=Decimal("500"), center=self.center, status=Course.Status.PUBLISHED)
+        Course.objects.create(title="Django Fundamentals", slug="django-fundamentals", description="Django", category=Course.Category.DEVELOPMENT, mode=Course.Mode.ONLINE, price=Decimal("1000"), status=Course.Status.DRAFT)
+        Course.objects.create(title="Excel Basics", slug="excel-basics", description="Excel", category=Course.Category.BUSINESS, mode=Course.Mode.OFFLINE, price=Decimal("500"), center=self.center, status=Course.Status.PUBLISHED)
         response = self.client.get(reverse("admin_panel:course_dashboard"), {"q": "Django", "status": "draft"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Django Fundamentals")

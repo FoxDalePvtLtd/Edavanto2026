@@ -368,6 +368,13 @@ class LessonAdminForm(forms.ModelForm):
         cleaned_data = super().clean()
         if self.module is None:
             raise forms.ValidationError("A valid parent module is required.")
+        status = cleaned_data.get("status")
+        is_published = cleaned_data.get("is_published")
+        if status == Lesson.Status.PUBLISHED or is_published:
+            cleaned_data["status"] = Lesson.Status.PUBLISHED
+            cleaned_data["is_published"] = True
+        elif status == Lesson.Status.DRAFT:
+            cleaned_data["is_published"] = False
         return cleaned_data
 
 

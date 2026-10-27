@@ -74,14 +74,14 @@
           </a>
         </li>
         <li>
-          <a href="#"
+          <a href="{% url 'core:student_assessments' %}"
              class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
             <i class="bi bi-clipboard-check"></i><span>Assessments</span>
             {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
           </a>
         </li>
         <li>
-          <a href="#"
+          <a href="{% url 'core:student_doubts' %}"
              class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
             <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
             {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
@@ -333,14 +333,14 @@
           </a>
         </li>
         <li>
-          <a href="#"
+          <a href="{% url 'core:student_assessments' %}"
              class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
             <i class="bi bi-clipboard-check"></i><span>Assessments</span>
             {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
           </a>
         </li>
         <li>
-          <a href="#"
+          <a href="{% url 'core:student_doubts' %}"
              class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
             <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
             {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}

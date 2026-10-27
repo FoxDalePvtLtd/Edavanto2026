@@ -34,4 +34,19 @@ urlpatterns = [
     path(
         "materials/<int:material_id>/view/", serve_lesson_material,name="serve_lesson_material",
     ),
+
+    # CAREER CONSULTATION
+    path("consultation/request/", views.career_consultation_request, name="career_consultation_request"),
+
+    # DOUBT CLEARANCE
+    path("dashboard/doubts/", views.student_doubts, name="student_doubts"),
+    path("dashboard/lesson/<int:lesson_id>/doubt/create/", views.create_doubt, name="create_doubt"),
+    path("dashboard/doubts/<int:thread_id>/", views.doubt_detail, name="doubt_detail"),
+    path("dashboard/doubts/<int:thread_id>/reply/", views.doubt_reply, name="doubt_reply"),
+    path("dashboard/doubts/<int:thread_id>/resolve/", views.doubt_resolve, name="doubt_resolve"),
+
+    # ASSESSMENTS
+    path("dashboard/assessments/", views.student_assessments, name="student_assessments"),
+    path("dashboard/assessment/<int:assessment_id>/take/", views.take_assessment, name="take_assessment"),
+    path("dashboard/assessment/submission/<int:submission_id>/result/", views.assessment_result, name="assessment_result"),
 ]

@@ -104,24 +104,39 @@ urlpatterns = [
 
     # ASSESSMENTS
     path("assessments/", views.assessment_list, name="assessment_list"),
+    path("assessments/create/", views.assessment_list, name="assessment_create"),
+    path("assessments/<int:assessment_id>/edit/", views.assessment_edit, name="assessment_edit"),
+    path("assessments/<int:assessment_id>/delete/", views.assessment_delete, name="assessment_delete"),
     path(
         "assessments/questions/",
         views.assessment_questions,
         name="assessment_questions",
     ),
+    path("assessments/questions/save/", views.question_save, name="question_save"),
+    path("assessments/questions/<int:question_id>/delete/", views.question_delete, name="question_delete"),
     path(
         "assessments/submissions/",
         views.assessment_submissions,
         name="assessment_submissions",
     ),
+    path(
+        "assessments/submissions/<int:submission_id>/grade/",
+        views.submission_grade,
+        name="submission_grade",
+    ),
 
+    # DOUBTS
     path("doubts/", views.doubt_list, name="doubt_list"),
+    path("doubts/<int:thread_id>/", views.doubt_detail_admin, name="doubt_detail_admin"),
+    path("doubts/<int:thread_id>/reply/", views.doubt_reply_admin, name="doubt_reply_admin"),
+    path("doubts/<int:thread_id>/status/", views.doubt_status_admin, name="doubt_status_admin"),
 
     # NOTIFICATIONS
     path("notifications/", views.notification_list, name="notification_list"),
 
     # CONSULTATIONS
     path("consultations/", views.consultation_list, name="consultation_list"),
+    path("consultations/<int:booking_id>/update/", views.consultation_update, name="consultation_update"),
 
     # CERTIFICATES
     path("certificates/", views.certificate_list, name="certificate_list"),

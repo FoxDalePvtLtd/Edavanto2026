@@ -273,6 +273,14 @@ class Syllabus(models.Model):
     class Meta:
         ordering = ["order"]
 
+    def save(self, *args, **kwargs):
+        if self.status == self.Status.PUBLISHED or self.is_published:
+            self.status = self.Status.PUBLISHED
+            self.is_published = True
+        elif self.status == self.Status.DRAFT:
+            self.is_published = False
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.course.title} - {self.title}"
 
