@@ -41,18 +41,31 @@
       {% endif %}
 
       {# -------- Video -------- #}
-      {% if video_asset and video_asset.processing_status == 'ready' %}
-        <div class="card mb-4">
-          <div class="card-header">
-            <strong><i class="bi bi-camera-video-fill me-2"></i> Video Lesson</strong>
+      {% if video_asset and video_asset.original_file %}
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong><i class="bi bi-camera-video-fill me-2 text-primary"></i> Video Lesson</strong>
+            <span id="video-progress-badge" class="badge {% if progress.watched_percent >= 90 %}bg-success{% elif progress.watched_percent > 0 %}bg-primary{% else %}bg-secondary{% endif %}">
+              Watched: <span id="video-progress-val">{{ progress.watched_percent|floatformat:"0" }}</span>%
+            </span>
           </div>
-          <div class="card-body p-0">
-            <video controls controlsList="nodownload"
+          <div class="card-body p-0 bg-dark">
+            <video id="lesson-video" controls controlsList="nodownload"
                    oncontextmenu="return false;"
-                   style="width:100%; background:#000;"
+                   style="width:100%; display:block; background:#000; max-height: 480px;"
                    {% if video_asset.hls_manifest %}src="{{ video_asset.hls_manifest }}"
                    {% else %}src="{{ video_asset.original_file.url }}"{% endif %}>
             </video>
+          </div>
+          <div class="card-footer bg-light d-flex justify-content-between align-items-center py-2 px-3 small text-muted">
+            <span><i class="bi bi-info-circle me-1"></i> Watch at least 90% of the video to unlock completion.</span>
+            <span id="video-status-text" class="{% if progress.watched_percent >= 90 %}text-success fw-semibold{% endif %}">
+              {% if progress.watched_percent >= 90 %}
+                <i class="bi bi-check-circle-fill me-1"></i> Watch requirement satisfied
+              {% else %}
+                <i class="bi bi-hourglass-split me-1"></i> In progress
+              {% endif %}
+            </span>
           </div>
         </div>
       {% elif video_asset %}
@@ -115,6 +128,104 @@
         </div>
       {% endif %}
 
+      {# -------- Module Assessments -------- #}
+      {% if module_assessments %}
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <strong><i class="bi bi-clipboard2-check-fill text-primary me-2"></i> Module Assessments &amp; Quizzes</strong>
+            <span class="badge bg-primary-subtle text-primary">{{ module_assessments|length }}</span>
+          </div>
+          <div class="list-group list-group-flush">
+            {% for a in module_assessments %}
+              <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+                <div>
+                  <div class="fw-bold text-dark">{{ a.title }}</div>
+                  <div class="small text-muted">
+                    {{ a.get_assessment_type_display }} &bull; Total Marks: {{ a.total_marks }} &bull; Pass: {{ a.pass_percentage }}%
+                    {% if a.time_limit_minutes %}&bull; Time: {{ a.time_limit_minutes }} mins{% endif %}
+                  </div>
+                </div>
+                <a href="{% url 'core:take_assessment' a.pk %}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-play-circle me-1"></i> Open Assessment
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {# -------- Doubt Clearance -------- #}
+      <div class="card mb-4 border-0 shadow-sm" id="askDoubtSection">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <strong><i class="bi bi-chat-quote-fill text-primary me-2"></i> Doubt Clearance &amp; Mentorship</strong>
+          <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#newDoubtCollapse">
+            <i class="bi bi-plus-circle me-1"></i> Ask a Doubt
+          </button>
+        </div>
+
+        <!-- NEW DOUBT COLLAPSE FORM -->
+        <div class="collapse p-4 border-bottom bg-light" id="newDoubtCollapse">
+          <form method="post" action="{% url 'core:create_doubt' lesson.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h6 class="fw-bold mb-3"><i class="bi bi-patch-question me-1 text-primary"></i> Submit Question to Course Instructors</h6>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Subject / Summary *</label>
+              <input type="text" class="form-control" name="subject" required
+                     placeholder="e.g. Difficulty understanding the CSS grid layout explained at 05:20">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Describe your doubt in detail *</label>
+              <textarea class="form-control" name="message" rows="4" required
+                        placeholder="Explain what concept was unclear, the error you encountered, or what you tried..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Attach screenshot / code snippet (Optional)</label>
+              <input type="file" class="form-control" name="attachment" accept="image/*,.pdf,.zip,.py,.js,.html,.txt">
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="collapse" data-bs-target="#newDoubtCollapse">Cancel</button>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-send me-1"></i> Send Question to Instructor</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- PREVIOUS DOUBTS LIST -->
+        <div class="card-body p-4">
+          {% if lesson_doubts %}
+            <h6 class="small fw-bold text-muted text-uppercase mb-3">Your Doubts on this Lesson</h6>
+            <div class="list-group list-group-flush">
+              {% for d in lesson_doubts %}
+                <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 px-0 py-2">
+                  <div>
+                    <div class="fw-semibold text-dark">{{ d.subject }}</div>
+                    <div class="small text-muted">{{ d.created_at|date:"d M Y, h:i A" }}</div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    {% if d.status == 'open' or d.status == 'reopened' %}
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Waiting on Mentor</span>
+                    {% elif d.status == 'answered' %}
+                      <span class="badge bg-info-subtle text-info border border-info-subtle">Instructor Replied</span>
+                    {% elif d.status == 'resolved' %}
+                      <span class="badge bg-success-subtle text-success border border-success-subtle">Resolved</span>
+                    {% else %}
+                      <span class="badge bg-secondary-subtle text-secondary">{{ d.get_status_display }}</span>
+                    {% endif %}
+                    <a href="{% url 'core:doubt_detail' d.pk %}" class="btn btn-sm btn-outline-primary">
+                      View Thread <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-3 text-muted small">
+              <i class="bi bi-chat-heart fs-3 d-block mb-1 text-secondary"></i>
+              Have questions about this lesson? Click <strong>"Ask a Doubt"</strong> above to get answers from our course instructors.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
       {# -------- Mark complete -------- #}
       <div class="d-flex justify-content-between align-items-center gap-2 mt-4">
         <a href="{% url 'core:course_dashboard' slug=course.slug %}"
@@ -168,6 +279,74 @@
 <script>
 (function () {
   'use strict';
+    // Video progress tracking
+  var video = document.getElementById('lesson-video');
+  if (video) {
+    var progressUrl = "{% url 'core:lesson_progress_api' lesson_id=lesson.pk %}";
+    var progressVal = document.getElementById('video-progress-val');
+    var progressBadge = document.getElementById('video-progress-badge');
+    var statusText = document.getElementById('video-status-text');
+    var lastSavedPercent = parseFloat("{{ progress.watched_percent|default:'0' }}") || 0;
+    var lastReportTime = 0;
+    var savedPos = parseInt("{{ progress.last_position_seconds|default:'0' }}") || 0;
+
+    if (savedPos > 0) {
+      video.addEventListener('loadedmetadata', function () {
+        if (video.duration && savedPos < video.duration - 2) {
+          video.currentTime = savedPos;
+        }
+      }, { once: true });
+    }
+
+    function sendVideoProgress(force) {
+      if (!video.duration || video.duration <= 0) return;
+      var current = video.currentTime;
+      var duration = video.duration;
+      var percent = Math.min(100, Math.round((current / duration) * 100));
+
+      var now = Date.now();
+      if (!force && (now - lastReportTime < 5000)) return;
+      if (percent < lastSavedPercent && !force) return;
+
+      lastReportTime = now;
+      lastSavedPercent = Math.max(lastSavedPercent, percent);
+
+      var fd = new FormData();
+      fd.append('watched_percent', percent);
+      fd.append('position_seconds', Math.floor(current));
+
+      fetch(progressUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: fd,
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.success) {
+          var pct = Math.round(data.watched_percent);
+          if (progressVal) progressVal.textContent = pct;
+          if (pct >= 90) {
+            if (progressBadge) {
+              progressBadge.className = 'badge bg-success';
+            }
+            if (statusText) {
+              statusText.className = 'text-success fw-semibold';
+              statusText.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Watch requirement satisfied';
+            }
+          }
+        }
+      })
+      .catch(function() {});
+    }
+
+    video.addEventListener('timeupdate', function () { sendVideoProgress(false); });
+    video.addEventListener('pause', function () { sendVideoProgress(true); });
+    video.addEventListener('ended', function () { sendVideoProgress(true); });
+  }
+
   var btn = document.getElementById('btn-complete-lesson');
   if (!btn) return;
 

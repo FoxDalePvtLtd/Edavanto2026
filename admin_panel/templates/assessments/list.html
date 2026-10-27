@@ -599,7 +599,7 @@
         <i class="bi bi-clipboard2-check-fill"></i>
       </div>
       <div class="edvanto-stat-label">Total Assessments</div>
-      <div class="edvanto-stat-value">86</div>
+      <div class="edvanto-stat-value">{{ total_count|default:"0" }}</div>
       <div class="edvanto-stat-meta">
         <i class="bi bi-arrow-up-short positive"></i>
         <span class="positive">+8</span>
@@ -615,7 +615,7 @@
         <i class="bi bi-patch-question-fill"></i>
       </div>
       <div class="edvanto-stat-label">Quizzes</div>
-      <div class="edvanto-stat-value">58</div>
+      <div class="edvanto-stat-value">{{ quiz_count|default:"0" }}</div>
       <div class="edvanto-stat-meta">
         <i class="bi bi-check-circle-fill" style="color: #0099B5; font-size: 0.75rem;"></i>
         <span>42 auto-graded</span>
@@ -630,7 +630,7 @@
         <i class="bi bi-file-earmark-text-fill"></i>
       </div>
       <div class="edvanto-stat-label">Assignments</div>
-      <div class="edvanto-stat-value">28</div>
+      <div class="edvanto-stat-value">{{ assignment_count|default:"0" }}</div>
       <div class="edvanto-stat-meta">
         <i class="bi bi-people-fill" style="color: #0F9D58; font-size: 0.75rem;"></i>
         <span>14 need review</span>
@@ -645,7 +645,7 @@
         <i class="bi bi-send-check-fill"></i>
       </div>
       <div class="edvanto-stat-label">Published</div>
-      <div class="edvanto-stat-value">72</div>
+      <div class="edvanto-stat-value">{{ published_count|default:"0" }}</div>
       <div class="edvanto-stat-meta">
         <i class="bi bi-pencil-square" style="color: var(--edvanto-gold); font-size: 0.75rem;"></i>
         <span>14 drafts pending</span>
@@ -677,10 +677,9 @@
           <label class="form-label mb-1" for="courseFilter">Course</label>
           <select class="form-select" id="courseFilter" name="course">
             <option value="">All Courses</option>
-            <option value="fullstack" {% if request.GET.course == 'fullstack' %}selected{% endif %}>Full Stack Web Development</option>
-            <option value="datascience" {% if request.GET.course == 'datascience' %}selected{% endif %}>Data Science & AI Masterclass</option>
-            <option value="uiux" {% if request.GET.course == 'uiux' %}selected{% endif %}>UI/UX Design Masterclass</option>
-            <option value="business" {% if request.GET.course == 'business' %}selected{% endif %}>Business Analytics Pro</option>
+            {% for c in courses %}
+              <option value="{{ c.slug }}" {% if selected_course == c.slug %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -764,219 +763,146 @@
           </tr>
         </thead>
         <tbody>
-          {# {% for assessment in assessments %} #}
-
-          <!-- Row 1: Published Quiz -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1024</div>
+          {% for a in assessments %}
+            <tr>
+              <td>
+                <div class="edvanto-assessment-cell">
+                  <span class="edvanto-assessment-icon {% if a.assessment_type == 'assignment' %}assignment{% else %}quiz{% endif %}">
+                    <i class="bi {% if a.assessment_type == 'assignment' %}bi-file-earmark-text-fill{% else %}bi-patch-question-fill{% endif %}"></i>
+                  </span>
+                  <div class="edvanto-assessment-info">
+                    <div class="edvanto-assessment-title">{{ a.title }}</div>
+                    <div class="edvanto-assessment-meta">Assessment ID: ASM-{{ a.pk }}</div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">Full Stack Web Development</div>
-              <div class="edvanto-course-meta">CRS-1024</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 1: Introduction to Web Dev</div></td>
-            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
-            <td><span class="edvanto-num">50</span></td>
-            <td><span class="edvanto-num pass">60%</span></td>
-            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 20 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('HTML5 Fundamentals Quiz')"><i class="bi bi-list-check"></i></button>
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('HTML5 Fundamentals Quiz')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('HTML5 Fundamentals Quiz')"><i class="bi bi-pencil"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 2: Published Quiz -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">JavaScript Basics Quiz</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1025</div>
+              </td>
+              <td>
+                <div class="edvanto-course-title">{{ a.module.course.title }}</div>
+                <div class="edvanto-course-meta">{{ a.module.course.slug }}</div>
+              </td>
+              <td><div class="edvanto-module-name">M{{ a.module.order }}: {{ a.module.title }}</div></td>
+              <td>
+                <span class="edvanto-badge badge-type-{{ a.assessment_type }}">
+                  <i class="bi {% if a.assessment_type == 'assignment' %}bi-file-earmark-text{% else %}bi-patch-question{% endif %}"></i>
+                  {{ a.get_assessment_type_display }}
+                </span>
+              </td>
+              <td><span class="edvanto-num">{{ a.total_marks }}</span></td>
+              <td><span class="edvanto-num pass">{{ a.pass_percentage }}%</span></td>
+              <td>
+                <span class="edvanto-q-count {% if not a.questions_count %}empty{% endif %}">
+                  <i class="bi bi-list-ol"></i> {{ a.questions_count }} Qs
+                </span>
+              </td>
+              <td>
+                {% if a.is_published %}
+                  <span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span>
+                {% else %}
+                  <span class="edvanto-badge badge-status-draft"><i class="bi bi-pencil-square"></i> Draft</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <a href="{% url 'admin_panel:assessment_questions' %}?assessment={{ a.pk }}" class="edvanto-action-btn" title="Manage Questions">
+                    <i class="bi bi-list-check"></i>
+                  </a>
+                  <a href="{% url 'admin_panel:assessment_submissions' %}?assessment={{ a.pk }}" class="edvanto-action-btn cyan" title="Submissions">
+                    <i class="bi bi-people"></i>
+                  </a>
+                  <button type="button" class="edvanto-action-btn gold" title="Edit"
+                          data-bs-toggle="modal" data-bs-target="#editModal{{ a.pk }}">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <form method="post" action="{% url 'admin_panel:assessment_delete' a.pk %}" class="d-inline"
+                        onsubmit="return confirm('Are you sure you want to delete this assessment?');">
+                    {% csrf_token %}
+                    <button type="submit" class="edvanto-action-btn danger" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">Full Stack Web Development</div>
-              <div class="edvanto-course-meta">CRS-1024</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 2: JavaScript Essentials</div></td>
-            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
-            <td><span class="edvanto-num">40</span></td>
-            <td><span class="edvanto-num pass">65%</span></td>
-            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 16 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('JavaScript Basics Quiz')"><i class="bi bi-list-check"></i></button>
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('JavaScript Basics Quiz')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('JavaScript Basics Quiz')"><i class="bi bi-pencil"></i></button>
-              </div>
-            </td>
-          </tr>
 
-          <!-- Row 3: Draft Assignment, no questions yet -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon assignment"><i class="bi bi-file-earmark-text-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">Build a Portfolio Page</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1026</div>
+                <!-- EDIT MODAL FOR THIS ASSESSMENT -->
+                <div class="modal fade text-start" id="editModal{{ a.pk }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow">
+                      <form method="post" action="{% url 'admin_panel:assessment_edit' a.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-header bg-dark text-white">
+                          <h5 class="modal-title h6 mb-0 text-white"><i class="bi bi-pencil-square me-2 text-warning"></i> Edit Assessment #{{ a.pk }}: {{ a.title }}</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                          <div class="row g-3">
+                            <div class="col-12 col-md-8">
+                              <label class="form-label small fw-bold">Assessment Title *</label>
+                              <input type="text" class="form-control" name="title" value="{{ a.title }}" required>
+                            </div>
+                            <div class="col-12 col-md-4">
+                              <label class="form-label small fw-bold">Type *</label>
+                              <select class="form-select" name="assessment_type">
+                                <option value="quiz" {% if a.assessment_type == 'quiz' %}selected{% endif %}>Quiz</option>
+                                <option value="assignment" {% if a.assessment_type == 'assignment' %}selected{% endif %}>Assignment</option>
+                              </select>
+                            </div>
+                            <div class="col-12">
+                              <label class="form-label small fw-bold">Target Module *</label>
+                              <select class="form-select" name="module" required>
+                                {% for c in courses %}
+                                  <optgroup label="{{ c.title }}">
+                                    {% for m in c.modules.all %}
+                                      <option value="{{ m.pk }}" {% if a.module_id == m.pk %}selected{% endif %}>{{ c.title }} &bull; M{{ m.order }}: {{ m.title }}</option>
+                                    {% endfor %}
+                                  </optgroup>
+                                {% endfor %}
+                              </select>
+                            </div>
+                            <div class="col-12">
+                              <label class="form-label small fw-bold">Description / Instructions</label>
+                              <textarea class="form-control" name="description" rows="3">{{ a.description }}</textarea>
+                            </div>
+                            <div class="col-6 col-md-3">
+                              <label class="form-label small fw-bold">Total Marks</label>
+                              <input type="number" class="form-control" name="total_marks" value="{{ a.total_marks }}">
+                            </div>
+                            <div class="col-6 col-md-3">
+                              <label class="form-label small fw-bold">Pass %</label>
+                              <input type="number" class="form-control" name="pass_percentage" value="{{ a.pass_percentage }}" min="0" max="100">
+                            </div>
+                            <div class="col-6 col-md-3">
+                              <label class="form-label small fw-bold">Time Limit (mins)</label>
+                              <input type="number" class="form-control" name="time_limit_minutes" value="{{ a.time_limit_minutes|default:'' }}" placeholder="Optional">
+                            </div>
+                            <div class="col-6 col-md-3">
+                              <label class="form-label small fw-bold">Attempts Allowed</label>
+                              <input type="number" class="form-control" name="attempts_allowed" value="{{ a.attempts_allowed }}" min="1">
+                            </div>
+                            <div class="col-12">
+                              <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_published" id="pubSwitch{{ a.pk }}" {% if a.is_published %}checked{% endif %}>
+                                <label class="form-check-label small fw-bold" for="pubSwitch{{ a.pk }}">Published (Visible to students)</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer bg-light py-2">
+                          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-sm btn-edvanto-primary"><i class="bi bi-check2 me-1"></i> Update Assessment</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">Full Stack Web Development</div>
-              <div class="edvanto-course-meta">CRS-1024</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 1: Introduction to Web Dev</div></td>
-            <td><span class="edvanto-badge badge-type-assignment"><i class="bi bi-file-earmark-text"></i> Assignment</span></td>
-            <td><span class="edvanto-num">100</span></td>
-            <td><span class="edvanto-num pass">50%</span></td>
-            <td><span class="edvanto-q-count empty"><i class="bi bi-exclamation-circle"></i> 0 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-draft"><i class="bi bi-pencil-square"></i> Draft</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('Build a Portfolio Page')"><i class="bi bi-list-check"></i></button>
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Build a Portfolio Page')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Build a Portfolio Page')"><i class="bi bi-pencil"></i></button>
-                <button class="edvanto-action-btn success" title="Publish" onclick="publishAssessment('Build a Portfolio Page')"><i class="bi bi-send-check"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 4: Published Quiz -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">React Components Quiz</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1027</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">Full Stack Web Development</div>
-              <div class="edvanto-course-meta">CRS-1024</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 3: Frontend Frameworks</div></td>
-            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
-            <td><span class="edvanto-num">30</span></td>
-            <td><span class="edvanto-num pass">70%</span></td>
-            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 12 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('React Components Quiz')"><i class="bi bi-list-check"></i></button>
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('React Components Quiz')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('React Components Quiz')"><i class="bi bi-pencil"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 5: Draft Quiz -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">Node.js & Express Quiz</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1028</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">Full Stack Web Development</div>
-              <div class="edvanto-course-meta">CRS-1024</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 4: Backend with Node.js</div></td>
-            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
-            <td><span class="edvanto-num">50</span></td>
-            <td><span class="edvanto-num pass">60%</span></td>
-            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 8 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-draft"><i class="bi bi-pencil-square"></i> Draft</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('Node.js & Express Quiz')"><i class="bi bi-list-check"></i></button>
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Node.js & Express Quiz')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Node.js & Express Quiz')"><i class="bi bi-pencil"></i></button>
-                <button class="edvanto-action-btn success" title="Publish" onclick="publishAssessment('Node.js & Express Quiz')"><i class="bi bi-send-check"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 6: Published Assignment -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon assignment"><i class="bi bi-file-earmark-text-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">Data Visualization Project</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-1029</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">Data Science &amp; AI Masterclass</div>
-              <div class="edvanto-course-meta">CRS-1018</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 2: Data Visualization</div></td>
-            <td><span class="edvanto-badge badge-type-assignment"><i class="bi bi-file-earmark-text"></i> Assignment</span></td>
-            <td><span class="edvanto-num">100</span></td>
-            <td><span class="edvanto-num pass">50%</span></td>
-            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 5 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-published"><i class="bi bi-check-circle-fill"></i> Published</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="Manage Questions" onclick="manageQuestions('Data Visualization Project')"><i class="bi bi-list-check"></i></button>
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Data Visualization Project')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Data Visualization Project')"><i class="bi bi-pencil"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 7: Archived -->
-          <tr>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <span class="edvanto-assessment-icon quiz"><i class="bi bi-patch-question-fill"></i></span>
-                <div class="edvanto-assessment-info">
-                  <div class="edvanto-assessment-title">Legacy CSS Quiz (2023)</div>
-                  <div class="edvanto-assessment-meta">Assessment ID: ASM-0987</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-course-title">UI/UX Design Masterclass</div>
-              <div class="edvanto-course-meta">CRS-1032</div>
-            </td>
-            <td><div class="edvanto-module-name">Module 1: Design Foundations</div></td>
-            <td><span class="edvanto-badge badge-type-quiz"><i class="bi bi-patch-question"></i> Quiz</span></td>
-            <td><span class="edvanto-num">20</span></td>
-            <td><span class="edvanto-num pass">50%</span></td>
-            <td><span class="edvanto-q-count"><i class="bi bi-list-ol"></i> 10 Qs</span></td>
-            <td><span class="edvanto-badge badge-status-archived"><i class="bi bi-archive-fill"></i> Archived</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn cyan" title="Preview" onclick="previewAssessment('Legacy CSS Quiz (2023)')"><i class="bi bi-eye"></i></button>
-                <button class="edvanto-action-btn gold" title="Edit" onclick="openAssessmentEditor('Legacy CSS Quiz (2023)')"><i class="bi bi-pencil"></i></button>
-              </div>
-            </td>
-          </tr>
-
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-clipboard2-x fs-1 d-block mb-2 text-secondary"></i>
+                No assessments found matching your criteria. Click "Create Assessment" above to add one.
+              </td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -1052,6 +978,8 @@
      aria-labelledby="assessmentEditorLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
+      <form method="post" action="{% url 'admin_panel:assessment_list' %}" id="createAssessmentForm">
+        {% csrf_token %}
       <div class="modal-header">
         <h5 class="modal-title" id="assessmentEditorLabel">
           <i class="bi bi-clipboard2-check-fill"></i>
@@ -1079,13 +1007,13 @@
           <div class="row g-3">
             <div class="col-12">
               <label for="editorAssessTitle" class="form-label">Title <span class="req">*</span></label>
-              <input type="text" class="form-control" id="editorAssessTitle"
+              <input type="text" class="form-control" id="editorAssessTitle" name="title" required
                      placeholder="e.g. HTML5 Fundamentals Quiz">
             </div>
 
             <div class="col-12">
               <label for="editorAssessDesc" class="form-label">Description</label>
-              <textarea class="form-control" id="editorAssessDesc" rows="3"
+              <textarea class="form-control" id="editorAssessDesc" name="description" rows="3"
                         placeholder="Brief description shown to students before they begin…"></textarea>
               <div class="form-text mt-1">Optional. Max 500 characters.</div>
             </div>
@@ -1101,18 +1029,21 @@
           <div class="row g-3">
             <div class="col-12 col-sm-6">
               <label for="editorModule" class="form-label">Module <span class="req">*</span></label>
-              <select class="form-select" id="editorModule">
+              <select class="form-select" id="editorModule" name="module" required>
                 <option value="">Select Module</option>
-                <option value="m1">Module 1: Introduction to Web Dev</option>
-                <option value="m2">Module 2: JavaScript Essentials</option>
-                <option value="m3">Module 3: Frontend Frameworks</option>
-                <option value="m4">Module 4: Backend with Node.js</option>
+                {% for c in courses %}
+                  <optgroup label="{{ c.title }}">
+                    {% for m in c.modules.all %}
+                      <option value="{{ m.pk }}">{{ c.title }} &bull; M{{ m.order }}: {{ m.title }}</option>
+                    {% endfor %}
+                  </optgroup>
+                {% endfor %}
               </select>
             </div>
 
             <div class="col-12 col-sm-6">
               <label for="editorUnlockOrder" class="form-label">Unlock Order</label>
-              <input type="number" class="form-control" id="editorUnlockOrder"
+              <input type="number" class="form-control" id="editorUnlockOrder" name="unlock_order"
                      min="0" step="1" placeholder="e.g. 1">
               <div class="form-text mt-1">Order in which it unlocks in the module.</div>
             </div>
@@ -1128,25 +1059,25 @@
           <div class="row g-3">
             <div class="col-6 col-sm-3">
               <label for="editorTotalMarks" class="form-label">Total Marks <span class="req">*</span></label>
-              <input type="number" class="form-control" id="editorTotalMarks"
+              <input type="number" class="form-control" id="editorTotalMarks" name="total_marks" required
                      min="0" step="1" placeholder="50">
             </div>
 
             <div class="col-6 col-sm-3">
               <label for="editorPassPct" class="form-label">Pass % <span class="req">*</span></label>
-              <input type="number" class="form-control" id="editorPassPct"
+              <input type="number" class="form-control" id="editorPassPct" name="pass_percentage" required
                      min="0" max="100" step="1" placeholder="60">
             </div>
 
             <div class="col-6 col-sm-3">
               <label for="editorTimeLimit" class="form-label">Time Limit (min)</label>
-              <input type="number" class="form-control" id="editorTimeLimit"
+              <input type="number" class="form-control" id="editorTimeLimit" name="time_limit_minutes"
                      min="0" step="1" placeholder="30">
             </div>
 
             <div class="col-6 col-sm-3">
               <label for="editorAttempts" class="form-label">Attempts Allowed</label>
-              <select class="form-select" id="editorAttempts">
+              <select class="form-select" id="editorAttempts" name="attempts_allowed">
                 <option value="1">1 attempt</option>
                 <option value="2">2 attempts</option>
                 <option value="3" selected>3 attempts</option>
@@ -1157,7 +1088,7 @@
 
             <div class="col-12 col-sm-6">
               <label for="editorDueDate" class="form-label">Due Date</label>
-              <input type="date" class="form-control" id="editorDueDate">
+              <input type="date" class="form-control" id="editorDueDate" name="due_date">
             </div>
           </div>
         </div>
@@ -1170,7 +1101,7 @@
 
           <div class="edvanto-switch-row">
             <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" role="switch" id="editorPublished">
+              <input class="form-check-input" type="checkbox" role="switch" id="editorPublished" name="is_published">
             </div>
             <div>
               <p class="edvanto-switch-label">Published</p>
@@ -1185,13 +1116,11 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-edvanto-outline btn-sm" onclick="saveEditor(false)">
-          <i class="bi bi-file-earmark me-1"></i> Save Draft
-        </button>
-        <button type="button" class="btn btn-edvanto-primary btn-sm" onclick="saveEditor(true)">
+        <button type="submit" class="btn btn-edvanto-primary btn-sm">
           <i class="bi bi-check-lg me-1"></i> Save Assessment
         </button>
       </div>
+      </form>
     </div>
   </div>
 </div>

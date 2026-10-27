@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from ..models import (
@@ -40,8 +41,9 @@ def get_course_lessons(course):
         Lesson.objects
         .filter(
             module__course=course,
-            status=Lesson.Status.PUBLISHED,
-            is_published=True,
+        )
+        .filter(
+            Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True)
         )
         .select_related("module")
         .order_by(
@@ -131,8 +133,9 @@ def is_first_lesson(enrollment, lesson):
         Lesson.objects
         .filter(
             module__course=enrollment.course,
-            status=Lesson.Status.PUBLISHED,
-            is_published=True,
+        )
+        .filter(
+            Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True)
         )
         .order_by(
             "module__unlock_order",
@@ -166,10 +169,7 @@ def lesson_is_accessible(enrollment, lesson):
     if lesson.module.course_id != enrollment.course_id:
         return False
 
-    if lesson.status != Lesson.Status.PUBLISHED:
-        return False
-
-    if not lesson.is_published:
+    if lesson.status != Lesson.Status.PUBLISHED and not lesson.is_published:
         return False
 
     progress = get_learning_progress(
@@ -611,11 +611,17 @@ def complete_lesson(enrollment, lesson):
 def update_enrollment_progress(enrollment):
     """
     Calculate overall course progress from completed lessons.
+    Denominator is the total number of published lessons in the course.
     """
 
     total = (
-        LearningProgress.objects
-        .filter(enrollment=enrollment)
+        Lesson.objects
+        .filter(
+            module__course=enrollment.course,
+        )
+        .filter(
+            Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True)
+        )
         .count()
     )
 
@@ -639,6 +645,9 @@ def update_enrollment_progress(enrollment):
         Decimal(completed)
         / Decimal(total)
     ) * Decimal("100")
+
+    # Clamp to 100 max
+    percentage = min(Decimal("100"), percentage)
 
     enrollment.progress_percent = percentage.quantize(
         Decimal("0.01")

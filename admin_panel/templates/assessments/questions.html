@@ -697,12 +697,37 @@
 <div class="edvanto-breadcrumb mb-3">
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#dashboard' %}">Edvanto</a></li>
-      <li class="breadcrumb-item"><a href="#assessments' %}">Assessments</a></li>
-      <li class="breadcrumb-item"><a href="#">HTML5 Fundamentals Quiz</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Questions</li>
+      <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'admin_panel:assessment_list' %}">Assessments</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ selected_assessment.title|default:"Questions" }}</li>
     </ol>
   </nav>
+</div>
+
+<!-- Assessment Switcher Bar -->
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label mb-0 fw-bold small"><i class="bi bi-collection me-1 text-primary"></i> Assessment:</label>
+      <form method="get" class="d-inline-block">
+        <select class="form-select form-select-sm" name="assessment" onchange="this.form.submit()">
+          {% for a in assessments %}
+            <option value="{{ a.pk }}" {% if selected_assessment.pk == a.pk %}selected{% endif %}>
+              {{ a.title }} ({{ a.module.course.title }} &bull; {{ a.get_assessment_type_display }})
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'admin_panel:assessment_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Assessments List
+      </a>
+      <button class="btn btn-sm btn-edvanto-primary" data-bs-toggle="modal" data-bs-target="#newQuestionModal">
+        <i class="bi bi-plus-lg me-1"></i> Add Question
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ============================================================
@@ -715,25 +740,25 @@
         <i class="bi bi-list-check"></i>
       </div>
       <div style="min-width: 0;">
-        <div class="edvanto-qb-banner-label">Question Builder · ASM-1024</div>
-        <h1 class="edvanto-qb-banner-title">HTML5 Fundamentals Quiz</h1>
+        <div class="edvanto-qb-banner-label">Question Builder &bull; ASM-{{ selected_assessment.pk }}</div>
+        <h1 class="edvanto-qb-banner-title">{{ selected_assessment.title }}</h1>
         <div class="edvanto-qb-banner-meta">
-          <span><i class="bi bi-journal-bookmark-fill"></i> Full Stack Web Development</span>
-          <span><i class="bi bi-collection-fill"></i> Module 1: Introduction to Web Dev</span>
+          <span><i class="bi bi-journal-bookmark-fill"></i> {{ selected_assessment.module.course.title }}</span>
+          <span><i class="bi bi-collection-fill"></i> M{{ selected_assessment.module.order }}: {{ selected_assessment.module.title }}</span>
         </div>
       </div>
     </div>
     <div class="edvanto-qb-banner-stats">
       <div class="edvanto-qb-banner-stat">
-        <div class="num" id="bannerTotalQuestions">5</div>
+        <div class="num">{{ questions|length }}</div>
         <div class="lbl">Questions</div>
       </div>
       <div class="edvanto-qb-banner-stat">
-        <div class="num" id="bannerTotalMarks">50</div>
+        <div class="num">{{ selected_assessment.total_marks }}</div>
         <div class="lbl">Total Marks</div>
       </div>
       <div class="edvanto-qb-banner-stat">
-        <div class="num">60%</div>
+        <div class="num">{{ selected_assessment.pass_percentage }}%</div>
         <div class="lbl">Pass Mark</div>
       </div>
     </div>
@@ -773,459 +798,165 @@
      QUESTIONS LIST
      ============================================================ -->
 <div id="questionsContainer">
-
-  <!-- ============================================================
-       QUESTION 1 – MCQ
-       ============================================================ -->
-  <div class="edvanto-q-card" draggable="true" data-question-id="1" data-type="mcq">
-    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody1"
-         aria-expanded="true" aria-controls="qBody1">
-      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
-        <i class="bi bi-grip-vertical"></i>
-      </span>
-      <div class="edvanto-q-num">1</div>
-      <div class="edvanto-q-info">
-        <h3 class="edvanto-q-title">Which HTML5 tag is used to define an independent, self-contained content block?</h3>
-        <div class="edvanto-q-meta">
-          <span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>
-          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
-          <span><i class="bi bi-check-circle-fill" style="color: #0F9D58;"></i> 4 options · 1 correct</span>
+  {% for q in questions %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary rounded-pill px-3 py-2">Q{{ forloop.counter }}</span>
+          <span class="badge bg-light text-dark border text-uppercase">{{ q.get_question_type_display }}</span>
+          <span class="badge bg-light text-dark border"><i class="bi bi-trophy text-warning me-1"></i>{{ q.marks }} mark{{ q.marks|pluralize }}</span>
         </div>
-      </div>
-      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
-        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
-          <i class="bi bi-files"></i>
-        </button>
-        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Which HTML5 tag is used to define an independent block?')">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>
-      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
-    </div>
-
-    <div id="qBody1" class="collapse show" data-bs-parent="#questionsContainer">
-      <div class="edvanto-q-body">
-
-        <!-- Question -->
-        <div class="mb-3">
-          <label class="form-label">Question <span class="req">*</span></label>
-          <textarea class="form-control" rows="2">Which HTML5 tag is used to define an independent, self-contained content block?</textarea>
-        </div>
-
-        <!-- Options -->
-        <div class="mb-2">
-          <label class="form-label">Options <span class="req">*</span></label>
-          <div class="edvanto-options-list" data-options-for="1">
-
-            <div class="edvanto-option-row correct">
-              <button type="button" class="edvanto-option-toggle checked" title="Mark as correct answer"
-                      onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">A</span>
-              <input type="text" class="edvanto-option-input" value="&lt;article&gt;" placeholder="Option text…">
-              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" title="Mark as correct answer"
-                      onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">B</span>
-              <input type="text" class="edvanto-option-input" value="&lt;section&gt;" placeholder="Option text…">
-              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" title="Mark as correct answer"
-                      onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">C</span>
-              <input type="text" class="edvanto-option-input" value="&lt;div&gt;" placeholder="Option text…">
-              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" title="Mark as correct answer"
-                      onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">D</span>
-              <input type="text" class="edvanto-option-input" value="&lt;span&gt;" placeholder="Option text…">
-              <button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-          </div>
-          <button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">
-            <i class="bi bi-plus-lg"></i> Add Option
+        <form method="post" action="{% url 'admin_panel:question_delete' q.pk %}"
+              onsubmit="return confirm('Delete Question #{{ forloop.counter }}?');" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash me-1"></i> Delete
           </button>
-        </div>
-
-        <div class="row g-3 mt-2">
-          <div class="col-12 col-sm-4">
-            <label class="form-label">Marks <span class="req">*</span></label>
-            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
-                   oninput="recalculateMarks()">
-          </div>
-          <div class="col-12 col-sm-8">
-            <label class="form-label">Explanation</label>
-            <input type="text" class="form-control"
-                   value="The &lt;article&gt; tag represents a self-contained composition in a document.">
-            <div class="form-text mt-1">Shown to students after they answer.</div>
-          </div>
-        </div>
-
+        </form>
       </div>
+      <div class="card-body p-4">
+        <h5 class="card-title h6 mb-3 text-dark fw-bold">{{ q.question_text }}</h5>
+
+        {% if q.question_type == 'mcq' %}
+          <div class="list-group list-group-flush mb-3">
+            {% for opt in q.options %}
+              <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 {% if opt == q.correct_answer %}bg-success-subtle text-success fw-bold border-success{% else %}bg-light{% endif %}">
+                <div>
+                  <span class="badge bg-secondary me-2">{{ forloop.counter }}</span>
+                  <span>{{ opt }}</span>
+                </div>
+                {% if opt == q.correct_answer %}
+                  <span class="badge bg-success"><i class="bi bi-check2 me-1"></i> Correct Answer</span>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% elif q.question_type == 'text' %}
+          <div class="p-3 bg-light rounded border text-muted small mb-2">
+            <strong>Expected Answer Guidance:</strong> {{ q.correct_answer|default:"Open-ended student text response." }}
+          </div>
+        {% else %}
+          <div class="p-3 bg-light rounded border text-muted small mb-2">
+            <i class="bi bi-file-earmark-arrow-up text-primary me-1"></i> Student is required to upload a document or code archive for manual review.
+          </div>
+        {% endif %}
+
+        {% if q.explanation %}
+          <div class="small text-muted mt-2">
+            <i class="bi bi-info-circle me-1 text-primary"></i> <strong>Explanation:</strong> {{ q.explanation }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="card border-0 shadow-sm p-5 text-center text-muted">
+      <i class="bi bi-patch-question fs-1 d-block mb-3 text-secondary"></i>
+      <h5>No questions in this assessment yet</h5>
+      <p class="small text-muted mb-4">Click the button below to add your first question (MCQ, Text, or File Upload).</p>
+      <div>
+        <button class="btn btn-edvanto-primary" data-bs-toggle="modal" data-bs-target="#newQuestionModal">
+          <i class="bi bi-plus-lg me-1"></i> Add First Question
+        </button>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div class="modal fade" id="newQuestionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <form method="post" action="{% url 'admin_panel:question_save' %}">
+        {% csrf_token %}
+        <input type="hidden" name="assessment_id" value="{{ selected_assessment.pk }}">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title h6 mb-0 text-white">
+            <i class="bi bi-plus-circle me-2 text-primary"></i>
+            Add Question to {{ selected_assessment.title }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-12 col-md-8">
+              <label class="form-label small fw-bold">Question Type *</label>
+              <select class="form-select" name="question_type" id="qTypeSelect" onchange="toggleQTypeInputs(this.value)">
+                {% for code, label in question_type_choices %}
+                  <option value="{{ code }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-bold">Marks *</label>
+              <input type="number" class="form-control" name="marks" value="1" min="1" required>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-bold">Order</label>
+              <input type="number" class="form-control" name="order" value="{{ questions|length|add:1 }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Question Text *</label>
+              <textarea class="form-control" name="question_text" rows="3" required
+                        placeholder="Write question statement here..."></textarea>
+            </div>
+
+            <!-- MCQ OPTIONS SECTION -->
+            <div id="mcqOptionsSection" class="col-12">
+              <label class="form-label small fw-bold">Options (For MCQ)</label>
+              <div class="row g-2 mb-2">
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">A</span>
+                    <input type="text" class="form-control" name="option_0" placeholder="Option A text">
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">B</span>
+                    <input type="text" class="form-control" name="option_1" placeholder="Option B text">
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">C</span>
+                    <input type="text" class="form-control" name="option_2" placeholder="Option C text">
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">D</span>
+                    <input type="text" class="form-control" name="option_3" placeholder="Option D text">
+                  </div>
+                </div>
+              </div>
+              <label class="form-label small fw-bold mt-2">Correct Answer (Exact text matching correct option above)</label>
+              <input type="text" class="form-control" name="correct_answer" placeholder="e.g. Value matching Option A, B, C or D">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-bold">Explanation (Shown after submission)</label>
+              <textarea class="form-control" name="explanation" rows="2"
+                        placeholder="Explain why this answer is correct..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-edvanto-primary"><i class="bi bi-check2 me-1"></i> Save Question</button>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 
-  <!-- ============================================================
-       QUESTION 2 – MCQ
-       ============================================================ -->
-  <div class="edvanto-q-card" draggable="true" data-question-id="2" data-type="mcq">
-    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody2"
-         aria-expanded="false" aria-controls="qBody2">
-      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
-        <i class="bi bi-grip-vertical"></i>
-      </span>
-      <div class="edvanto-q-num">2</div>
-      <div class="edvanto-q-info">
-        <h3 class="edvanto-q-title">Which attribute is required to associate a &lt;label&gt; with an input field?</h3>
-        <div class="edvanto-q-meta">
-          <span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>
-          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
-          <span><i class="bi bi-check-circle-fill" style="color: #0F9D58;"></i> 4 options · 1 correct</span>
-        </div>
-      </div>
-      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
-        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
-          <i class="bi bi-files"></i>
-        </button>
-        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Which attribute is required to associate a label with an input?')">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>
-      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
-    </div>
-
-    <div id="qBody2" class="collapse" data-bs-parent="#questionsContainer">
-      <div class="edvanto-q-body">
-
-        <div class="mb-3">
-          <label class="form-label">Question <span class="req">*</span></label>
-          <textarea class="form-control" rows="2">Which attribute is required to associate a &lt;label&gt; with an input field?</textarea>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">Options <span class="req">*</span></label>
-          <div class="edvanto-options-list" data-options-for="2">
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">A</span>
-              <input type="text" class="edvanto-option-input" value="name">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row correct">
-              <button type="button" class="edvanto-option-toggle checked" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">B</span>
-              <input type="text" class="edvanto-option-input" value="for">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">C</span>
-              <input type="text" class="edvanto-option-input" value="id">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">D</span>
-              <input type="text" class="edvanto-option-input" value="class">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-          </div>
-          <button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">
-            <i class="bi bi-plus-lg"></i> Add Option
-          </button>
-        </div>
-
-        <div class="row g-3 mt-2">
-          <div class="col-12 col-sm-4">
-            <label class="form-label">Marks <span class="req">*</span></label>
-            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
-                   oninput="recalculateMarks()">
-          </div>
-          <div class="col-12 col-sm-8">
-            <label class="form-label">Explanation</label>
-            <input type="text" class="form-control"
-                   value="The 'for' attribute matches the id of the input it describes.">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       QUESTION 3 – TEXT
-       ============================================================ -->
-  <div class="edvanto-q-card" draggable="true" data-question-id="3" data-type="text">
-    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody3"
-         aria-expanded="false" aria-controls="qBody3">
-      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
-        <i class="bi bi-grip-vertical"></i>
-      </span>
-      <div class="edvanto-q-num text">3</div>
-      <div class="edvanto-q-info">
-        <h3 class="edvanto-q-title">Explain the difference between semantic and non-semantic HTML elements with an example.</h3>
-        <div class="edvanto-q-meta">
-          <span class="edvanto-q-type text"><i class="bi bi-textarea-t"></i> Text</span>
-          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
-          <span><i class="bi bi-pencil-square" style="color: #007A8F;"></i> Manual grading</span>
-        </div>
-      </div>
-      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
-        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
-          <i class="bi bi-files"></i>
-        </button>
-        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Explain the difference between semantic and non-semantic HTML elements')">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>
-      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
-    </div>
-
-    <div id="qBody3" class="collapse" data-bs-parent="#questionsContainer">
-      <div class="edvanto-q-body">
-
-        <div class="mb-3">
-          <label class="form-label">Question <span class="req">*</span></label>
-          <textarea class="form-control" rows="2">Explain the difference between semantic and non-semantic HTML elements with an example.</textarea>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Expected Answer / Grading Guidance</label>
-          <textarea class="form-control" rows="4"
-                    placeholder="Describe what a good answer should contain…">A strong answer should mention that semantic elements clearly describe their meaning to both the browser and the developer (e.g. &lt;article&gt;, &lt;header&gt;, &lt;footer&gt;), while non-semantic elements tell nothing about their content (e.g. &lt;div&gt;, &lt;span&gt;). Award full marks for a correct example of each.</textarea>
-          <div class="form-text mt-1">Visible to instructors during grading.</div>
-        </div>
-
-        <div class="row g-3">
-          <div class="col-12 col-sm-4">
-            <label class="form-label">Marks <span class="req">*</span></label>
-            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
-                   oninput="recalculateMarks()">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       QUESTION 4 – FILE UPLOAD
-       ============================================================ -->
-  <div class="edvanto-q-card" draggable="true" data-question-id="4" data-type="file">
-    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody4"
-         aria-expanded="false" aria-controls="qBody4">
-      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
-        <i class="bi bi-grip-vertical"></i>
-      </span>
-      <div class="edvanto-q-num file">4</div>
-      <div class="edvanto-q-info">
-        <h3 class="edvanto-q-title">Submit your completed HTML page for the "About Me" project.</h3>
-        <div class="edvanto-q-meta">
-          <span class="edvanto-q-type file"><i class="bi bi-file-earmark-arrow-up"></i> File Upload</span>
-          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
-          <span><i class="bi bi-filetype-html" style="color: #9A6D00;"></i> .html, .zip · Max 10 MB</span>
-        </div>
-      </div>
-      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
-        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
-          <i class="bi bi-files"></i>
-        </button>
-        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Submit your completed HTML page')">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>
-      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
-    </div>
-
-    <div id="qBody4" class="collapse" data-bs-parent="#questionsContainer">
-      <div class="edvanto-q-body">
-
-        <div class="mb-3">
-          <label class="form-label">Question <span class="req">*</span></label>
-          <textarea class="form-control" rows="2">Submit your completed HTML page for the "About Me" project.</textarea>
-        </div>
-
-        <div class="row g-3">
-          <div class="col-12 col-sm-6">
-            <label class="form-label">Allowed File Types <span class="req">*</span></label>
-            <input type="text" class="form-control" value=".html, .htm, .zip"
-                   placeholder="e.g. .pdf, .docx, .zip">
-            <div class="form-text mt-1">Comma-separated list of extensions.</div>
-          </div>
-
-          <div class="col-12 col-sm-3">
-            <label class="form-label">Max File Size <span class="req">*</span></label>
-            <div class="input-group">
-              <input type="number" class="form-control" value="10" min="1" step="1">
-              <span class="input-group-text" style="font-size: 0.82rem; font-weight: 600; color: var(--edvanto-gray-600); background: var(--edvanto-gray-50);">MB</span>
-            </div>
-          </div>
-
-          <div class="col-12 col-sm-3">
-            <label class="form-label">Marks <span class="req">*</span></label>
-            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
-                   oninput="recalculateMarks()">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       QUESTION 5 – MCQ
-       ============================================================ -->
-  <div class="edvanto-q-card" draggable="true" data-question-id="5" data-type="mcq">
-    <div class="edvanto-q-header" data-bs-toggle="collapse" data-bs-target="#qBody5"
-         aria-expanded="false" aria-controls="qBody5">
-      <span class="edvanto-q-drag" title="Drag to reorder" onclick="event.stopPropagation();">
-        <i class="bi bi-grip-vertical"></i>
-      </span>
-      <div class="edvanto-q-num">5</div>
-      <div class="edvanto-q-info">
-        <h3 class="edvanto-q-title">Which of the following is a valid HTML5 doctype declaration?</h3>
-        <div class="edvanto-q-meta">
-          <span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>
-          <span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>
-          <span><i class="bi bi-check-circle-fill" style="color: #0F9D58;"></i> 4 options · 1 correct</span>
-        </div>
-      </div>
-      <div class="edvanto-q-actions" onclick="event.stopPropagation();">
-        <button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">
-          <i class="bi bi-files"></i>
-        </button>
-        <button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, 'Which is a valid HTML5 doctype declaration?')">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>
-      <i class="bi bi-chevron-down edvanto-q-chevron"></i>
-    </div>
-
-    <div id="qBody5" class="collapse" data-bs-parent="#questionsContainer">
-      <div class="edvanto-q-body">
-
-        <div class="mb-3">
-          <label class="form-label">Question <span class="req">*</span></label>
-          <textarea class="form-control" rows="2">Which of the following is a valid HTML5 doctype declaration?</textarea>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">Options <span class="req">*</span></label>
-          <div class="edvanto-options-list" data-options-for="5">
-
-            <div class="edvanto-option-row correct">
-              <button type="button" class="edvanto-option-toggle checked" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">A</span>
-              <input type="text" class="edvanto-option-input" value="&lt;!DOCTYPE html&gt;">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">B</span>
-              <input type="text" class="edvanto-option-input" value="&lt;!DOCTYPE HTML5&gt;">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">C</span>
-              <input type="text" class="edvanto-option-input" value="&lt;DOCTYPE html&gt;">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div class="edvanto-option-row">
-              <button type="button" class="edvanto-option-toggle" onclick="toggleCorrect(this)">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <span class="edvanto-option-letter">D</span>
-              <input type="text" class="edvanto-option-input" value="&lt;!html&gt;">
-              <button type="button" class="edvanto-option-remove" onclick="removeOption(this)">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-          </div>
-          <button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">
-            <i class="bi bi-plus-lg"></i> Add Option
-          </button>
-        </div>
-
-        <div class="row g-3 mt-2">
-          <div class="col-12 col-sm-4">
-            <label class="form-label">Marks <span class="req">*</span></label>
-            <input type="number" class="form-control marks-input" value="10" min="0" step="1"
-                   oninput="recalculateMarks()">
-          </div>
-          <div class="col-12 col-sm-8">
-            <label class="form-label">Explanation</label>
-            <input type="text" class="form-control"
-                   value="HTML5 uses the simplified doctype &lt;!DOCTYPE html&gt;.">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-</div><!-- /#questionsContainer -->
+<script>
+function toggleQTypeInputs(val) {
+  var sec = document.getElementById('mcqOptionsSection');
+  if (sec) {
+    sec.style.display = (val === 'mcq') ? 'block' : 'none';
+  }
+}
+</script>
 
 <!-- ============================================================
      ADD QUESTION CARD

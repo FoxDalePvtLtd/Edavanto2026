@@ -1,0 +1,98 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_title %}Assessments{% endblock %}
+{% block page_title %}Course Assessments{% endblock %}
+{% block page_context %}Quizzes, tests and hands-on assignments for enrolled courses{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-3">
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <h2 class="h4 mb-1 fw-bold">Assessments &amp; Quizzes</h2>
+      <p class="text-muted small mb-0">Complete module tests to validate your learning and unlock subsequent curriculum milestones.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for a in assessments %}
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm hover-shadow transition">
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <span class="badge {% if a.assessment_type == 'assignment' %}bg-info-subtle text-info border border-info-subtle{% else %}bg-primary-subtle text-primary border border-primary-subtle{% endif %} text-uppercase">
+              <i class="bi {% if a.assessment_type == 'assignment' %}bi-file-earmark-code{% else %}bi-patch-question{% endif %} me-1"></i>
+              {{ a.get_assessment_type_display }}
+            </span>
+            {% if a.passed %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle-fill me-1"></i>Passed</span>
+            {% elif a.best_submission %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-hourglass-split me-1"></i>Score: {{ a.best_submission.score|default:"Pending" }}</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary">Not Attempted</span>
+            {% endif %}
+          </div>
+          <div class="card-body p-4 d-flex flex-column justify-content-between">
+            <div>
+              <div class="small text-muted mb-1">{{ a.module.course.title }} &bull; M{{ a.module.order }}</div>
+              <h5 class="h6 fw-bold mb-2 text-dark">{{ a.title }}</h5>
+              {% if a.description %}
+                <p class="small text-muted mb-3" style="min-height: 40px;">{{ a.description|truncatewords:20 }}</p>
+              {% endif %}
+
+              <div class="p-3 bg-light rounded border mb-3 small">
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted">Total Marks:</span>
+                  <span class="fw-bold">{{ a.total_marks }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted">Pass Requirement:</span>
+                  <span class="fw-bold text-success">{{ a.pass_percentage }}%</span>
+                </div>
+                {% if a.time_limit_minutes %}
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Time Limit:</span>
+                    <span class="fw-bold">{{ a.time_limit_minutes }} mins</span>
+                  </div>
+                {% endif %}
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted">Attempts:</span>
+                  <span>{{ a.attempts_taken }} / {% if a.attempts_allowed > 0 %}{{ a.attempts_allowed }}{% else %}Unlimited{% endif %}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              {% if a.best_submission %}
+                <div class="d-flex gap-2">
+                  <a href="{% url 'core:assessment_result' a.best_submission.pk %}" class="btn btn-sm btn-outline-secondary flex-fill">
+                    <i class="bi bi-eye me-1"></i> Result
+                  </a>
+                  {% if not a.passed and a.attempts_allowed > a.attempts_taken or a.attempts_allowed == 0 %}
+                    <a href="{% url 'core:take_assessment' a.pk %}" class="btn btn-sm btn-primary flex-fill">
+                      <i class="bi bi-arrow-repeat me-1"></i> Retake
+                    </a>
+                  {% endif %}
+                </div>
+              {% else %}
+                <a href="{% url 'core:take_assessment' a.pk %}" class="btn btn-sm btn-primary w-100">
+                  <i class="bi bi-play-circle me-1"></i> Start Assessment
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card border-0 shadow-sm p-5 text-center text-muted">
+          <i class="bi bi-clipboard2-check fs-1 d-block mb-3 text-secondary"></i>
+          <h5>No published assessments found</h5>
+          <p class="small text-muted mb-0">Assessments published by your instructors will appear here automatically.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

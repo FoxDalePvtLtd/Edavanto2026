@@ -1,0 +1,160 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_title %}Take: {{ assessment.title }}{% endblock %}
+{% block page_title %}{{ assessment.title }}{% endblock %}
+{% block page_context %}{{ assessment.module.course.title }} · Module {{ assessment.module.order }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-3">
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <div class="small text-muted mb-1">
+        <a href="{% url 'core:student_assessments' %}" class="text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Back to Assessments
+        </a>
+      </div>
+      <h2 class="h4 mb-1 fw-bold">{{ assessment.title }}</h2>
+      <div class="small text-muted">
+        Total Marks: <strong>{{ assessment.total_marks }}</strong> &bull;
+        Pass Percentage: <strong>{{ assessment.pass_percentage }}%</strong> &bull;
+        Attempts Remaining: <strong>{{ attempts_left }}</strong>
+      </div>
+    </div>
+
+    {% if assessment.time_limit_minutes %}
+      <div class="p-2 px-3 bg-white rounded border shadow-sm d-flex align-items-center gap-2">
+        <i class="bi bi-stopwatch-fill fs-5 text-warning"></i>
+        <div>
+          <div class="small text-muted" style="font-size: 0.72rem;">TIME REMAINING</div>
+          <div id="countdownTimer" class="fw-bold font-monospace text-dark fs-6"
+               data-minutes="{{ assessment.time_limit_minutes }}">
+            {{ assessment.time_limit_minutes }}:00
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if assessment.description %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4 bg-light rounded">
+        <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-1 text-primary"></i> Assessment Instructions</h6>
+        <p class="mb-0 small text-muted">{{ assessment.description|linebreaks }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ASSESSMENT FORM -->
+  <form method="post" action="{% url 'core:take_assessment' assessment.pk %}" id="assessmentTakeForm" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        {% for q in questions %}
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <span class="badge bg-primary rounded-pill px-3 py-2">Question {{ forloop.counter }} of {{ questions|length }}</span>
+              <span class="badge bg-light text-dark border"><i class="bi bi-trophy text-warning me-1"></i>{{ q.marks }} mark{{ q.marks|pluralize }}</span>
+            </div>
+            <div class="card-body p-4">
+              <h5 class="h6 fw-bold mb-3 text-dark">{{ q.question_text }}</h5>
+
+              {% if q.question_type == 'mcq' %}
+                <div class="d-flex flex-column gap-2">
+                  {% for opt in q.options %}
+                    <label class="p-3 bg-light rounded border d-flex align-items-center gap-3 cursor-pointer hover-bg-primary-subtle transition mb-0">
+                      <input type="radio" class="form-check-input mt-0" name="question_{{ q.pk }}" value="{{ opt }}" required>
+                      <span class="small fw-semibold text-dark">{{ opt }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              {% elif q.question_type == 'text' %}
+                <div class="mb-2">
+                  <textarea class="form-control" name="question_{{ q.pk }}" rows="4" required
+                            placeholder="Type your detailed answer or code solution here..."></textarea>
+                </div>
+              {% elif q.question_type == 'file' %}
+                <div class="p-3 bg-light rounded border">
+                  <label class="form-label small fw-bold mb-1"><i class="bi bi-upload me-1 text-primary"></i> Upload Submission File / Archive:</label>
+                  <input type="file" class="form-control" name="question_{{ q.pk }}" required>
+                  <div class="form-text small mt-1">Accepted formats: PDF, ZIP, code archives, or screenshots.</div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="alert alert-warning">This assessment does not have any questions configured yet.</div>
+        {% endfor %}
+
+        <div class="card border-0 shadow-sm p-4 bg-white d-flex justify-content-between align-items-center flex-row flex-wrap gap-3">
+          <a href="{% url 'core:student_assessments' %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary px-5 py-2 fw-bold" id="submitAssessmentBtn"
+                  onclick="return confirm('Ready to submit your answers?');">
+            <i class="bi bi-check-circle me-1"></i> Submit Assessment
+          </button>
+        </div>
+      </div>
+
+      <!-- SIDEBAR INFO -->
+      <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm sticky-top" style="top: 1rem;">
+          <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2 text-primary"></i> Question Navigator</h6>
+          </div>
+          <div class="card-body p-4">
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              {% for q in questions %}
+                <span class="badge bg-light text-dark border p-2 px-3 fw-bold">Q{{ forloop.counter }}</span>
+              {% endfor %}
+            </div>
+
+            <div class="small text-muted border-top pt-3">
+              <div class="mb-2"><i class="bi bi-check2 text-success me-1"></i> Answer all questions before submitting.</div>
+              <div class="mb-2"><i class="bi bi-clock text-warning me-1"></i> If the timer expires, answers will auto-submit.</div>
+              <div><i class="bi bi-shield-check text-primary me-1"></i> Multiple choice questions are graded instantly.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>
+
+{% if assessment.time_limit_minutes %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var timerEl = document.getElementById("countdownTimer");
+  if (!timerEl) return;
+  var minutes = parseInt(timerEl.getAttribute("data-minutes"), 10);
+  var totalSeconds = minutes * 60;
+
+  var interval = setInterval(function () {
+    totalSeconds--;
+    if (totalSeconds <= 0) {
+      clearInterval(interval);
+      alert("Time is up! Submitting your assessment automatically.");
+      document.getElementById("assessmentTakeForm").submit();
+      return;
+    }
+    var m = Math.floor(totalSeconds / 60);
+    var s = totalSeconds % 60;
+    timerEl.textContent = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+    if (totalSeconds < 120) {
+      timerEl.classList.remove("text-dark");
+      timerEl.classList.add("text-danger");
+    }
+  }, 1000);
+});
+</script>
+{% endif %}
+
+<style>
+.cursor-pointer { cursor: pointer; }
+.hover-bg-primary-subtle:hover { background-color: #eef2ff !important; border-color: var(--edvanto-violet) !important; }
+</style>
+{% endblock %}

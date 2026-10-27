@@ -1,0 +1,205 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Doubt Clearance{% endblock %}
+
+{% block content %}
+<div class="edvanto-breadcrumb mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Edvanto</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Doubts Clearance</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h1 class="edvanto-page-title mb-1">Doubt Clearance Inbox</h1>
+    <p class="edvanto-page-subtitle">Track, answer, and resolve questions asked by enrolled students on curriculum lessons.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-edvanto-outline btn-sm px-3" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+      <i class="bi bi-funnel me-1"></i> Filter Doubts
+    </button>
+  </div>
+</div>
+
+<!-- ================= STAT CARDS ================= -->
+<div class="row g-3 g-lg-4 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card">
+      <div class="edvanto-stat-icon">
+        <i class="bi bi-chat-quote-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Total Doubts</div>
+      <div class="edvanto-stat-value">{{ total_count|default:"0" }}</div>
+      <div class="edvanto-stat-meta text-muted">All student inquiries</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card gold">
+      <div class="edvanto-stat-icon gold">
+        <i class="bi bi-exclamation-circle-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Pending / Open</div>
+      <div class="edvanto-stat-value">{{ open_count|default:"0" }}</div>
+      <div class="edvanto-stat-meta text-warning">Requires response</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card cyan">
+      <div class="edvanto-stat-icon cyan">
+        <i class="bi bi-reply-all-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Answered</div>
+      <div class="edvanto-stat-value">{{ answered_count|default:"0" }}</div>
+      <div class="edvanto-stat-meta text-info">Awaiting student review</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="edvanto-stat-card green">
+      <div class="edvanto-stat-icon green">
+        <i class="bi bi-patch-check-fill"></i>
+      </div>
+      <div class="edvanto-stat-label">Resolved</div>
+      <div class="edvanto-stat-value">{{ resolved_count|default:"0" }}</div>
+      <div class="edvanto-stat-meta text-success">Cleared successfully</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FILTER BAR ================= -->
+<div class="collapse show mb-4" id="filterCollapse">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-3">
+      <form method="get" class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="search" class="form-control bg-light border-start-0" name="q"
+                   placeholder="Search by student, subject or lesson..."
+                   value="{{ search_query }}">
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <select class="form-select bg-light" name="status">
+            <option value="">All Statuses</option>
+            {% for code, label in status_choices %}
+              <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <select class="form-select bg-light" name="course">
+            <option value="">All Courses</option>
+            {% for c in courses %}
+              <option value="{{ c.pk }}" {% if selected_course == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-2 d-flex gap-2">
+          <button type="submit" class="btn btn-edvanto-primary w-100"><i class="bi bi-filter me-1"></i> Filter</button>
+          {% if search_query or selected_status or selected_course %}
+            <a href="{% url 'admin_panel:doubt_list' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TABLE ================= -->
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0 table-hover">
+      <thead class="table-light text-uppercase small text-muted">
+        <tr>
+          <th>Ref</th>
+          <th>Student</th>
+          <th>Course &amp; Lesson</th>
+          <th>Subject / Doubt Summary</th>
+          <th>Status</th>
+          <th>Assigned Instructor</th>
+          <th>Last Activity</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in threads %}
+          <tr>
+            <td><strong class="text-secondary">#{{ t.pk }}</strong></td>
+            <td>
+              <div class="fw-bold text-dark">{{ t.student.get_full_name|default:t.student.username }}</div>
+              <div class="small text-muted">{{ t.student.email }}</div>
+            </td>
+            <td>
+              <div class="fw-semibold small text-primary">{{ t.lesson.module.course.title }}</div>
+              <div class="small text-muted">M{{ t.lesson.module.order }}: {{ t.lesson.title }}</div>
+            </td>
+            <td>
+              <div class="fw-semibold text-dark">{{ t.subject }}</div>
+              <div class="small text-muted text-truncate" style="max-width: 280px;">
+                {{ t.messages.last.message|default:"No messages yet" }}
+              </div>
+            </td>
+            <td>
+              {% if t.status == 'open' or t.status == 'reopened' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-fire me-1 small"></i>{{ t.get_status_display }}</span>
+              {% elif t.status == 'assigned' or t.status == 'in_progress' %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">{{ t.get_status_display }}</span>
+              {% elif t.status == 'answered' %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1"><i class="bi bi-reply me-1"></i>Answered</span>
+              {% elif t.status == 'resolved' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-check2-circle me-1"></i>Resolved</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary px-2 py-1">Closed</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if t.assigned_instructor %}
+                <span class="small fw-semibold text-dark"><i class="bi bi-person-check me-1"></i>{{ t.assigned_instructor.get_full_name|default:t.assigned_instructor.username }}</span>
+              {% else %}
+                <span class="text-muted small fst-italic">Unassigned</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ t.updated_at|date:"d M Y, h:i A" }}</td>
+            <td class="text-end">
+              <a href="{% url 'admin_panel:doubt_detail_admin' t.pk %}" class="btn btn-sm btn-edvanto-primary">
+                <i class="bi bi-chat-dots me-1"></i> Open Thread
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-chat-left-dots fs-1 d-block mb-2 text-secondary"></i>
+              No doubts found in the inbox matching your criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white border-0 py-3">
+      <nav>
+        <ul class="pagination justify-content-center mb-0">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Previous</a></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Next</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

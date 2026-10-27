@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from ..models import (
@@ -310,8 +311,9 @@ def initialize_learning_progress(enrollment):
         Lesson.objects
         .filter(
             module__course=enrollment.course,
-            is_published=True,
-            status=Lesson.Status.PUBLISHED,
+        )
+        .filter(
+            Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True)
         )
         .order_by(
             "module__unlock_order",
