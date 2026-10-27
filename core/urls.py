@@ -1,6 +1,11 @@
 from django.urls import path
 
-from core.views_materials import serve_lesson_material
+from core.views_materials import (
+    serve_lesson_material,
+    material_note_api,
+    serve_resource_file,
+)
+from core.views_video import stream_lesson_video
 
 from . import views
 
@@ -15,6 +20,7 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("sign-in/", views.sign_in, name="sign_in"),
     path("forgot-password/", views.forgot_password, name="forgot_password"),
+    path("reset-password/<uidb64>/<token>/", views.password_reset_confirm, name="password_reset_confirm"),
     path("logout/", views.logout_view, name="logout"),
 
     path("course-details/<slug:slug>/", views.course_detail, name="course_detail"),
@@ -32,7 +38,16 @@ urlpatterns = [
     path("api/lesson/<int:lesson_id>/progress/", views.lesson_progress_api, name="lesson_progress_api"),
     path("api/lesson/<int:lesson_id>/complete/", views.lesson_complete_api, name="lesson_complete_api"),
     path(
-        "materials/<int:material_id>/view/", serve_lesson_material,name="serve_lesson_material",
+        "materials/<int:material_id>/view/", serve_lesson_material, name="serve_lesson_material",
+    ),
+    path(
+        "materials/<int:material_id>/note/", material_note_api, name="material_note_api",
+    ),
+    path(
+        "resources/<int:resource_id>/file/", serve_resource_file, name="serve_resource_file",
+    ),
+    path(
+        "lesson/<int:lesson_id>/video/stream/", stream_lesson_video, name="stream_lesson_video",
     ),
 
     # CAREER CONSULTATION

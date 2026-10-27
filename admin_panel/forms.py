@@ -569,6 +569,16 @@ class ResourceAdminForm(forms.ModelForm):
                 )
         return f
 
+    def clean_external_url(self):
+        url = self.cleaned_data.get("external_url")
+        if url:
+            low = url.lower()
+            if "/admin-panel" in low or "admin_panel" in low:
+                raise forms.ValidationError(
+                    "Resource reference links cannot point to internal admin panel management URLs."
+                )
+        return url
+
     def clean(self):
         cleaned = super().clean()
         file_obj = cleaned.get("file")
