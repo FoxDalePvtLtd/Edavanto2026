@@ -1,0 +1,122 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_title %}Result: {{ assessment.title }}{% endblock %}
+{% block page_title %}Assessment Result{% endblock %}
+{% block page_context %}{{ assessment.title }} · {{ assessment.module.course.title }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-3">
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <div class="small text-muted mb-1">
+        <a href="{% url 'core:student_assessments' %}" class="text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Back to Assessments
+        </a>
+      </div>
+      <h2 class="h4 mb-1 fw-bold">{{ assessment.title }} — Submission Result</h2>
+      <div class="small text-muted">Submitted on {{ submission.submitted_at|date:"d M Y, h:i A" }}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'core:course_dashboard' assessment.module.course.slug %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-journal-bookmark me-1"></i> Course Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- RESULT HERO BANNER -->
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="p-4 text-white d-flex justify-content-between align-items-center flex-wrap gap-4"
+         style="background: {% if passed %}linear-gradient(120deg, #0F9D58 0%, #16B86B 100%){% elif submission.status == 'submitted' %}linear-gradient(120deg, #0A3E7A 0%, #0D4E96 100%){% else %}linear-gradient(120deg, #d9534f 0%, #c9302c 100%){% endif %};">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi {% if passed %}bi-check-circle-fill{% elif submission.status == 'submitted' %}bi-hourglass-split{% else %}bi-x-circle-fill{% endif %} fs-3"></i>
+          <h3 class="h4 mb-0 fw-bold">
+            {% if passed %}
+              Congratulations! You Passed the Assessment!
+            {% elif submission.status == 'submitted' %}
+              Submission Received — Under Review
+            {% else %}
+              Assessment Not Passed
+            {% endif %}
+          </h3>
+        </div>
+        <p class="mb-0 text-white-50 small">
+          {% if passed %}
+            You have satisfied the assessment criteria for this module. Your progress is unlocked!
+          {% elif submission.status == 'submitted' %}
+            Your answers and files have been safely submitted. The instructor will review your open-ended/file responses shortly.
+          {% else %}
+            You required {{ assessment.pass_percentage }}% to pass. Review the answers below and try again.
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center gap-4 bg-white bg-opacity-10 p-3 px-4 rounded-3 text-center">
+        <div>
+          <div class="small text-white-50" style="font-size: 0.72rem;">YOUR SCORE</div>
+          <div class="h3 mb-0 fw-bold">{{ score }} <span class="fs-6 text-white-50">/ {{ total_marks }}</span></div>
+        </div>
+        <div class="border-start border-white border-opacity-25 ps-4">
+          <div class="small text-white-50" style="font-size: 0.72rem;">PERCENTAGE</div>
+          <div class="h3 mb-0 fw-bold">{{ percentage }}%</div>
+        </div>
+        <div class="border-start border-white border-opacity-25 ps-4">
+          <div class="small text-white-50" style="font-size: 0.72rem;">PASS MARK</div>
+          <div class="h3 mb-0 fw-bold">{{ assessment.pass_percentage }}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS BREAKDOWN -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-bottom">
+      <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2 text-primary"></i> Question by Question Review</h6>
+    </div>
+    <div class="card-body p-4">
+      {% for item in reviewed_questions %}
+        <div class="p-3 mb-3 rounded border {% if item.is_correct %}border-success-subtle bg-success-subtle bg-opacity-25{% elif item.question.question_type == 'mcq' %}border-danger-subtle bg-danger-subtle bg-opacity-25{% else %}bg-light{% endif %}">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary">Question {{ forloop.counter }}</span>
+            <span>
+              {% if item.question.question_type == 'mcq' %}
+                {% if item.is_correct %}
+                  <span class="badge bg-success"><i class="bi bi-check-lg me-1"></i> Correct (+{{ item.question.marks }})</span>
+                {% else %}
+                  <span class="badge bg-danger"><i class="bi bi-x-lg me-1"></i> Incorrect (0 / {{ item.question.marks }})</span>
+                {% endif %}
+              {% else %}
+                <span class="badge bg-info text-dark"><i class="bi bi-pencil me-1"></i> Manually Evaluated</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <h6 class="fw-bold text-dark mb-2">{{ item.question.question_text }}</h6>
+
+          <div class="small text-muted mb-1">
+            <strong>Your Answer:</strong>
+            <span class="{% if item.is_correct %}text-success fw-bold{% elif item.question.question_type == 'mcq' %}text-danger{% else %}text-dark{% endif %}">
+              {{ item.student_answer|default:"No response recorded" }}
+            </span>
+          </div>
+
+          {% if item.question.question_type == 'mcq' and not item.is_correct %}
+            <div class="small text-success mb-1">
+              <strong>Correct Answer:</strong> {{ item.question.correct_answer }}
+            </div>
+          {% endif %}
+
+          {% if item.question.explanation %}
+            <div class="small text-muted mt-2 pt-2 border-top">
+              <i class="bi bi-lightbulb me-1 text-warning"></i> <strong>Explanation:</strong> {{ item.question.explanation }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

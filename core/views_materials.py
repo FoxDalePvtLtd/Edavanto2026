@@ -86,8 +86,13 @@ def serve_lesson_material(request, material_id: int):
     try:
         material.file.open("rb")
         blob = material.file.read()
+    except (FileNotFoundError, OSError):
+        raise Http404("Material file is currently unavailable or missing on the server.")
     finally:
-        material.file.close()
+        try:
+            material.file.close()
+        except Exception:
+            pass
 
     try:
         plaintext = decrypt_bytes(blob)
@@ -114,9 +119,14 @@ def serve_lesson_material(request, material_id: int):
         content_type=content_type,
     )
 
-    # INLINE — discourage "Save As" but browsers may still allow it.
+    # INLINE for viewable formats (pdf, images, text); ATTACHMENT for office docs (docx, xlsx, ppt)
     safe_name = quote(material.original_filename or material.title)
-    disposition = "inline" if not material.allow_printing else "inline"
+    inline_exts = ("pdf", "png", "jpg", "jpeg", "gif", "svg", "txt", "webp")
+    fname_lower = (material.original_filename or "").lower()
+    if material.material_type in ("pdf", "text", "image") or fname_lower.endswith(inline_exts):
+        disposition = "inline"
+    else:
+        disposition = "attachment"
     response["Content-Disposition"] = f'{disposition}; filename="{safe_name}"'
 
     # Anti-cache, anti-frame, anti-referrer.

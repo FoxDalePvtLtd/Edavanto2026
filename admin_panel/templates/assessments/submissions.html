@@ -808,7 +808,7 @@
         <i class="bi bi-check-circle-fill"></i>
       </div>
       <div class="edvanto-stat-label">Graded</div>
-      <div class="edvanto-stat-value">142</div>
+      <div class="edvanto-stat-value">{{ graded_count|default:"0" }}</div>
       <div class="edvanto-stat-meta">
         <i class="bi bi-graph-up-arrow" style="color: #0F9D58; font-size: 0.75rem;"></i>
         <span>Avg. score 74%</span>
@@ -856,10 +856,9 @@
           <label class="form-label mb-1" for="assessmentFilter">Assessment</label>
           <select class="form-select" id="assessmentFilter" name="assessment">
             <option value="">All Assessments</option>
-            <option value="html5-quiz" {% if request.GET.assessment == 'html5-quiz' %}selected{% endif %}>HTML5 Fundamentals Quiz</option>
-            <option value="js-quiz" {% if request.GET.assessment == 'js-quiz' %}selected{% endif %}>JavaScript Basics Quiz</option>
-            <option value="portfolio" {% if request.GET.assessment == 'portfolio' %}selected{% endif %}>Build a Portfolio Page</option>
-            <option value="react-quiz" {% if request.GET.assessment == 'react-quiz' %}selected{% endif %}>React Components Quiz</option>
+            {% for a in assessments %}
+              <option value="{{ a.pk }}" {% if selected_assessment == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.title }}</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -955,239 +954,119 @@
           </tr>
         </thead>
         <tbody>
-          {# {% for submission in submissions %} #}
-
-          <!-- Row 1: Pending -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v1">AK</span>
-                <div>
-                  <div class="edvanto-user-name">Ananya Kapoor</div>
-                  <div class="edvanto-user-meta">ananya.k@example.com</div>
+          {% for sub in submissions %}
+            <tr>
+              <td>
+                <div class="edvanto-user-cell">
+                  <span class="edvanto-avatar-sm v1">{{ sub.student.username|slice:":2"|upper }}</span>
+                  <div>
+                    <div class="edvanto-user-name">{{ sub.student.get_full_name|default:sub.student.username }}</div>
+                    <div class="edvanto-user-meta">{{ sub.student.email }}</div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
-                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
-              </div>
-            </td>
-            <td><span style="font-size:0.8rem;">15 Apr 2025, 7:22 PM</span></td>
-            <td>
-              <div class="edvanto-score">
-                <span class="edvanto-score-value pending">Awaiting</span>
-                <span class="edvanto-score-meta">0 / 50</span>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-sub-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
-            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
-            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn success" title="Grade" onclick="openGradeModal(1)">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Ananya Kapoor')">
-                  <i class="bi bi-arrow-counterclockwise"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 2: In Progress -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v2">RS</span>
-                <div>
-                  <div class="edvanto-user-name">Rohan Sharma</div>
-                  <div class="edvanto-user-meta">rohan.s@example.com</div>
+              </td>
+              <td>
+                <div class="edvanto-assessment-cell">
+                  <div class="edvanto-assessment-title">{{ sub.assessment.title }}</div>
+                  <div class="edvanto-assessment-meta">{{ sub.assessment.module.course.title }} &bull; {{ sub.assessment.get_assessment_type_display }}</div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <div class="edvanto-assessment-title">JavaScript Basics Quiz</div>
-                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
-              </div>
-            </td>
-            <td><span style="font-size:0.8rem;">15 Apr 2025, 6:50 PM</span></td>
-            <td>
-              <div class="edvanto-score">
-                <span class="edvanto-score-value">32 / 40</span>
-                <span class="edvanto-score-meta">Q2 of 16 graded</span>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-sub-in-progress"><i class="bi bi-pencil-square"></i> In Progress</span></td>
-            <td><span style="font-size:0.8rem;">Priya Nair</span></td>
-            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">In progress</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn success" title="Continue Grading" onclick="openGradeModal(2)">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Rohan Sharma')">
-                  <i class="bi bi-arrow-counterclockwise"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 3: Graded – Pass -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v3">PM</span>
-                <div>
-                  <div class="edvanto-user-name">Priya Mehta</div>
-                  <div class="edvanto-user-meta">priya.m@example.com</div>
+              </td>
+              <td><span style="font-size:0.8rem;">{{ sub.submitted_at|date:"d M Y, h:i A" }}</span></td>
+              <td>
+                <div class="edvanto-score">
+                  {% if sub.score is not None %}
+                    <span class="edvanto-score-value">{{ sub.score }} / {{ sub.assessment.total_marks }}</span>
+                  {% else %}
+                    <span class="edvanto-score-value pending">Awaiting</span>
+                    <span class="edvanto-score-meta">Max {{ sub.assessment.total_marks }}</span>
+                  {% endif %}
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <div class="edvanto-assessment-title">HTML5 Fundamentals Quiz</div>
-                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
-              </div>
-            </td>
-            <td><span style="font-size:0.8rem;">14 Apr 2025, 8:05 PM</span></td>
-            <td>
-              <div class="edvanto-score">
-                <span class="edvanto-score-value pass">42 / 50</span>
-                <span class="edvanto-score-meta">84% · Passed</span>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-sub-graded"><i class="bi bi-check-circle-fill"></i> Graded</span></td>
-            <td><span style="font-size:0.8rem;">Priya Nair</span></td>
-            <td><span style="font-size:0.8rem;">14 Apr 2025</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="View / Edit Grade" onclick="openGradeModal(3)">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Priya Mehta')">
-                  <i class="bi bi-arrow-counterclockwise"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 4: Graded – File Submission -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v4">AV</span>
-                <div>
-                  <div class="edvanto-user-name">Arjun Verma</div>
-                  <div class="edvanto-user-meta">arjun.v@example.com</div>
+              </td>
+              <td>
+                {% if sub.status == 'submitted' %}
+                  <span class="edvanto-badge badge-sub-pending"><i class="bi bi-hourglass-split"></i> Submitted</span>
+                {% elif sub.status == 'graded' %}
+                  <span class="edvanto-badge badge-sub-graded"><i class="bi bi-check-circle-fill"></i> Graded</span>
+                {% else %}
+                  <span class="edvanto-badge badge-sub-returned"><i class="bi bi-arrow-counterclockwise"></i> Returned</span>
+                {% endif %}
+              </td>
+              <td><span style="font-size:0.8rem;">{{ sub.graded_by.get_full_name|default:sub.graded_by.username|default:"—" }}</span></td>
+              <td><span style="font-size:0.8rem;">{{ sub.graded_at|date:"d M Y, h:i A"|default:"—" }}</span></td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <button type="button" class="edvanto-action-btn success" title="Grade / Review"
+                          data-bs-toggle="modal" data-bs-target="#gradeModal{{ sub.pk }}">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <div class="edvanto-assessment-title">Build a Portfolio Page</div>
-                <div class="edvanto-assessment-meta">Full Stack Web Dev · Assignment</div>
-              </div>
-            </td>
-            <td><span style="font-size:0.8rem;">13 Apr 2025, 9:12 PM</span></td>
-            <td>
-              <div class="edvanto-score">
-                <span class="edvanto-score-value pass">88 / 100</span>
-                <span class="edvanto-score-meta">88% · Passed</span>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-sub-graded"><i class="bi bi-check-circle-fill"></i> Graded</span></td>
-            <td><span style="font-size:0.8rem;">Dr. Rajesh Sharma</span></td>
-            <td><span style="font-size:0.8rem;">13 Apr 2025</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="View / Edit Grade" onclick="openGradeModal(4)">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Arjun Verma')">
-                  <i class="bi bi-arrow-counterclockwise"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
 
-          <!-- Row 5: Returned -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v5">SN</span>
-                <div>
-                  <div class="edvanto-user-name">Sneha Nair</div>
-                  <div class="edvanto-user-meta">sneha.n@example.com</div>
+                <!-- GRADING MODAL FOR SUBMISSION -->
+                <div class="modal fade text-start" id="gradeModal{{ sub.pk }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow">
+                      <form method="post" action="{% url 'admin_panel:submission_grade' sub.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-header bg-dark text-white">
+                          <h5 class="modal-title h6 mb-0 text-white">
+                            <i class="bi bi-award me-2 text-warning"></i>
+                            Grade Submission #{{ sub.pk }} — {{ sub.student.get_full_name|default:sub.student.username }}
+                          </h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                          <div class="p-3 bg-light rounded border mb-3">
+                            <div class="fw-bold">{{ sub.assessment.title }} (Max Marks: {{ sub.assessment.total_marks }}, Pass: {{ sub.assessment.pass_percentage }}%)</div>
+                            <div class="small text-muted">Student: {{ sub.student.get_full_name|default:sub.student.username }} ({{ sub.student.email }})</div>
+                            <div class="small text-muted">Submitted At: {{ sub.submitted_at|date:"d M Y, h:i A" }}</div>
+                            {% if sub.uploaded_file %}
+                              <div class="mt-2">
+                                <a href="{{ sub.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                  <i class="bi bi-download me-1"></i> Download Uploaded File
+                                </a>
+                              </div>
+                            {% endif %}
+                          </div>
+
+                          <div class="mb-3">
+                            <label class="form-label small fw-bold">Student Answers (JSON / Responses):</label>
+                            <pre class="bg-light p-3 rounded border small text-dark" style="max-height: 200px; overflow-y: auto;">{{ sub.answers }}</pre>
+                          </div>
+
+                          <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                              <label class="form-label small fw-bold">Score Awarded (out of {{ sub.assessment.total_marks }}) *</label>
+                              <input type="number" step="0.5" min="0" max="{{ sub.assessment.total_marks }}"
+                                     class="form-control" name="score" value="{{ sub.score|default:'' }}" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                              <label class="form-label small fw-bold">Status *</label>
+                              <select class="form-select" name="status">
+                                {% for code, label in status_choices %}
+                                  <option value="{{ code }}" {% if sub.status == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer bg-light py-2">
+                          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-sm btn-edvanto-primary"><i class="bi bi-check2 me-1"></i> Save Grade</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <div class="edvanto-assessment-title">JavaScript Basics Quiz</div>
-                <div class="edvanto-assessment-meta">Full Stack Web Dev · MCQ</div>
-              </div>
-            </td>
-            <td><span style="font-size:0.8rem;">12 Apr 2025, 5:40 PM</span></td>
-            <td>
-              <div class="edvanto-score">
-                <span class="edvanto-score-value fail">18 / 40</span>
-                <span class="edvanto-score-meta">45% · Below pass</span>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-sub-returned"><i class="bi bi-arrow-counterclockwise"></i> Returned</span></td>
-            <td><span style="font-size:0.8rem;">Priya Nair</span></td>
-            <td><span style="font-size:0.8rem;">12 Apr 2025</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn" title="View / Edit Grade" onclick="openGradeModal(5)">
-                  <i class="bi bi-eye"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 6: Pending – File Submission -->
-          <tr>
-            <td>
-              <div class="edvanto-user-cell">
-                <span class="edvanto-avatar-sm v6">KG</span>
-                <div>
-                  <div class="edvanto-user-name">Kavita Gupta</div>
-                  <div class="edvanto-user-meta">kavita.g@example.com</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="edvanto-assessment-cell">
-                <div class="edvanto-assessment-title">Data Visualization Project</div>
-                <div class="edvanto-assessment-meta">Data Science &amp; AI · Assignment</div>
-              </div>
-            </td>
-            <td><span style="font-size:0.8rem;">15 Apr 2025, 4:30 PM</span></td>
-            <td>
-              <div class="edvanto-score">
-                <span class="edvanto-score-value pending">Awaiting</span>
-                <span class="edvanto-score-meta">0 / 100</span>
-              </div>
-            </td>
-            <td><span class="edvanto-badge badge-sub-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
-            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
-            <td><span style="font-size:0.8rem;color:var(--edvanto-gray-500);">—</span></td>
-            <td class="text-end">
-              <div class="d-inline-flex gap-1">
-                <button class="edvanto-action-btn success" title="Grade" onclick="openGradeModal(6)">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="edvanto-action-btn danger" title="Return for Correction" onclick="returnSubmission('Kavita Gupta')">
-                  <i class="bi bi-arrow-counterclockwise"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                No submissions found matching your filters.
+              </td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>

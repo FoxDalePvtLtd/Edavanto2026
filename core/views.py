@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate, login, logout
@@ -22,6 +23,8 @@ from .auth_services import (
 )
 
 from .models import *
+from decimal import Decimal
+from core.forms import CareerConsultationForm, StudentDoubtThreadForm, DoubtMessageForm
 
 from .registration_services import (
     validate_student_registration,
@@ -1167,7 +1170,7 @@ def lesson_view(request, lesson_id):
     # All published lessons of this course, in curriculum order
     all_lessons = list(
         Lesson.objects
-        .filter(module__course=course, is_published=True, status=Lesson.Status.PUBLISHED)
+        .filter(Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True), module__course=course)
         .select_related("module")
         .order_by(
             "module__unlock_order", "module__order",
@@ -1195,7 +1198,7 @@ def lesson_view(request, lesson_id):
             next_lesson = all_lessons[i + 1]
             break
 
-        return render(
+    return render(
         request,
         "dashboard/student/lesson.html",
         {
@@ -1216,6 +1219,9 @@ def lesson_view(request, lesson_id):
             "resources": resources,
             "sidebar_rows": sidebar_rows,
 
+            # Doubts & Assessments for this lesson:
+            "lesson_doubts": DoubtThread.objects.filter(student=request.user, lesson=lesson).prefetch_related("messages").order_by("-created_at"),
+            "module_assessments": Assessment.objects.filter(module=lesson.module, is_published=True).order_by("unlock_order"),
             # Sidebar / header bits the base template reads:
             "current_lesson": lesson,
             "dash_section": "lesson",
@@ -1483,6 +1489,8 @@ def course_dashboard(request, slug):
     learning_progress = []
 
     if course.mode == Course.Mode.ONLINE:
+        # Populate initial progress records for all published lessons if not yet created
+        initialize_learning_progress(active_enrollment)
         current_lesson = get_current_unlocked_lesson(active_enrollment)
 
         # Same queryset the dashboard view uses — ordered exactly the
@@ -1508,6 +1516,19 @@ def course_dashboard(request, slug):
         row.lesson_id: row for row in learning_progress
     }
 
+    # Query published modules with lessons and attach per-lesson progress
+    modules_list = list(
+        course.modules.all().order_by("order", "pk")
+    )
+    for m in modules_list:
+        m_lessons = list(
+            m.lessons.filter(Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True))
+            .order_by("unlock_order", "order", "pk")
+        )
+        for l in m_lessons:
+            l.progress = progress_by_lesson.get(l.pk)
+        m.published_lessons = m_lessons
+
     return render(
         request,
         "dashboard/student/my_course.html",
@@ -1518,6 +1539,7 @@ def course_dashboard(request, slug):
             "current_lesson": current_lesson,
             "learning_progress": learning_progress,
             "progress_by_lesson": progress_by_lesson,
+            "modules": modules_list,
             "is_student": True,
             "student_name": (
                 request.user.get_full_name()
@@ -1536,3 +1558,440 @@ def course_dashboard(request, slug):
             "notifications": [],
         },
     )
+
+# ============================================================
+# CAREER CONSULTATION REQUEST
+# ============================================================
+
+@require_POST
+def career_consultation_request(request):
+    """
+    Allow only registered student accounts to submit career consultation requests.
+    """
+    if not request.user.is_authenticated or getattr(request.user, "role", None) != User.Role.STUDENT:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse({
+                "status": "error",
+                "message": "Career consultation is only available to registered students. Please sign in or create an account."
+            }, status=403)
+        messages.error(request, "Career consultation is an exclusive feature for registered students. Please sign in or register.")
+        return redirect("core:sign_in")
+
+    form = CareerConsultationForm(request.POST)
+    if not form.is_valid():
+        first_error = next(iter(form.errors.values()))[0] if form.errors else "Please fill in all required fields properly."
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "error", "message": first_error}, status=400)
+        messages.error(request, first_error)
+        return redirect(request.META.get("HTTP_REFERER", "core:home"))
+
+    preferred_date = form.cleaned_data.get("preferred_date")
+    phone = form.cleaned_data.get("phone")
+    message = form.cleaned_data.get("message")
+
+    student_name = request.user.get_full_name() or request.user.username
+    student_email = request.user.email
+
+    booking = ConsultationBooking.objects.create(
+        name=student_name,
+        email=student_email,
+        phone=phone,
+        preferred_date=preferred_date,
+        message=message,
+        status=ConsultationBooking.Status.NEW,
+    )
+
+    success_msg = f"Thank you, {student_name}! Your career consultation request has been registered (Ref #{booking.pk}). Our mentorship team will contact you shortly."
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "status": "success",
+            "message": success_msg,
+            "booking_id": booking.pk,
+        })
+
+    messages.success(request, success_msg)
+    return redirect(request.META.get("HTTP_REFERER", "core:home"))
+
+
+# ============================================================
+# STUDENT DOUBT CLEARANCE
+# ============================================================
+
+@login_required
+def student_doubts(request):
+    """List all doubts asked by the logged-in student."""
+    user = request.user
+    if user.role != User.Role.STUDENT:
+        messages.error(request, "This area is only for students.")
+        return redirect("core:home")
+
+    threads = (
+        DoubtThread.objects
+        .filter(student=user)
+        .select_related("lesson", "lesson__module", "lesson__module__course", "assigned_instructor")
+        .prefetch_related("messages")
+        .order_by("-updated_at")
+    )
+
+    status_filter = request.GET.get("status", "").strip()
+    if status_filter:
+        threads = threads.filter(status=status_filter)
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=user)
+        .select_related("course")
+        .order_by("-enrolled_at")
+    )
+    active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+
+    context = {
+        "threads": threads,
+        "selected_status": status_filter,
+        "enrollments": enrollments,
+        "active_enrollment": active_enrollment,
+        "dash_section": "doubts",
+        "is_student": True,
+        "student_name": user.get_full_name() or user.username,
+        "student_initials": (
+            (user.first_name[:1] if user.first_name else "") +
+            (user.last_name[:1] if user.last_name else "")
+        ).upper() or "S",
+        "open_doubts": DoubtThread.objects.filter(
+            student=user,
+            status__in=[DoubtThread.Status.OPEN, DoubtThread.Status.ANSWERED, DoubtThread.Status.REOPENED]
+        ).count(),
+    }
+    return render(request, "dashboard/student/doubts.html", context)
+
+
+@login_required
+@require_POST
+def create_doubt(request, lesson_id):
+    """Submit a new doubt thread for a specific lesson."""
+    user = request.user
+    if user.role != User.Role.STUDENT:
+        return JsonResponse({"status": "error", "message": "Only students can ask doubts."}, status=403)
+
+    lesson = get_object_or_404(
+        Lesson.objects.select_related("module", "module__course"),
+        pk=lesson_id
+    )
+
+    enrollment = Enrollment.objects.filter(
+        student=user,
+        course=lesson.module.course
+    ).first()
+    if not enrollment or not enrollment_has_access(enrollment):
+        messages.error(request, "You must be actively enrolled in this course to ask doubts.")
+        return redirect("core:lesson", lesson_id=lesson.pk)
+
+    subject = request.POST.get("subject", "").strip()
+    message_text = request.POST.get("message", "").strip()
+    attachment = request.FILES.get("attachment")
+
+    if not subject or not message_text:
+        messages.error(request, "Please provide both a subject and details for your doubt.")
+        return redirect("core:lesson", lesson_id=lesson.pk)
+
+    thread = DoubtThread.objects.create(
+        student=user,
+        enrollment=enrollment,
+        lesson=lesson,
+        subject=subject,
+        status=DoubtThread.Status.OPEN,
+    )
+    DoubtMessage.objects.create(
+        thread=thread,
+        sender=user,
+        message=message_text,
+        attachment=attachment,
+    )
+
+    messages.success(request, f"Your doubt regarding '{lesson.title}' has been submitted. Our instructor will reply soon!")
+    return redirect("core:doubt_detail", thread_id=thread.pk)
+
+
+@login_required
+def doubt_detail(request, thread_id):
+    """View doubt conversation timeline for student."""
+    user = request.user
+    thread = get_object_or_404(
+        DoubtThread.objects.select_related(
+            "student", "lesson", "lesson__module", "lesson__module__course", "assigned_instructor"
+        ),
+        pk=thread_id,
+        student=user
+    )
+    messages_list = thread.messages.select_related("sender").order_by("created_at")
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=user)
+        .select_related("course")
+        .order_by("-enrolled_at")
+    )
+    active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+
+    context = {
+        "thread": thread,
+        "messages_list": messages_list,
+        "enrollments": enrollments,
+        "active_enrollment": active_enrollment,
+        "dash_section": "doubts",
+        "is_student": True,
+        "student_name": user.get_full_name() or user.username,
+        "student_initials": (
+            (user.first_name[:1] if user.first_name else "") +
+            (user.last_name[:1] if user.last_name else "")
+        ).upper() or "S",
+    }
+    return render(request, "dashboard/student/doubt_detail.html", context)
+
+
+@login_required
+@require_POST
+def doubt_reply(request, thread_id):
+    """Post student follow-up message to doubt thread."""
+    user = request.user
+    thread = get_object_or_404(DoubtThread, pk=thread_id, student=user)
+    message_text = request.POST.get("message", "").strip()
+    attachment = request.FILES.get("attachment")
+
+    if message_text or attachment:
+        DoubtMessage.objects.create(
+            thread=thread,
+            sender=user,
+            message=message_text,
+            attachment=attachment,
+        )
+        if thread.status in [DoubtThread.Status.RESOLVED, DoubtThread.Status.ANSWERED, DoubtThread.Status.CLOSED]:
+            thread.status = DoubtThread.Status.REOPENED
+        else:
+            thread.status = DoubtThread.Status.OPEN
+        thread.save()
+        messages.success(request, "Follow-up message sent.")
+
+    return redirect("core:doubt_detail", thread_id=thread.pk)
+
+
+@login_required
+@require_POST
+def doubt_resolve(request, thread_id):
+    """Student marks doubt as resolved."""
+    user = request.user
+    thread = get_object_or_404(DoubtThread, pk=thread_id, student=user)
+    thread.status = DoubtThread.Status.RESOLVED
+    thread.save()
+    messages.success(request, "Thread marked as resolved! Feel free to ask whenever you need help.")
+    return redirect("core:doubt_detail", thread_id=thread.pk)
+
+
+# ============================================================
+# STUDENT ASSESSMENTS
+# ============================================================
+
+@login_required
+def student_assessments(request):
+    """List all available assessments for enrolled courses."""
+    user = request.user
+    if user.role != User.Role.STUDENT:
+        messages.error(request, "This area is only for students.")
+        return redirect("core:home")
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=user)
+        .select_related("course")
+        .order_by("-enrolled_at")
+    )
+    active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+
+    enrolled_courses = [e.course for e in enrollments if enrollment_has_access(e)]
+    assessments = (
+        Assessment.objects
+        .filter(module__course__in=enrolled_courses, is_published=True)
+        .select_related("module", "module__course")
+        .order_by("module__course__title", "module__order", "unlock_order", "pk")
+    )
+
+    assessments_list = []
+    for a in assessments:
+        subs = list(
+            Submission.objects
+            .filter(assessment=a, student=user)
+            .order_by("-score", "-submitted_at")
+        )
+        a.attempts_taken = len(subs)
+        a.best_submission = subs[0] if subs else None
+        a.passed = assessment_is_passed(a, user)
+        assessments_list.append(a)
+
+    context = {
+        "assessments": assessments_list,
+        "enrollments": enrollments,
+        "active_enrollment": active_enrollment,
+        "dash_section": "assessment",
+        "is_student": True,
+        "student_name": user.get_full_name() or user.username,
+        "student_initials": (
+            (user.first_name[:1] if user.first_name else "") +
+            (user.last_name[:1] if user.last_name else "")
+        ).upper() or "S",
+    }
+    return render(request, "dashboard/student/assessments.html", context)
+
+
+@login_required
+def take_assessment(request, assessment_id):
+    """Take or submit an assessment."""
+    user = request.user
+    assessment = get_object_or_404(
+        Assessment.objects.select_related("module", "module__course"),
+        pk=assessment_id,
+        is_published=True
+    )
+
+    enrollment = Enrollment.objects.filter(
+        student=user,
+        course=assessment.module.course
+    ).first()
+    if not enrollment or not enrollment_has_access(enrollment):
+        messages.error(request, "You must be enrolled in this course to take this assessment.")
+        return redirect("core:courses")
+
+    subs_count = Submission.objects.filter(assessment=assessment, student=user).count()
+    if assessment.attempts_allowed > 0 and subs_count >= assessment.attempts_allowed:
+        messages.warning(request, f"You have reached the maximum allowed attempts ({assessment.attempts_allowed}) for this assessment.")
+        last_sub = Submission.objects.filter(assessment=assessment, student=user).order_by("-submitted_at").first()
+        if last_sub:
+            return redirect("core:assessment_result", submission_id=last_sub.pk)
+        return redirect("core:student_assessments")
+
+    questions = list(assessment.questions.all().order_by("order", "pk"))
+
+    if request.method == "POST":
+        answers = {}
+        total_mcq_obtained = Decimal("0")
+        has_manual_questions = False
+        uploaded_file = request.FILES.get("submission_file")
+
+        for q in questions:
+            field_name = f"question_{q.pk}"
+            if q.question_type == Question.QuestionType.MCQ:
+                ans = request.POST.get(field_name, "").strip()
+                answers[str(q.pk)] = ans
+                if ans and ans == q.correct_answer:
+                    total_mcq_obtained += Decimal(str(q.marks))
+            elif q.question_type == Question.QuestionType.TEXT:
+                has_manual_questions = True
+                ans = request.POST.get(field_name, "").strip()
+                answers[str(q.pk)] = ans
+            elif q.question_type == Question.QuestionType.FILE:
+                has_manual_questions = True
+                f = request.FILES.get(field_name)
+                if f:
+                    uploaded_file = f
+                    answers[str(q.pk)] = f.name
+
+        if not has_manual_questions:
+            final_score = total_mcq_obtained
+            status = Submission.Status.GRADED
+        else:
+            final_score = total_mcq_obtained
+            status = Submission.Status.SUBMITTED
+
+        submission = Submission.objects.create(
+            assessment=assessment,
+            student=user,
+            answers=answers,
+            uploaded_file=uploaded_file,
+            score=final_score,
+            status=status,
+            graded_at=timezone.now() if status == Submission.Status.GRADED else None,
+        )
+
+        messages.success(request, f"Assessment '{assessment.title}' submitted successfully!")
+        return redirect("core:assessment_result", submission_id=submission.pk)
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=user)
+        .select_related("course")
+        .order_by("-enrolled_at")
+    )
+    active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+
+    context = {
+        "assessment": assessment,
+        "questions": questions,
+        "attempts_left": max(0, assessment.attempts_allowed - subs_count) if assessment.attempts_allowed > 0 else "Unlimited",
+        "enrollments": enrollments,
+        "active_enrollment": active_enrollment,
+        "dash_section": "assessment",
+        "is_student": True,
+        "student_name": user.get_full_name() or user.username,
+        "student_initials": (
+            (user.first_name[:1] if user.first_name else "") +
+            (user.last_name[:1] if user.last_name else "")
+        ).upper() or "S",
+    }
+    return render(request, "dashboard/student/take_assessment.html", context)
+
+
+@login_required
+def assessment_result(request, submission_id):
+    """View result and breakdown of an assessment submission."""
+    user = request.user
+    submission = get_object_or_404(
+        Submission.objects.select_related(
+            "assessment", "assessment__module", "assessment__module__course", "student"
+        ),
+        pk=submission_id,
+        student=user
+    )
+    assessment = submission.assessment
+    questions = list(assessment.questions.all().order_by("order", "pk"))
+
+    total_marks = assessment.total_marks or sum(q.marks for q in questions) or 1
+    score = submission.score or Decimal("0")
+    percentage = (score / Decimal(str(total_marks))) * Decimal("100") if total_marks > 0 else Decimal("0")
+    passed = percentage >= assessment.pass_percentage
+
+    reviewed_questions = []
+    for q in questions:
+        student_ans = submission.answers.get(str(q.pk), "")
+        is_correct = (q.question_type == Question.QuestionType.MCQ and student_ans == q.correct_answer)
+        reviewed_questions.append({
+            "question": q,
+            "student_answer": student_ans,
+            "is_correct": is_correct,
+        })
+
+    enrollments = list(
+        Enrollment.objects
+        .filter(student=user)
+        .select_related("course")
+        .order_by("-enrolled_at")
+    )
+    active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+
+    context = {
+        "submission": submission,
+        "assessment": assessment,
+        "score": score,
+        "total_marks": total_marks,
+        "percentage": round(percentage, 1),
+        "passed": passed,
+        "reviewed_questions": reviewed_questions,
+        "enrollments": enrollments,
+        "active_enrollment": active_enrollment,
+        "dash_section": "assessment",
+        "is_student": True,
+        "student_name": user.get_full_name() or user.username,
+        "student_initials": (
+            (user.first_name[:1] if user.first_name else "") +
+            (user.last_name[:1] if user.last_name else "")
+        ).upper() or "S",
+    }
+    return render(request, "dashboard/student/assessment_result.html", context)

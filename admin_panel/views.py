@@ -1,10 +1,11 @@
-from django.shortcuts import render
-
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
+from django.urls import reverse
+from decimal import Decimal
+import json
 
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
@@ -692,36 +693,514 @@ def batch_attendance(request):
     return render(request, "batches/attendance.html")
 # ASSESSMENTS
 @admin_required
-@require_GET
+@require_http_methods(["GET", "POST"])
 def assessment_list(request):
-    return render(request, "assessments/list.html")
+    """List assessments with real filtering, pagination, and handle new assessment creation."""
+    if request.method == "POST":
+        module_id = request.POST.get("module")
+        title = request.POST.get("title", "").strip()
+        description = request.POST.get("description", "").strip()
+        assessment_type = request.POST.get("assessment_type", Assessment.AssessmentType.QUIZ)
+        unlock_order = int(request.POST.get("unlock_order") or 0)
+        total_marks = int(request.POST.get("total_marks") or 0)
+        pass_percentage = int(request.POST.get("pass_percentage") or 50)
+        time_limit_minutes = request.POST.get("time_limit_minutes")
+        time_limit_minutes = int(time_limit_minutes) if time_limit_minutes else None
+        attempts_allowed = int(request.POST.get("attempts_allowed") or 1)
+        due_date_raw = request.POST.get("due_date", "").strip()
+        due_date = None
+        if due_date_raw:
+            try:
+                due_date = timezone.datetime.fromisoformat(due_date_raw)
+            except Exception:
+                due_date = None
+        is_published = request.POST.get("is_published") in ["true", "True", "on", "1"]
+
+        module = get_object_or_404(Module, pk=module_id)
+        assessment = Assessment.objects.create(
+            module=module,
+            title=title,
+            description=description,
+            assessment_type=assessment_type,
+            unlock_order=unlock_order,
+            total_marks=total_marks,
+            pass_percentage=pass_percentage,
+            time_limit_minutes=time_limit_minutes,
+            attempts_allowed=attempts_allowed,
+            due_date=due_date,
+            is_published=is_published,
+        )
+        messages.success(request, f"Assessment '{assessment.title}' created successfully.")
+        return redirect("admin_panel:assessment_list")
+
+    assessments = Assessment.objects.select_related("module", "module__course").annotate(
+        questions_count=Count("questions", distinct=True),
+        submissions_count=Count("submissions", distinct=True),
+    ).order_by("-created_at")
+
+    search = request.GET.get("q", "").strip()
+    course_filter = request.GET.get("course", "").strip()
+    type_filter = request.GET.get("type", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+
+    if search:
+        assessments = assessments.filter(
+            Q(title__icontains=search)
+            | Q(description__icontains=search)
+            | Q(module__title__icontains=search)
+            | Q(module__course__title__icontains=search)
+        )
+    if course_filter:
+        assessments = assessments.filter(module__course__slug=course_filter)
+    if type_filter:
+        assessments = assessments.filter(assessment_type=type_filter)
+    if status_filter == "published":
+        assessments = assessments.filter(is_published=True)
+    elif status_filter == "draft":
+        assessments = assessments.filter(is_published=False)
+
+    total_count = Assessment.objects.count()
+    quiz_count = Assessment.objects.filter(assessment_type=Assessment.AssessmentType.QUIZ).count()
+    assignment_count = Assessment.objects.filter(assessment_type=Assessment.AssessmentType.ASSIGNMENT).count()
+    published_count = Assessment.objects.filter(is_published=True).count()
+
+    paginator = Paginator(assessments, 15)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    courses = Course.objects.prefetch_related("modules").order_by("title")
+
+    context = {
+        "page_title": "Assessments",
+        "assessments": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
+        "quiz_count": quiz_count,
+        "assignment_count": assignment_count,
+        "published_count": published_count,
+        "courses": courses,
+        "type_choices": Assessment.AssessmentType.choices,
+        "selected_course": course_filter,
+        "selected_type": type_filter,
+        "selected_status": status_filter,
+        "search_query": search,
+    }
+    return render(request, "assessments/list.html", context)
 
 
 @admin_required
-@require_GET
+@require_POST
+def assessment_edit(request, assessment_id):
+    """Edit assessment parameters."""
+    assessment = get_object_or_404(Assessment, pk=assessment_id)
+    module_id = request.POST.get("module")
+    if module_id:
+        assessment.module = get_object_or_404(Module, pk=module_id)
+    assessment.title = request.POST.get("title", assessment.title).strip()
+    assessment.description = request.POST.get("description", assessment.description).strip()
+    assessment.assessment_type = request.POST.get("assessment_type", assessment.assessment_type)
+    assessment.unlock_order = int(request.POST.get("unlock_order") or assessment.unlock_order)
+    assessment.total_marks = int(request.POST.get("total_marks") or assessment.total_marks)
+    assessment.pass_percentage = int(request.POST.get("pass_percentage") or assessment.pass_percentage)
+    time_limit_raw = request.POST.get("time_limit_minutes")
+    assessment.time_limit_minutes = int(time_limit_raw) if time_limit_raw else None
+    assessment.attempts_allowed = int(request.POST.get("attempts_allowed") or assessment.attempts_allowed)
+    assessment.is_published = request.POST.get("is_published") in ["true", "True", "on", "1"]
+    assessment.save()
+    messages.success(request, f"Assessment '{assessment.title}' updated successfully.")
+    return redirect("admin_panel:assessment_list")
+
+
+@admin_required
+@require_POST
+def assessment_delete(request, assessment_id):
+    """Delete an assessment."""
+    assessment = get_object_or_404(Assessment, pk=assessment_id)
+    title = assessment.title
+    assessment.delete()
+    messages.success(request, f"Assessment '{title}' deleted successfully.")
+    return redirect("admin_panel:assessment_list")
+
+
+@admin_required
+@require_http_methods(["GET", "POST"])
 def assessment_questions(request):
-    return render(request, "assessments/questions.html")
+    """Manage questions for a selected assessment."""
+    assessment_id = request.GET.get("assessment") or request.POST.get("assessment_id")
+    assessments = Assessment.objects.select_related("module", "module__course").order_by("-created_at")
+
+    selected_assessment = None
+    if assessment_id:
+        selected_assessment = get_object_or_404(Assessment, pk=assessment_id)
+    elif assessments.exists():
+        selected_assessment = assessments.first()
+
+    questions = []
+    if selected_assessment:
+        questions = selected_assessment.questions.all().order_by("order", "pk")
+
+    context = {
+        "page_title": "Question Builder",
+        "assessments": assessments,
+        "selected_assessment": selected_assessment,
+        "questions": questions,
+        "question_type_choices": Question.QuestionType.choices,
+    }
+    return render(request, "assessments/questions.html", context)
 
 
 @admin_required
-@require_GET
+@require_POST
+def question_save(request):
+    """Save or update question with choices / correct answer."""
+    assessment_id = request.POST.get("assessment_id")
+    assessment = get_object_or_404(Assessment, pk=assessment_id)
+
+    question_id = request.POST.get("question_id")
+    question_text = request.POST.get("question_text", "").strip()
+    question_type = request.POST.get("question_type", Question.QuestionType.MCQ)
+    marks = int(request.POST.get("marks") or 1)
+    explanation = request.POST.get("explanation", "").strip()
+    order = int(request.POST.get("order") or (assessment.questions.count() + 1))
+    correct_answer = request.POST.get("correct_answer", "").strip()
+
+    options_raw = request.POST.get("options")
+    options = []
+    if options_raw:
+        try:
+            options = json.loads(options_raw) if isinstance(options_raw, str) else options_raw
+        except Exception:
+            options = [opt.strip() for opt in options_raw.split("\n") if opt.strip()]
+    else:
+        i = 0
+        while f"option_{i}" in request.POST:
+            val = request.POST.get(f"option_{i}").strip()
+            if val:
+                options.append(val)
+            i += 1
+
+    if question_id:
+        q = get_object_or_404(Question, pk=question_id, assessment=assessment)
+        q.question_text = question_text
+        q.question_type = question_type
+        q.marks = marks
+        q.explanation = explanation
+        q.order = order
+        q.options = options
+        q.correct_answer = correct_answer
+        q.save()
+        messages.success(request, f"Question #{q.order} updated successfully.")
+    else:
+        q = Question.objects.create(
+            assessment=assessment,
+            question_text=question_text,
+            question_type=question_type,
+            marks=marks,
+            explanation=explanation,
+            order=order,
+            options=options,
+            correct_answer=correct_answer,
+        )
+        messages.success(request, f"Question added to '{assessment.title}'.")
+
+    # Update total marks on assessment
+    total_q_marks = assessment.questions.aggregate(total=Sum("marks"))["total"] or 0
+    if total_q_marks > 0 and assessment.total_marks != total_q_marks:
+        assessment.total_marks = total_q_marks
+        assessment.save(update_fields=["total_marks"])
+
+    return redirect(f"{reverse('admin_panel:assessment_questions')}?assessment={assessment.pk}")
+
+
+@admin_required
+@require_POST
+def question_delete(request, question_id):
+    """Delete a question."""
+    q = get_object_or_404(Question, pk=question_id)
+    assessment_id = q.assessment_id
+    q.delete()
+    messages.success(request, "Question deleted successfully.")
+    return redirect(f"{reverse('admin_panel:assessment_questions')}?assessment={assessment_id}")
+
+
+@admin_required
+@require_http_methods(["GET"])
 def assessment_submissions(request):
-    return render(request, "assessments/submissions.html")
+    """View and filter student submissions."""
+    submissions = Submission.objects.select_related(
+        "assessment", "student", "graded_by", "assessment__module", "assessment__module__course"
+    ).order_by("-submitted_at")
+
+    assess_filter = request.GET.get("assessment", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    search = request.GET.get("q", "").strip()
+
+    if search:
+        submissions = submissions.filter(
+            Q(student__username__icontains=search)
+            | Q(student__first_name__icontains=search)
+            | Q(student__last_name__icontains=search)
+            | Q(student__email__icontains=search)
+            | Q(assessment__title__icontains=search)
+        )
+    if assess_filter:
+        submissions = submissions.filter(assessment_id=assess_filter)
+    if status_filter:
+        submissions = submissions.filter(status=status_filter)
+
+    total_count = Submission.objects.count()
+    submitted_count = Submission.objects.filter(status=Submission.Status.SUBMITTED).count()
+    graded_count = Submission.objects.filter(status=Submission.Status.GRADED).count()
+
+    paginator = Paginator(submissions, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    assessments = Assessment.objects.order_by("title")
+
+    context = {
+        "page_title": "Submissions",
+        "submissions": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
+        "submitted_count": submitted_count,
+        "graded_count": graded_count,
+        "assessments": assessments,
+        "status_choices": Submission.Status.choices,
+        "selected_assessment": assess_filter,
+        "selected_status": status_filter,
+        "search_query": search,
+    }
+    return render(request, "assessments/submissions.html", context)
+
+
+@admin_required
+@require_POST
+def submission_grade(request, submission_id):
+    """Grade or return a student submission."""
+    submission = get_object_or_404(Submission, pk=submission_id)
+    score_val = request.POST.get("score")
+    status_val = request.POST.get("status", Submission.Status.GRADED)
+
+    if score_val is not None and score_val != "":
+        submission.score = Decimal(str(score_val))
+    submission.status = status_val
+    submission.graded_by = request.user
+    submission.graded_at = timezone.now()
+    submission.save()
+
+    messages.success(request, f"Submission #{submission.pk} graded successfully (Score: {submission.score}).")
+    return redirect("admin_panel:assessment_submissions")
+
+
 # DOUBTS
 @admin_required
 @require_GET
 def doubt_list(request):
-    return render(request, "doubts/list.html")
+    """List doubt threads with status filters and instructors."""
+    threads = DoubtThread.objects.select_related(
+        "student", "lesson", "lesson__module", "lesson__module__course", "assigned_instructor"
+    ).prefetch_related("messages").order_by("-updated_at")
+
+    search = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    course_filter = request.GET.get("course", "").strip()
+
+    if search:
+        threads = threads.filter(
+            Q(subject__icontains=search)
+            | Q(student__username__icontains=search)
+            | Q(student__first_name__icontains=search)
+            | Q(student__last_name__icontains=search)
+            | Q(lesson__title__icontains=search)
+        )
+    if status_filter:
+        threads = threads.filter(status=status_filter)
+    if course_filter:
+        threads = threads.filter(lesson__module__course_id=course_filter)
+
+    total_count = DoubtThread.objects.count()
+    open_count = DoubtThread.objects.filter(
+        status__in=[DoubtThread.Status.OPEN, DoubtThread.Status.ASSIGNED, DoubtThread.Status.IN_PROGRESS, DoubtThread.Status.REOPENED]
+    ).count()
+    answered_count = DoubtThread.objects.filter(status=DoubtThread.Status.ANSWERED).count()
+    resolved_count = DoubtThread.objects.filter(status=DoubtThread.Status.RESOLVED).count()
+
+    paginator = Paginator(threads, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    courses = Course.objects.order_by("title")
+
+    context = {
+        "page_title": "Doubt Clearance",
+        "threads": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
+        "open_count": open_count,
+        "answered_count": answered_count,
+        "resolved_count": resolved_count,
+        "courses": courses,
+        "status_choices": DoubtThread.Status.choices,
+        "selected_status": status_filter,
+        "selected_course": course_filter,
+        "search_query": search,
+    }
+    return render(request, "doubts/list.html", context)
+
+
+@admin_required
+@require_GET
+def doubt_detail_admin(request, thread_id):
+    """View full thread and messages history for admin / instructor."""
+    thread = get_object_or_404(
+        DoubtThread.objects.select_related(
+            "student", "lesson", "lesson__module", "lesson__module__course", "assigned_instructor"
+        ),
+        pk=thread_id
+    )
+    messages_list = thread.messages.select_related("sender").order_by("created_at")
+    instructors = User.objects.filter(role__in=[User.Role.INSTRUCTOR, User.Role.ADMIN], is_active=True).order_by("first_name", "username")
+
+    context = {
+        "page_title": f"Doubt #{thread.pk}",
+        "thread": thread,
+        "messages_list": messages_list,
+        "instructors": instructors,
+        "status_choices": DoubtThread.Status.choices,
+    }
+    return render(request, "doubts/detail.html", context)
+
+
+@admin_required
+@require_POST
+def doubt_reply_admin(request, thread_id):
+    """Post an instructor reply to the thread."""
+    thread = get_object_or_404(DoubtThread, pk=thread_id)
+    message_text = request.POST.get("message", "").strip()
+    attachment = request.FILES.get("attachment")
+    mark_resolved = request.POST.get("mark_resolved") in ["true", "True", "on", "1"]
+
+    if message_text or attachment:
+        DoubtMessage.objects.create(
+            thread=thread,
+            sender=request.user,
+            message=message_text,
+            attachment=attachment,
+        )
+
+        if mark_resolved:
+            thread.status = DoubtThread.Status.RESOLVED
+        else:
+            thread.status = DoubtThread.Status.ANSWERED
+
+        if not thread.assigned_instructor:
+            thread.assigned_instructor = request.user
+        thread.save()
+        messages.success(request, "Reply posted to student successfully.")
+
+    return redirect("admin_panel:doubt_detail_admin", thread_id=thread.pk)
+
+
+@admin_required
+@require_POST
+def doubt_status_admin(request, thread_id):
+    """Update doubt thread status and assigned instructor."""
+    thread = get_object_or_404(DoubtThread, pk=thread_id)
+    status_val = request.POST.get("status")
+    assigned_id = request.POST.get("assigned_instructor")
+
+    if status_val in dict(DoubtThread.Status.choices):
+        thread.status = status_val
+    if assigned_id:
+        mentor = User.objects.filter(pk=assigned_id, role__in=[User.Role.INSTRUCTOR, User.Role.ADMIN]).first()
+        thread.assigned_instructor = mentor
+    elif "assigned_instructor" in request.POST:
+        thread.assigned_instructor = None
+
+    thread.save()
+    messages.success(request, f"Doubt thread #{thread.pk} updated.")
+    return redirect("admin_panel:doubt_detail_admin", thread_id=thread.pk)
+
+
 # NOTIFICATIONS
 @admin_required
 @require_GET
 def notification_list(request):
     return render(request, "notifications/list.html")
+
+
 # CONSULTATIONS
 @admin_required
 @require_GET
 def consultation_list(request):
-    return render(request, "consultations/list.html")
+    """List career consultation bookings with status/search filters and summary metrics."""
+    bookings = ConsultationBooking.objects.select_related("assigned_to").order_by("-created_at")
+
+    search = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+
+    if search:
+        bookings = bookings.filter(
+            Q(name__icontains=search)
+            | Q(email__icontains=search)
+            | Q(phone__icontains=search)
+            | Q(message__icontains=search)
+        )
+
+    if status_filter:
+        bookings = bookings.filter(status=status_filter)
+
+    total_count = ConsultationBooking.objects.count()
+    new_count = ConsultationBooking.objects.filter(status=ConsultationBooking.Status.NEW).count()
+    contacted_count = ConsultationBooking.objects.filter(status=ConsultationBooking.Status.CONTACTED).count()
+    scheduled_count = ConsultationBooking.objects.filter(status=ConsultationBooking.Status.SCHEDULED).count()
+    completed_count = ConsultationBooking.objects.filter(status=ConsultationBooking.Status.COMPLETED).count()
+
+    paginator = Paginator(bookings, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    instructors = User.objects.filter(role__in=[User.Role.INSTRUCTOR, User.Role.ADMIN], is_active=True).order_by("first_name", "username")
+
+    context = {
+        "page_title": "Career Consultations",
+        "page_obj": page_obj,
+        "bookings": page_obj,
+        "total_count": total_count,
+        "new_count": new_count,
+        "contacted_count": contacted_count,
+        "scheduled_count": scheduled_count,
+        "completed_count": completed_count,
+        "instructors": instructors,
+        "status_choices": ConsultationBooking.Status.choices,
+        "selected_status": status_filter,
+        "search_query": search,
+    }
+    return render(request, "consultations/list.html", context)
+
+
+@admin_required
+@require_POST
+def consultation_update(request, booking_id):
+    """Update consultation booking status, assigned mentor, and internal notes."""
+    booking = get_object_or_404(ConsultationBooking, pk=booking_id)
+    new_status = request.POST.get("status", "").strip()
+    assigned_to_id = request.POST.get("assigned_to", "").strip()
+    internal_notes = request.POST.get("internal_notes", "").strip()
+
+    if new_status in dict(ConsultationBooking.Status.choices):
+        booking.status = new_status
+
+    if assigned_to_id:
+        mentor = User.objects.filter(pk=assigned_to_id, role__in=[User.Role.INSTRUCTOR, User.Role.ADMIN]).first()
+        booking.assigned_to = mentor
+    elif "assigned_to" in request.POST:
+        booking.assigned_to = None
+
+    if "internal_notes" in request.POST:
+        booking.internal_notes = internal_notes
+
+    booking.save()
+    messages.success(request, f"Consultation booking #{booking.pk} for {booking.name} updated successfully.")
+    return redirect("admin_panel:consultation_list")
 # CERTIFICATES
 @admin_required
 @require_GET
