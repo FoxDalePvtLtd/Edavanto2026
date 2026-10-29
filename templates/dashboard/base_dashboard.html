@@ -350,19 +350,40 @@
           <i class="bi bi-grid-1x2"></i><span>Overview</span>
         </a>
       </li>
-      <li>
-        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% else %}{% url 'core:courses' %}{% endif %}"
-           class="edvanto-dash-nav-link {% if dash_section == 'course_curriculum' or dash_section == 'my_course' %}is-active{% endif %}">
-          <i class="bi bi-journal-bookmark"></i><span>Course Curriculum</span>
-        </a>
-      </li>
-      {% if active_enrollment and active_enrollment.course %}
+      {% if active_enrollment and active_enrollment.course.mode == 'offline' %}
         <li>
-          <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% endif %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
-            <i class="bi bi-play-circle-fill" style="color: var(--study-gold) !important;"></i><span>Current Lesson</span>
+          <a href="{% url 'core:dashboard' %}#schedule"
+             class="edvanto-dash-nav-link">
+            <i class="bi bi-calendar-week"></i><span>Class Schedule</span>
           </a>
         </li>
+        <li>
+          <a href="{% url 'core:dashboard' %}#attendance"
+             class="edvanto-dash-nav-link">
+            <i class="bi bi-person-check"></i><span>Attendance Record</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'core:dashboard' %}#handouts"
+             class="edvanto-dash-nav-link">
+            <i class="bi bi-journal-text"></i><span>Class Handouts &amp; Notes</span>
+          </a>
+        </li>
+      {% else %}
+        <li>
+          <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% else %}{% url 'core:courses' %}{% endif %}"
+             class="edvanto-dash-nav-link {% if dash_section == 'course_curriculum' or dash_section == 'my_course' %}is-active{% endif %}">
+            <i class="bi bi-journal-bookmark"></i><span>Course Curriculum</span>
+          </a>
+        </li>
+        {% if active_enrollment and active_enrollment.course %}
+          <li>
+            <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% endif %}"
+               class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
+              <i class="bi bi-play-circle-fill" style="color: var(--study-gold) !important;"></i><span>Current Lesson</span>
+            </a>
+          </li>
+        {% endif %}
       {% endif %}
       <li>
         <a href="{% url 'core:student_assessments' %}"
