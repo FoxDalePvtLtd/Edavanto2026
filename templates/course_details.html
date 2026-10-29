@@ -4,6 +4,31 @@
 {% comment %}{% block title %}Course Details | Edvanto{% endblock %}{% endcomment %}
 {% block title %}Course Details | Edvanto{% endblock %}
 
+{% block extra_css %}
+
+  <style>
+    .tj-course-details-img {
+      width: 100% !important;
+      aspect-ratio: 16 / 9 !important;
+      max-height: 480px !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+      position: relative !important;
+      background: var(--tj-color-theme-bg-2, #F7F3E8) !important;
+      margin-bottom: 30px !important;
+      box-shadow: 0 8px 30px rgba(17, 17, 17, 0.08) !important;
+    }
+    .tj-course-details-img img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      display: block !important;
+    }
+  </style>
+
+{% endblock %}
+
 {% block content %}
 <main id="primary" class="site-main">
 
@@ -194,10 +219,7 @@
                             {% else %}
                             <img src="{% static 'images/course/course-img-4.webp' %}" alt="{{ course.title }}">
                             {% endif %}
-                            <a class="video-btn video-popup" data-autoplay="true" data-vbtype="video" data-maxwidth="1200px"
-                                href="https://www.youtube.com/watch?v=MLpWrANjFbI&ab_channel=eidelchteinadvogados">
-                                <span><i class="tji-play"></i></span>
-                            </a>
+
                         </div>
                         <div class="tj-course-tab-wrap tj-sticky-item-2">
                             <div class="tj-course-tab">

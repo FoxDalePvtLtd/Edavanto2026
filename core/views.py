@@ -1,3 +1,6 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import json
 from django.http import JsonResponse
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -1089,7 +1092,6 @@ def test_payment(request, slug):
 @login_required
 @require_POST
 def offline_payment_request(request, slug):
-
     if request.user.role != User.Role.STUDENT:
         messages.error(
             request,
@@ -1104,39 +1106,41 @@ def offline_payment_request(request, slug):
         slug=slug,
     )
 
-    try:
-        order, payment_transaction, enrollment = (
-            create_offline_payment_request(
-                student=request.user,
-                course=course,
-            )
-        )
+    payment_mode = request.POST.get("payment_mode", "UPI").strip()
+    transaction_reference = request.POST.get("transaction_reference", "").strip()
+    payment_date = request.POST.get("payment_date", "").strip()
+    notes = request.POST.get("notes", "").strip()
 
+    try:
+        order, payment_transaction, enrollment = create_offline_payment_request(
+            student=request.user,
+            course=course,
+            payment_mode=payment_mode,
+            transaction_reference=transaction_reference,
+            payment_date=payment_date or None,
+            notes=notes,
+        )
     except ValueError as exc:
         messages.error(
             request,
             str(exc),
         )
         return redirect(
-            "core:course_detail",
+            "core:payment",
             slug=course.slug,
         )
 
-    messages.warning(
+    ref_str = f" (Ref: {transaction_reference})" if transaction_reference else ""
+    messages.success(
         request,
-        "Offline payment request submitted. "
-        "Course access will remain locked until admin approval.",
+        f"Your offline payment request for '{course.title}'{ref_str} has been submitted! "
+        "Our team will verify your transaction details and activate course access shortly.",
     )
-
-    return redirect(
-        "core:course_detail",
-        slug=course.slug,
-    )
+    return redirect("core:dashboard")
 
 
 @login_required
 def payment(request, slug):
-
     if request.user.role != User.Role.STUDENT:
         messages.error(
             request,
@@ -1161,19 +1165,153 @@ def payment(request, slug):
     )
 
     if enrollment is not None:
-        messages.info(
-            request,
-            "You already have an enrollment for this course."
-        )
-        return redirect("core:dashboard")
+        if enrollment.payment_status == Enrollment.PaymentStatus.PAID:
+            messages.info(
+                request,
+                "You are already enrolled in this course."
+            )
+            return redirect("core:course_dashboard", slug=course.slug)
+        elif enrollment.approval_status == Enrollment.ApprovalStatus.PENDING:
+            messages.warning(
+                request,
+                "Your enrollment for this course is pending administrative approval."
+            )
+            return redirect("core:dashboard")
+
+    # Calculate effective price
+    price = course.discounted_price if (course.discounted_price and course.discounted_price > 0) else course.price
+    price_paise = int(price * 100) if price else 0
+
+    razorpay_key_id = getattr(settings, "RAZORPAY_KEY_ID", "")
+    razorpay_order_id = ""
+    razorpay_available = False
+
+    if razorpay_key_id and getattr(settings, "RAZORPAY_KEY_SECRET", ""):
+        try:
+            _, _, rp_order = create_razorpay_order(student=request.user, course=course)
+            razorpay_order_id = rp_order.get("id", "")
+            razorpay_available = True
+        except Exception as exc:
+            # If Razorpay client failed (e.g. invalid test keys or offline dev), keep graceful
+            razorpay_available = False
 
     return render(
         request,
         "payment.html",
         {
             "course": course,
+            "price": price,
+            "price_paise": price_paise,
+            "razorpay_available": razorpay_available,
+            "razorpay_key_id": razorpay_key_id,
+            "razorpay_order_id": razorpay_order_id,
+            "today_date": timezone.now().strftime("%Y-%m-%d"),
         },
     )
+
+
+@login_required
+@require_POST
+def razorpay_verify(request, slug):
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can purchase courses."
+        )
+        return redirect("core:courses")
+
+    course = get_object_or_404(
+        Course.objects.filter(
+            status=Course.Status.PUBLISHED
+        ),
+        slug=slug,
+    )
+
+    razorpay_order_id = request.POST.get("razorpay_order_id", "").strip()
+    razorpay_payment_id = request.POST.get("razorpay_payment_id", "").strip()
+    razorpay_signature = request.POST.get("razorpay_signature", "").strip()
+
+    if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
+        messages.error(
+            request,
+            "Incomplete payment verification payload received. Please try again."
+        )
+        return redirect("core:payment", slug=course.slug)
+
+    try:
+        order, payment_transaction, enrollment = verify_and_complete_razorpay_payment(
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+            razorpay_signature=razorpay_signature,
+            student=request.user,
+        )
+    except ValueError as exc:
+        messages.error(
+            request,
+            str(exc)
+        )
+        return redirect("core:payment", slug=course.slug)
+
+    if enrollment.approval_status == Enrollment.ApprovalStatus.ACCEPTED:
+        messages.success(
+            request,
+            f"Payment successful! You are now enrolled in '{course.title}'. Enjoy learning!"
+        )
+        return redirect("core:course_dashboard", slug=course.slug)
+
+    messages.success(
+        request,
+        f"Payment received! Your enrollment for '{course.title}' is awaiting instructor approval."
+    )
+    return redirect("core:dashboard")
+
+
+@csrf_exempt
+@require_POST
+def razorpay_webhook(request):
+    from django.http import HttpResponse, HttpResponseBadRequest
+    webhook_secret = getattr(settings, "RAZORPAY_WEBHOOK_SECRET", "")
+    webhook_signature = request.headers.get("X-Razorpay-Signature", "")
+
+    client = get_razorpay_client()
+    if webhook_secret and client:
+        try:
+            client.utility.verify_webhook_signature(
+                request.body.decode("utf-8"),
+                webhook_signature,
+                webhook_secret,
+            )
+        except Exception:
+            return HttpResponseBadRequest("Invalid webhook signature")
+
+    try:
+        event_payload = json.loads(request.body.decode("utf-8"))
+        event_type = event_payload.get("event")
+        payload_data = event_payload.get("payload", {})
+
+        if event_type in ("payment.captured", "order.paid"):
+            payment_entity = payload_data.get("payment", {}).get("entity", {})
+            order_entity = payload_data.get("order", {}).get("entity", {})
+
+            razorpay_order_id = payment_entity.get("order_id") or order_entity.get("id")
+            razorpay_payment_id = payment_entity.get("id")
+
+            if razorpay_order_id and razorpay_payment_id:
+                try:
+                    verify_and_complete_razorpay_payment(
+                        razorpay_order_id=razorpay_order_id,
+                        razorpay_payment_id=razorpay_payment_id,
+                        razorpay_signature="",
+                        is_webhook=True,
+                    )
+                except Exception:
+                    pass
+
+        return HttpResponse(status=200)
+    except Exception:
+        return HttpResponseBadRequest("Invalid webhook payload")
+
+
 @login_required
 def dashboard(request):
 
@@ -1294,6 +1432,7 @@ def dashboard(request):
             "active_enrollment": active_enrollment,
             "current_lesson": current_lesson,
             "learning_progress": learning_progress,
+            "dash_section": "dashboard",
             "is_student": True,
             "student_name": user.get_full_name() or user.username,
             "student_initials": (
@@ -1728,6 +1867,7 @@ def course_dashboard(request, slug):
             "learning_progress": learning_progress,
             "progress_by_lesson": progress_by_lesson,
             "modules": modules_list,
+            "dash_section": "course_curriculum",
             "is_student": True,
             "student_name": (
                 request.user.get_full_name()
@@ -1832,12 +1972,14 @@ def student_doubts(request):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "threads": threads,
         "selected_status": status_filter,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "doubts",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -1920,12 +2062,14 @@ def doubt_detail(request, thread_id):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "thread": thread,
         "messages_list": messages_list,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "doubts",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -2003,6 +2147,8 @@ def student_assessments(request):
         .order_by("module__course__title", "module__order", "unlock_order", "pk")
     )
 
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
+
     assessments_list = []
     for a in assessments:
         subs = list(
@@ -2019,6 +2165,7 @@ def student_assessments(request):
         "assessments": assessments_list,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "assessment",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -2109,6 +2256,7 @@ def take_assessment(request, assessment_id):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "assessment": assessment,
@@ -2116,6 +2264,7 @@ def take_assessment(request, assessment_id):
         "attempts_left": max(0, assessment.attempts_allowed - subs_count) if assessment.attempts_allowed > 0 else "Unlimited",
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "assessment",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -2163,6 +2312,7 @@ def assessment_result(request, submission_id):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "submission": submission,
@@ -2174,6 +2324,7 @@ def assessment_result(request, submission_id):
         "reviewed_questions": reviewed_questions,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "assessment",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,

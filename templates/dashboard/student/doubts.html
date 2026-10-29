@@ -3,40 +3,58 @@
 
 {% block dashboard_title %}Doubt Clearance{% endblock %}
 {% block page_title %}Doubt Clearance{% endblock %}
-{% block page_context %}Ask questions and get answers directly from your mentors and instructors{% endblock %}
+{% block page_context %}Direct question &amp; answer channel with your mentors and instructors{% endblock %}
 
 {% block dashboard_content %}
-<div class="container-fluid py-3">
+<div class="container-fluid px-0">
 
+  <!-- ========================================================
+     HEADER & BREADCRUMBS
+     ======================================================== -->
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-      <h2 class="h4 mb-1 fw-bold">My Doubt Inquiries</h2>
-      <p class="text-muted small mb-0">Track all your questions, doubts, and instructor replies in real-time.</p>
+      <div class="small text-muted mb-1">
+        <a href="{% url 'core:dashboard' %}" class="study-link text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <span class="mx-2">/</span>
+        <span class="text-dark fw-semibold">Doubt Clearance</span>
+      </div>
+      <h2 class="h4 mb-0 fw-bold text-dark" style="font-family: 'Urbanist', sans-serif;">Doubt Inquiries &amp; Mentor Support</h2>
     </div>
+
     {% if current_lesson %}
-      <a href="{% url 'core:lesson' current_lesson.pk %}#askDoubtSection" class="btn btn-primary btn-sm">
-        <i class="bi bi-question-circle me-1"></i> Ask on Current Lesson
+      <a href="{% url 'core:lesson' current_lesson.id %}#askDoubtSection" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Ask on Current Lesson
       </a>
     {% endif %}
   </div>
 
-  <!-- FILTER PILLS -->
+  <!-- ========================================================
+     FILTER PILLS
+     ======================================================== -->
   <div class="d-flex gap-2 mb-4 flex-wrap">
-    <a href="{% url 'core:student_doubts' %}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-      All Doubts
+    <a href="{% url 'core:student_doubts' %}"
+       class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-light border text-muted{% endif %} px-3 py-1">
+      All Questions
     </a>
-    <a href="{% url 'core:student_doubts' %}?status=open" class="btn btn-sm {% if selected_status == 'open' %}btn-danger{% else %}btn-outline-secondary{% endif %}">
-      Pending
+    <a href="{% url 'core:student_doubts' %}?status=open"
+       class="btn btn-sm {% if selected_status == 'open' %}btn-primary{% else %}btn-light border text-muted{% endif %} px-3 py-1">
+      Waiting on Mentor
     </a>
-    <a href="{% url 'core:student_doubts' %}?status=answered" class="btn btn-sm {% if selected_status == 'answered' %}btn-info{% else %}btn-outline-secondary{% endif %}">
-      Answered
+    <a href="{% url 'core:student_doubts' %}?status=answered"
+       class="btn btn-sm {% if selected_status == 'answered' %}btn-primary{% else %}btn-light border text-muted{% endif %} px-3 py-1">
+      Instructor Replied
     </a>
-    <a href="{% url 'core:student_doubts' %}?status=resolved" class="btn btn-sm {% if selected_status == 'resolved' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+    <a href="{% url 'core:student_doubts' %}?status=resolved"
+       class="btn btn-sm {% if selected_status == 'resolved' %}btn-primary{% else %}btn-light border text-muted{% endif %} px-3 py-1">
       Resolved
     </a>
   </div>
 
-  <!-- THREADS LIST -->
+  <!-- ========================================================
+     THREADS LIST
+     ======================================================== -->
   <div class="row g-3">
     {% for t in threads %}
       <div class="col-12">
@@ -44,13 +62,13 @@
           <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div style="flex: 1; min-width: 250px;">
               <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-light text-muted border">#{{ t.pk }}</span>
-                <span class="small text-primary fw-semibold">{{ t.lesson.module.course.title }}</span>
+                <span class="badge bg-light text-muted border font-monospace">#{{ t.pk }}</span>
+                <span class="small text-muted fw-semibold">{{ t.lesson.module.course.title }}</span>
                 <span class="text-muted small">&bull;</span>
                 <span class="small text-muted">{{ t.lesson.title }}</span>
               </div>
               <h5 class="h6 mb-2 fw-bold text-dark">
-                <a href="{% url 'core:doubt_detail' t.pk %}" class="text-decoration-none text-dark">
+                <a href="{% url 'core:doubt_detail' t.pk %}" class="text-decoration-none text-dark hover-gold">
                   {{ t.subject }}
                 </a>
               </h5>
@@ -63,19 +81,19 @@
               <div class="text-end">
                 <div class="mb-1">
                   {% if t.status == 'open' or t.status == 'reopened' %}
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-clock-history me-1"></i>Waiting on Mentor</span>
+                    <span class="badge bg-danger-subtle text-danger px-3 py-1"><i class="bi bi-clock-history me-1"></i> Waiting on Mentor</span>
                   {% elif t.status == 'answered' %}
-                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1"><i class="bi bi-reply-fill me-1"></i>Instructor Replied</span>
+                    <span class="badge bg-primary-subtle text-primary px-3 py-1"><i class="bi bi-reply-fill me-1"></i> Instructor Replied</span>
                   {% elif t.status == 'resolved' %}
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-check2-circle me-1"></i>Resolved</span>
+                    <span class="badge bg-success-subtle text-success px-3 py-1"><i class="bi bi-check2-circle me-1"></i> Resolved</span>
                   {% else %}
-                    <span class="badge bg-secondary-subtle text-secondary px-2 py-1">{{ t.get_status_display }}</span>
+                    <span class="badge bg-secondary-subtle text-secondary px-3 py-1">{{ t.get_status_display }}</span>
                   {% endif %}
                 </div>
                 <div class="text-muted" style="font-size: 0.75rem;">Updated: {{ t.updated_at|date:"d M, h:i A" }}</div>
               </div>
 
-              <a href="{% url 'core:doubt_detail' t.pk %}" class="btn btn-outline-primary btn-sm">
+              <a href="{% url 'core:doubt_detail' t.pk %}" class="btn btn-outline-primary btn-sm px-3 py-2">
                 View Thread <i class="bi bi-arrow-right ms-1"></i>
               </a>
             </div>
@@ -85,9 +103,19 @@
     {% empty %}
       <div class="col-12">
         <div class="card border-0 shadow-sm p-5 text-center text-muted">
-          <i class="bi bi-chat-quote fs-1 d-block mb-3 text-secondary"></i>
-          <h5>No doubts asked yet</h5>
-          <p class="small text-muted mb-0">Whenever you face any difficulty while watching lessons or solving tasks, click "Ask Doubt" on that lesson to reach your mentors.</p>
+          <div class="d-inline-flex align-items-center justify-content-center rounded-circle mx-auto mb-3"
+               style="width: 64px; height: 64px; background: #FEF9EE; color: var(--study-gold); font-size: 1.75rem;">
+            <i class="bi bi-chat-quote"></i>
+          </div>
+          <h5 class="h6 fw-bold text-dark mb-1">No Doubt Inquiries Found</h5>
+          <p class="small text-muted mb-3" style="max-width: 480px; margin: 0 auto;">
+            Whenever you have a question or need clarity on lesson materials or coding exercises, click "Ask Doubt" directly on that lesson.
+          </p>
+          {% if current_lesson %}
+            <a href="{% url 'core:lesson' current_lesson.id %}#askDoubtSection" class="btn btn-sm btn-primary">
+              <i class="bi bi-question-circle me-1"></i> Ask on Current Lesson
+            </a>
+          {% endif %}
         </div>
       </div>
     {% endfor %}

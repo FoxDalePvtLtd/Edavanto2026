@@ -88,6 +88,8 @@ urlpatterns = [
 
     # ENROLLMENTS
     path("enrollments/", views.enrollment_list, name="enrollment_list"),
+    path("enrollments/<int:enrollment_id>/approve/", views.enrollment_approve, name="enrollment_approve"),
+    path("enrollments/<int:enrollment_id>/reject/", views.enrollment_reject, name="enrollment_reject"),
 
     # PAYMENTS
     path("payments/", views.payment_list, name="payment_list"),
@@ -107,6 +109,7 @@ urlpatterns = [
     path("assessments/create/", views.assessment_list, name="assessment_create"),
     path("assessments/<int:assessment_id>/edit/", views.assessment_edit, name="assessment_edit"),
     path("assessments/<int:assessment_id>/delete/", views.assessment_delete, name="assessment_delete"),
+    path("assessments/<int:assessment_id>/toggle-publish/", views.assessment_toggle_publish, name="assessment_toggle_publish"),
     path(
         "assessments/questions/",
         views.assessment_questions,

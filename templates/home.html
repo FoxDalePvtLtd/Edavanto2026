@@ -1,6 +1,54 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_css %}
+<style id="edvanto-course-card-style">
+    .tj-course-img {
+      width: 100% !important;
+      height: 220px !important;
+      min-height: 220px !important;
+      max-height: 220px !important;
+      aspect-ratio: 16 / 9 !important;
+      position: relative !important;
+      overflow: hidden !important;
+      background: var(--tj-color-theme-bg-2, #F7F3E8) !important;
+      border-radius: 18px 18px 0 0 !important;
+      display: block !important;
+    }
+    .tj-course-img a {
+      display: block !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .tj-course-img img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      display: block !important;
+    }
+    .tj-course-badge,
+    .tj-course-mode {
+      position: absolute !important;
+      top: 14px !important;
+      left: 14px !important;
+      z-index: 5 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.35rem !important;
+      padding: 0.35rem 0.85rem !important;
+      font-size: 0.75rem !important;
+      font-weight: 700 !important;
+      border-radius: 999px !important;
+      background: rgba(17, 17, 17, 0.82) !important;
+      backdrop-filter: blur(6px) !important;
+      color: #ffffff !important;
+      text-transform: capitalize !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
       <div class="space-for-header"></div>
               <!-- start: Banner Section -->
@@ -408,10 +456,12 @@
                           <img src="{% static 'images/course/course-img-1.webp' %}" alt="{{ course.title }}">
                         {% endif %}
                       </a>
-                      <span class="tj-course-mode">
-                        <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %}"></i>
-                        {{ course.get_mode_display }}
-                      </span>
+                      <div class="tj-course-badge">
+                        <span>
+                          <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %} me-1"></i>
+                          {{ course.get_mode_display }}
+                        </span>
+                      </div>
                     </div>
                     <div class="tj-course-content">
                       <a class="tj-cat" href="{% url 'core:course_detail' course.slug %}">
@@ -1431,7 +1481,7 @@
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
       
       <!-- MODAL HEADER -->
-      <div class="modal-header bg-dark text-white p-4" style="background: linear-gradient(135deg, #032A5A 0%, #0A3E7A 60%, #451CEE 100%) !important;">
+      <div class="modal-header bg-dark text-white p-4" style="background: linear-gradient(135deg, #171717 0%, #2A2415 60%, #D4A62A 100%) !important;">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-3 bg-white bg-opacity-10 p-2 d-flex align-items-center justify-content-center text-info" style="width: 48px; height: 48px;">
             <i class="bi bi-headset fs-3 text-info"></i>
@@ -1615,10 +1665,10 @@
   gap: 10px;
   padding: 12px 22px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #451CEE 0%, #032A5A 100%);
+  background: linear-gradient(135deg, #D4A62A 0%, #B8891F 50%, #171717 100%);
   color: #ffffff;
   border: none;
-  box-shadow: 0 10px 25px rgba(69, 28, 238, 0.45);
+  box-shadow: 0 10px 25px rgba(212, 166, 42, 0.45);
   cursor: pointer;
   font-weight: 700;
   font-size: 0.9rem;
@@ -1626,7 +1676,7 @@
 }
 .edvanto-consult-btn:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 14px 30px rgba(69, 28, 238, 0.6);
+  box-shadow: 0 14px 30px rgba(212, 166, 42, 0.6);
   color: #ffffff;
 }
 .edvanto-consult-btn .consult-icon {
@@ -1645,7 +1695,7 @@
   right: -4px;
   bottom: -4px;
   border-radius: 999px;
-  border: 2px solid #01DFFE;
+  border: 2px solid #D4A62A;
   animation: edvantoPulse 2s infinite;
   opacity: 0.8;
   pointer-events: none;

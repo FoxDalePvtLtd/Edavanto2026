@@ -14,17 +14,17 @@
 <div class="container-fluid py-2">
   <div class="row g-4">
 
-    {# ============ MAIN CONTENT ============ #}
+    <!-- ============ MAIN CONTENT ============ #}
     <div class="col-12 col-lg-8">
 
-      {# -------- Lesson header -------- #}
+      <!-- -------- Lesson header -------- -->
       <div class="mb-4">
         <div class="small text-muted mb-1">
-          <a href="{% url 'core:dashboard' %}">Dashboard</a>
+          <a href="{% url 'core:dashboard' %}" class="study-link text-decoration-none"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
           <span class="mx-1">/</span>
-          <a href="{% url 'core:course_dashboard' slug=course.slug %}">{{ course.title }}</a>
+          <a href="{% url 'core:course_dashboard' slug=course.slug %}" class="study-link text-decoration-none">{{ course.title }}</a>
           <span class="mx-1">/</span>
-          {{ module.title }}
+          <span class="text-dark">{{ module.title }}</span>
         </div>
         <h1 class="h4 mb-1">{{ lesson.title }}</h1>
         <div class="text-muted small">
@@ -33,14 +33,14 @@
         </div>
       </div>
 
-      {# -------- Description -------- #}
+      <!-- -------- Description -------- #}
       {% if lesson.description %}
         <div class="card mb-4">
           <div class="card-body">{{ lesson.description|linebreaks }}</div>
         </div>
       {% endif %}
 
-      {# -------- Video -------- #}
+      <!-- -------- Video -------- -->
       {% if video_asset and video_asset.original_file %}
         <div class="card mb-4 shadow-sm border-0">
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
@@ -80,7 +80,7 @@
         </div>
       {% endif %}
 
-      {# -------- Study Material & In-Web Note Reader -------- #}
+      <!-- -------- Study Material & In-Web Note Reader -------- #}
       {% if materials %}
         <div class="card mb-4 border-0 shadow-sm" id="studyNotesCard">
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -206,7 +206,7 @@
         </div>
       {% endif %}
 
-      {# -------- Resource Links -------- #}
+      <!-- -------- Resource Links -------- -->
       {% if resources %}
         <div class="card mb-4 border-0 shadow-sm">
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
@@ -241,7 +241,7 @@
         </div>
       {% endif %}
 
-      {# -------- Module Assessments -------- #}
+      <!-- -------- Module Assessments -------- #}
       {% if module_assessments %}
         <div class="card mb-4 border-0 shadow-sm">
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
@@ -267,7 +267,7 @@
         </div>
       {% endif %}
 
-      {# -------- Doubt Clearance -------- #}
+      <!-- -------- Doubt Clearance -------- -->
       <div class="card mb-4 border-0 shadow-sm" id="askDoubtSection">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
           <strong><i class="bi bi-chat-quote-fill text-primary me-2"></i> Doubt Clearance &amp; Mentorship</strong>
@@ -339,24 +339,34 @@
         </div>
       </div>
 
-      {# -------- Mark complete -------- #}
-      <div class="d-flex justify-content-between align-items-center gap-2 mt-4">
+      <!-- -------- Mark complete -------- #}
+      <div class="d-flex justify-content-between align-items-center gap-2 mt-4 p-3 bg-white rounded-3 border" style="border-color: var(--study-border) !important;">
         <a href="{% url 'core:course_dashboard' slug=course.slug %}"
-           class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-left me-1"></i> Back to course
+           class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left me-1"></i> Back to Curriculum
         </a>
-        <button type="button" id="btn-complete-lesson" class="btn btn-primary"
-                data-lesson-id="{{ lesson.pk }}">
-          <i class="bi bi-check-circle me-1"></i>
-          {% if progress.status == 'completed' %}Completed{% else %}Mark complete{% endif %}
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          {% if next_lesson %}
+            <a href="{% url 'core:lesson' next_lesson.pk %}" class="btn btn-outline-primary btn-sm">
+              Next Lesson <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          {% endif %}
+          <button type="button" id="btn-complete-lesson" class="btn btn-primary btn-sm px-4"
+                  data-lesson-id="{{ lesson.pk }}">
+            <i class="bi bi-check-circle me-1"></i>
+            {% if progress.status == 'completed' %}Completed{% else %}Mark Complete{% endif %}
+          </button>
+        </div>
       </div>
     </div>
 
-    {# ============ SIDEBAR: lesson list ============ #}
+    <!-- ======================================================== -->
     <div class="col-12 col-lg-4">
-      <div class="card">
-        <div class="card-header"><strong>Course lessons</strong></div>
+      <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+        <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+          <strong class="text-dark"><i class="bi bi-list-nested text-warning me-2"></i> Course Lessons</strong>
+          <span class="badge bg-light text-muted border">{{ sidebar_rows|length }}</span>
+        </div>
         <div class="list-group list-group-flush"
              style="max-height: 70vh; overflow-y: auto;">
           {% for row in sidebar_rows %}
@@ -388,7 +398,7 @@
   </div>
 </div>
 
-{# -------- completion script -------- #}
+<!-- -------- completion script -------- -->
 <script>
 (function () {
   'use strict';
@@ -573,6 +583,16 @@
   font-size: 0.9rem;
 }
 
+
+.list-group-item.active {
+  background-color: #FEF9EE !important;
+  color: #171717 !important;
+  border-color: #F6D98B !important;
+  border-left: 4px solid var(--study-gold) !important;
+}
+.list-group-item.active .text-muted {
+  color: #9C7924 !important;
+}
 /* Fullscreen Reader Mode */
 .note-paper-box:fullscreen {
   max-height: 100vh !important;
