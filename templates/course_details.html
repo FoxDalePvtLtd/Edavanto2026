@@ -1267,10 +1267,20 @@
                                 {% else %}
                                 {% if request.user.is_authenticated %}
                                 {% if request.user.role == 'student' %}
+                                {% if other_enrolled_course %}
+                                <div class="alert alert-warning p-3 rounded-3 mb-3 small text-start" style="background: #FFFDF7; border: 1px solid #D4A62A; color: #171717;">
+                                    <i class="tji-info-circle me-1" style="color: #D4A62A;"></i>
+                                    You are already enrolled in <strong>{{ other_enrolled_course.title }}</strong>. Edvanto allows only one active course enrollment per student.
+                                </div>
+                                <a class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md tj-btn-full" href="{% url 'core:dashboard' %}">
+                                    <span class="btn-text">Go to Enrolled Course</span>
+                                </a>
+                                {% else %}
                                 <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:payment' course.slug %}">
                                     <span class="btn-text">Enroll now</span>
                                     <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
                                 </a>
+                                {% endif %}
                                 {% else %}
                                 <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
                                     <span class="btn-text">Browse courses</span>

@@ -126,6 +126,14 @@ def create_test_payment(
             "This course is not available for purchase."
         )
 
+    # Restriction: A student can only be enrolled in one course at a time
+    other_enrollment = get_student_active_or_pending_enrollment(student, exclude_course=course)
+    if other_enrollment:
+        raise ValueError(
+            f"You are already enrolled in '{other_enrollment.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time. Please complete your current course first."
+        )
+
     existing_enrollment = (
         Enrollment.objects
         .filter(
@@ -269,6 +277,14 @@ def create_offline_payment_request(
     if course.status != Course.Status.PUBLISHED:
         raise ValueError(
             "This course is not available for enrollment."
+        )
+
+    # Restriction: A student can only be enrolled in one course at a time
+    other_enrollment = get_student_active_or_pending_enrollment(student, exclude_course=course)
+    if other_enrollment:
+        raise ValueError(
+            f"You are already enrolled in '{other_enrollment.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time. Please complete your current course first."
         )
 
     existing_enrollment = (
@@ -657,6 +673,14 @@ def create_razorpay_order(
 
     if course.status != Course.Status.PUBLISHED:
         raise ValueError("This course is not available for purchase.")
+
+    # Restriction: A student can only be enrolled in one course at a time
+    other_enrollment = get_student_active_or_pending_enrollment(student, exclude_course=course)
+    if other_enrollment:
+        raise ValueError(
+            f"You are already enrolled in '{other_enrollment.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time. Please complete your current course first."
+        )
 
     existing_enrollment = (
         Enrollment.objects
