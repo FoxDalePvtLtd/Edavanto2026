@@ -1002,6 +1002,7 @@ def course_detail(request, slug):
     )
 
     enrollment = None
+    other_enrolled_course = None
 
     if request.user.is_authenticated:
         enrollment = (
@@ -1012,6 +1013,10 @@ def course_detail(request, slug):
             )
             .first()
         )
+        if request.user.role == User.Role.STUDENT:
+            other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+            if other_enr:
+                other_enrolled_course = other_enr.course
 
     return render(
         request,
@@ -1020,6 +1025,7 @@ def course_detail(request, slug):
             "course": course,
             "related_courses": related_courses,
             "enrollment": enrollment,
+            "other_enrolled_course": other_enrolled_course,
         },
     )
 
@@ -1047,6 +1053,15 @@ def test_payment(request, slug):
         ),
         slug=slug,
     )
+
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.error(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time.",
+        )
+        return redirect("core:dashboard")
 
     try:
         order, payment_transaction, enrollment = (
@@ -1106,6 +1121,15 @@ def offline_payment_request(request, slug):
         slug=slug,
     )
 
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.error(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time.",
+        )
+        return redirect("core:dashboard")
+
     payment_mode = request.POST.get("payment_mode", "UPI").strip()
     transaction_reference = request.POST.get("transaction_reference", "").strip()
     payment_date = request.POST.get("payment_date", "").strip()
@@ -1154,6 +1178,16 @@ def payment(request, slug):
         ),
         slug=slug,
     )
+
+    # Restriction: Student cannot enroll in another course if already enrolled in one
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.warning(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time. Please complete your current course first.",
+        )
+        return redirect("core:dashboard")
 
     enrollment = (
         Enrollment.objects
@@ -1226,6 +1260,15 @@ def razorpay_verify(request, slug):
         ),
         slug=slug,
     )
+
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.error(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Multiple course enrollments are restricted.",
+        )
+        return redirect("core:dashboard")
 
     razorpay_order_id = request.POST.get("razorpay_order_id", "").strip()
     razorpay_payment_id = request.POST.get("razorpay_payment_id", "").strip()
@@ -1423,6 +1466,87 @@ def dashboard(request):
         messages.warning(request, "Please select a course to access your student dashboard.")
         return redirect("core:courses")
     
+
+    # DEDICATED OFFLINE STUDENT DASHBOARD
+    if active_enrollment.course.mode == Course.Mode.OFFLINE:
+        center = active_enrollment.course.center
+        batch = (
+            Batch.objects
+            .filter(course=active_enrollment.course)
+            .select_related("instructor", "center")
+            .first()
+        )
+        sessions = []
+        if batch:
+            sessions = list(
+                batch.sessions
+                .select_related("instructor")
+                .order_by("date", "start_time")
+            )
+
+        attendance_records = list(
+            Attendance.objects
+            .filter(student=user, session__batch__course=active_enrollment.course)
+            .select_related("session", "marked_by")
+            .order_by("-session__date", "-session__start_time")
+        )
+        total_sessions_held = len(attendance_records)
+        present_count = sum(1 for a in attendance_records if a.status == Attendance.Status.PRESENT)
+        absent_count = sum(1 for a in attendance_records if a.status == Attendance.Status.ABSENT)
+        late_count = sum(1 for a in attendance_records if a.status == Attendance.Status.LATE)
+        excused_count = sum(1 for a in attendance_records if a.status == Attendance.Status.EXCUSED)
+        attendance_rate = int((present_count / total_sessions_held * 100)) if total_sessions_held > 0 else 100
+
+        modules = list(
+            active_enrollment.course.modules
+            .prefetch_related("lessons", "lessons__materials", "lessons__resources")
+            .order_by("order")
+        )
+
+        assessments = list(
+            Assessment.objects
+            .filter(module__course=active_enrollment.course, is_published=True)
+            .select_related("module")
+            .order_by("module__order", "unlock_order")
+        )
+
+        doubt_threads = list(
+            DoubtThread.objects
+            .filter(student=user, enrollment=active_enrollment)
+            .order_by("-updated_at")[:5]
+        )
+
+        return render(
+            request,
+            "dashboard/student/offline_dashboard.html",
+            {
+                "enrollments": enrollments,
+                "active_enrollment": active_enrollment,
+                "course": active_enrollment.course,
+                "center": center,
+                "batch": batch,
+                "sessions": sessions,
+                "attendance_records": attendance_records,
+                "total_sessions_held": total_sessions_held,
+                "present_count": present_count,
+                "absent_count": absent_count,
+                "late_count": late_count,
+                "excused_count": excused_count,
+                "attendance_rate": attendance_rate,
+                "modules": modules,
+                "assessments": assessments,
+                "doubt_threads": doubt_threads,
+                "dash_section": "dashboard",
+                "is_student": True,
+                "is_offline_student": True,
+                "student_name": user.get_full_name() or user.username,
+                "student_initials": (
+                    (user.first_name[:1] if user.first_name else "") +
+                    (user.last_name[:1] if user.last_name else "")
+                ).upper() or "S",
+                "dashboard_welcome": True,
+            },
+        )
 
     return render(
         request,
