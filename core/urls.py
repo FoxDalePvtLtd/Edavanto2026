@@ -25,6 +25,8 @@ urlpatterns = [
 
     path("course-details/<slug:slug>/", views.course_detail, name="course_detail"),
     path("course/<slug:slug>/payment/", views.payment, name="payment"),
+    path("course/<slug:slug>/payment/verify/", views.razorpay_verify, name="razorpay_verify"),
+    path("payments/razorpay/webhook/", views.razorpay_webhook, name="razorpay_webhook"),
     path("course/<slug:slug>/test-payment/", views.test_payment, name="test_payment"),
     path("course/<slug:slug>/offline-payment/", views.offline_payment_request, name="offline_payment_request"),
 

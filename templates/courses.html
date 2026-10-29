@@ -6,6 +6,160 @@
 
 {% block extra_css %}
 
+  <style>
+    /* ============================================================
+       EDVANTO COURSE CARDS – UNIFIED ALIGNMENT & SIZING
+       ============================================================ */
+    .tj-course-wrapper {
+      display: flex !important;
+      flex-wrap: wrap !important;
+    }
+    .course-col {
+      display: flex !important;
+      margin-bottom: 30px !important;
+    }
+    .tj-course-item {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: #ffffff !important;
+      border-radius: 18px !important;
+      border: 1px solid var(--tj-color-border-1, #E6E0D2) !important;
+      overflow: hidden !important;
+      box-shadow: 0 4px 20px rgba(17, 17, 17, 0.05) !important;
+      transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    }
+    .tj-course-item:hover {
+      transform: translateY(-6px) !important;
+      box-shadow: 0 16px 36px rgba(17, 17, 17, 0.10) !important;
+    }
+    .tj-course-img {
+      width: 100% !important;
+      height: 220px !important;
+      min-height: 220px !important;
+      max-height: 220px !important;
+      aspect-ratio: 16 / 9 !important;
+      position: relative !important;
+      overflow: hidden !important;
+      background: var(--tj-color-theme-bg-2, #F7F3E8) !important;
+      border-radius: 18px 18px 0 0 !important;
+      display: block !important;
+    }
+    .tj-course-img a {
+      display: block !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .tj-course-img img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      display: block !important;
+      transition: transform 0.6s ease !important;
+    }
+    .tj-course-item:hover .tj-course-img img {
+      transform: scale(1.06) !important;
+    }
+    .tj-course-badge,
+    .tj-course-mode {
+      position: absolute !important;
+      top: 14px !important;
+      left: 14px !important;
+      z-index: 5 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.35rem !important;
+      padding: 0.35rem 0.85rem !important;
+      font-size: 0.75rem !important;
+      font-weight: 700 !important;
+      border-radius: 999px !important;
+      background: rgba(17, 17, 17, 0.82) !important;
+      backdrop-filter: blur(6px) !important;
+      color: #ffffff !important;
+      text-transform: capitalize !important;
+      letter-spacing: 0.02em !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+    }
+    .tj-course-content {
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      padding: 1.25rem 1.4rem 1.5rem !important;
+    }
+    .tj-course-content .tj-cat {
+      font-size: 0.78rem !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.06em !important;
+      color: var(--tj-color-theme-primary, #D4A62A) !important;
+      margin-bottom: 0.45rem !important;
+      display: inline-block !important;
+    }
+    .tj-course-content .title {
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+      color: var(--tj-color-heading-primary, #171717) !important;
+      margin-bottom: 0.75rem !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+      min-height: 2.8em !important;
+    }
+    .tj-course-content .title a {
+      color: var(--tj-color-heading-primary, #171717) !important;
+      transition: color 0.2s ease !important;
+    }
+    .tj-course-content .title a:hover {
+      color: var(--tj-color-theme-primary, #D4A62A) !important;
+    }
+    .tj-course-content .course-meta {
+      display: flex !important;
+      align-items: center !important;
+      gap: 1rem !important;
+      font-size: 0.82rem !important;
+      color: var(--tj-color-text-body-3, #777777) !important;
+      margin-bottom: 1.1rem !important;
+    }
+    .tj-course-content .course-meta span {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.35rem !important;
+    }
+    .tj-course-content .course-meta i {
+      color: var(--tj-color-theme-primary, #D4A62A) !important;
+    }
+    .tj-course-content .tj-course-price-wrap {
+      margin-top: auto !important;
+      padding-top: 0.85rem !important;
+      margin-bottom: 0.9rem !important;
+      border-top: 1px solid var(--tj-color-border-2, rgba(23, 23, 23, 0.08)) !important;
+    }
+    .tj-course-content .course-price {
+      font-size: 1.3rem !important;
+      font-weight: 800 !important;
+      color: var(--tj-color-heading-primary, #171717) !important;
+    }
+    .tj-course-content .tj-btn-primary {
+      width: 100% !important;
+      text-align: center !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 999px !important;
+      background-color: var(--tj-color-theme-primary, #D4A62A) !important;
+      color: #171717 !important;
+      font-weight: 700 !important;
+    }
+    .tj-course-content .tj-btn-primary:hover {
+      background-color: var(--tj-color-theme-primary-hover, rgba(212, 166, 42, 0.85)) !important;
+    }
+  </style>
+
+
 {% endblock %}
 
 {% block content %}
@@ -486,7 +640,7 @@
                     {% for course in courses %}
                       <div class="col-lg-4 col-md-6 course-col">
                         <div class="tj-course-item">
-                          <div class="tj-course-thumb">
+                          <div class="tj-course-img">
                             <a href="{% url 'core:course_detail' course.slug %}">
                               {% if course.thumbnail %}
                                 <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
@@ -494,10 +648,12 @@
                                 <img src="{% static 'images/course/course-img-1.webp' %}" alt="{{ course.title }}">
                               {% endif %}
                             </a>
-                            <span class="tj-course-mode">
-                              <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %}"></i>
-                              {{ course.get_mode_display }}
-                            </span>
+                            <div class="tj-course-badge">
+                              <span>
+                                <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %} me-1"></i>
+                                {{ course.get_mode_display }}
+                              </span>
+                            </div>
                           </div>
                           <div class="tj-course-content">
                             <a class="tj-cat" href="{% url 'core:course_detail' course.slug %}">
