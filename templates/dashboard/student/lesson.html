@@ -241,25 +241,70 @@
         </div>
       {% endif %}
 
-      <!-- -------- Module Assessments -------- #}
+      <!-- -------- Topic Assessment Tests -------- -->
+      {% if lesson_assessments %}
+        <div class="card mb-4 border-0 shadow-sm border-start border-4 border-warning">
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <strong><i class="bi bi-patch-question-fill text-warning me-2 fs-5"></i> Topic Assessment &amp; Mastery Check</strong>
+              <div class="text-muted small">Complete this assessment to test your understanding of this topic and unlock progression.</div>
+            </div>
+            <span class="badge bg-warning-subtle text-dark border">{{ lesson_assessments|length }} Assessment{{ lesson_assessments|length|pluralize }}</span>
+          </div>
+          <div class="list-group list-group-flush">
+            {% for a in lesson_assessments %}
+              <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-3 py-3" style="background: {% if a.passed %}#F0FDF4{% else %}#FFFFFF{% endif %};">
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="fw-bold text-dark">{{ a.title }}</span>
+                    {% if a.passed %}
+                      <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle-fill me-1"></i> Passed</span>
+                    {% else %}
+                      <span class="badge bg-warning-subtle text-dark border border-warning-subtle"><i class="bi bi-clock me-1"></i> Required</span>
+                    {% endif %}
+                  </div>
+                  <div class="small text-muted">
+                    {{ a.get_assessment_type_display }} &bull; Total Marks: <strong class="text-dark">{{ a.total_marks }}</strong> &bull; Pass: <strong>{{ a.pass_percentage }}%</strong>
+                    {% if a.time_limit_minutes %}&bull; <i class="bi bi-stopwatch text-warning"></i> {{ a.time_limit_minutes }} mins{% endif %}
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <a href="{% url 'core:take_assessment' a.pk %}" class="btn btn-sm {% if a.passed %}btn-outline-success{% else %}btn-primary{% endif %} px-3 py-2 fw-semibold">
+                    <i class="bi {% if a.passed %}bi-arrow-repeat{% else %}bi-play-circle-fill{% endif %} me-1"></i>
+                    {% if a.passed %}Retake Test{% else %}Take Assessment Test{% endif %}
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- -------- Module Assessments -------- -->
       {% if module_assessments %}
         <div class="card mb-4 border-0 shadow-sm">
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <strong><i class="bi bi-clipboard2-check-fill text-primary me-2"></i> Module Assessments &amp; Quizzes</strong>
+            <strong><i class="bi bi-clipboard2-check-fill text-primary me-2"></i> Module Capstone Assessments &amp; Quizzes</strong>
             <span class="badge bg-primary-subtle text-primary">{{ module_assessments|length }}</span>
           </div>
           <div class="list-group list-group-flush">
             {% for a in module_assessments %}
-              <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+              <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 py-3" style="background: {% if a.passed %}#F0FDF4{% else %}#FFFFFF{% endif %};">
                 <div>
-                  <div class="fw-bold text-dark">{{ a.title }}</div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="fw-bold text-dark">{{ a.title }}</div>
+                    {% if a.passed %}
+                      <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle-fill me-1"></i> Passed</span>
+                    {% endif %}
+                  </div>
                   <div class="small text-muted">
                     {{ a.get_assessment_type_display }} &bull; Total Marks: {{ a.total_marks }} &bull; Pass: {{ a.pass_percentage }}%
                     {% if a.time_limit_minutes %}&bull; Time: {{ a.time_limit_minutes }} mins{% endif %}
                   </div>
                 </div>
-                <a href="{% url 'core:take_assessment' a.pk %}" class="btn btn-sm btn-primary">
-                  <i class="bi bi-play-circle me-1"></i> Open Assessment
+                <a href="{% url 'core:take_assessment' a.pk %}" class="btn btn-sm {% if a.passed %}btn-outline-success{% else %}btn-primary{% endif %}">
+                  <i class="bi {% if a.passed %}bi-arrow-repeat{% else %}bi-play-circle{% endif %} me-1"></i>
+                  {% if a.passed %}Retake{% else %}Open Assessment{% endif %}
                 </a>
               </div>
             {% endfor %}

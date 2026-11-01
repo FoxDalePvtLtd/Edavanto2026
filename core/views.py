@@ -1672,7 +1672,14 @@ def lesson_view(request, lesson_id):
 
             # Doubts & Assessments for this lesson:
             "lesson_doubts": DoubtThread.objects.filter(student=request.user, lesson=lesson).prefetch_related("messages").order_by("-created_at"),
-            "module_assessments": Assessment.objects.filter(module=lesson.module, is_published=True).order_by("unlock_order"),
+            "lesson_assessments": [
+                (setattr(a, "passed", assessment_is_passed(a, request.user)) or a)
+                for a in Assessment.objects.filter(lesson=lesson, is_published=True).order_by("unlock_order", "pk")
+            ],
+            "module_assessments": [
+                (setattr(a, "passed", assessment_is_passed(a, request.user)) or a)
+                for a in Assessment.objects.filter(module=lesson.module, is_published=True).order_by("unlock_order", "pk")
+            ],
             # Sidebar / header bits the base template reads:
             "current_lesson": lesson,
             "dash_section": "lesson",
@@ -2340,7 +2347,7 @@ def take_assessment(request, assessment_id):
             if q.question_type == Question.QuestionType.MCQ:
                 ans = request.POST.get(field_name, "").strip()
                 answers[str(q.pk)] = ans
-                if ans and ans == q.correct_answer:
+                if q.check_answer(ans):
                     total_mcq_obtained += Decimal(str(q.marks))
             elif q.question_type == Question.QuestionType.TEXT:
                 has_manual_questions = True
@@ -2369,6 +2376,18 @@ def take_assessment(request, assessment_id):
             status=status,
             graded_at=timezone.now() if status == Submission.Status.GRADED else None,
         )
+
+        LearningEvent.objects.create(
+            student=user,
+            enrollment=enrollment,
+            event_type=LearningEvent.EventType.ASSESSMENT_COMPLETED,
+            progress=final_score,
+        )
+
+        total_possible = assessment.total_marks or sum(q.marks for q in questions) or 1
+        percentage = (final_score / Decimal(str(total_possible))) * Decimal("100")
+        if percentage >= Decimal(str(assessment.pass_percentage)):
+            update_enrollment_progress(enrollment)
 
         messages.success(request, f"Assessment '{assessment.title}' submitted successfully!")
         return redirect("core:assessment_result", submission_id=submission.pk)
@@ -2422,11 +2441,13 @@ def assessment_result(request, submission_id):
     reviewed_questions = []
     for q in questions:
         student_ans = submission.answers.get(str(q.pk), "")
-        is_correct = (q.question_type == Question.QuestionType.MCQ and student_ans == q.correct_answer)
+        is_correct = (q.question_type == Question.QuestionType.MCQ and q.check_answer(student_ans))
         reviewed_questions.append({
             "question": q,
             "student_answer": student_ans,
             "is_correct": is_correct,
+            "marks_awarded": q.marks if is_correct else 0,
+            "correct_display": q.get_correct_answer_display(),
         })
 
     enrollments = list(

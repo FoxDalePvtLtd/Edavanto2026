@@ -154,7 +154,7 @@
     <div class="card-body p-4">
       {% if course.modules.all %}
         <div class="accordion" id="curriculumAccordion">
-          {% for module in course.modules.all %}
+          {% for module in modules|default:course.modules.all %}
             <div class="accordion-item mb-3 border rounded-3 overflow-hidden shadow-none" style="border-color: var(--study-border) !important;">
 
               <h2 class="accordion-header" id="headingMod{{ module.id }}">

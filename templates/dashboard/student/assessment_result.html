@@ -120,10 +120,10 @@
             <strong class="text-dark">{{ item.student_answer|default:"(No answer provided)" }}</strong>
           </div>
 
-          {% if not item.is_correct and item.question.correct_answer %}
+          {% if not item.is_correct and item.correct_display %}
             <div class="small text-success mb-1">
               <span>Expected Answer:</span>
-              <strong>{{ item.question.correct_answer }}</strong>
+              <strong>{{ item.correct_display }}</strong>
             </div>
           {% endif %}
 
