@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils import timezone
 
 from ..models import (
@@ -383,25 +383,21 @@ def update_video_progress(
 
 def get_lesson_assessments(lesson):
     """
-    Assessments are attached to modules in the current model.
-
-    A lesson therefore uses assessments belonging to its module.
+    Return published assessments attached to this lesson or module.
     """
-
-    return Assessment.objects.filter(
+    qs = Assessment.objects.filter(
         module=lesson.module,
         is_published=True,
-    ).order_by(
-        "unlock_order",
-        "pk",
     )
+    if hasattr(Assessment, "lesson"):
+        qs = qs.filter(Q(lesson=lesson) | Q(lesson__isnull=True))
+    return qs.order_by("unlock_order", "pk")
 
 
 def assessment_is_passed(assessment, student):
     """
     Determine whether the student has a passing submission.
     """
-
     submissions = (
         Submission.objects
         .filter(
@@ -412,17 +408,20 @@ def assessment_is_passed(assessment, student):
         .order_by("-submitted_at")
     )
 
+    total_marks = assessment.total_marks
+    if not total_marks or total_marks <= 0:
+        total_marks = assessment.questions.aggregate(total=Sum("marks"))["total"] or 0
+
+    if total_marks <= 0:
+        return submissions.exists()
+
     for submission in submissions:
-
-        if assessment.total_marks <= 0:
-            continue
-
         percentage = (
             Decimal(str(submission.score))
-            / Decimal(str(assessment.total_marks))
+            / Decimal(str(total_marks))
         ) * Decimal("100")
 
-        if percentage >= assessment.pass_percentage:
+        if percentage >= Decimal(str(assessment.pass_percentage)):
             return True
 
     return False
@@ -433,27 +432,37 @@ def lesson_assessment_requirement_met(
     lesson,
 ):
     """
-    If the lesson's module has published assessments,
-    require a passing submission.
-
-    If no assessment exists, the lesson does not have
-    an assessment requirement.
+    Check if the assessment requirement for the lesson is met:
+    1. If the lesson has its own published assessments, student must pass them.
+    2. If the lesson is the last published lesson in the module, student must pass module-level assessments.
+    3. Intermediate lessons in the module are not blocked by future module assessments.
     """
-
-    assessments = list(
-        get_lesson_assessments(lesson)
+    # 1. Lesson-specific assessments
+    lesson_assessments = list(
+        Assessment.objects.filter(
+            lesson=lesson,
+            is_published=True,
+        )
     )
-
-    if not assessments:
-        return True
-
-    for assessment in assessments:
-
-        if not assessment_is_passed(
-            assessment,
-            enrollment.student,
-        ):
+    for assessment in lesson_assessments:
+        if not assessment_is_passed(assessment, enrollment.student):
             return False
+
+    # 2. Module-level assessments (enforced on the last published lesson of the module)
+    is_last_in_module = not lesson.module.lessons.filter(
+        Q(status=Lesson.Status.PUBLISHED) | Q(is_published=True),
+        order__gt=lesson.order,
+    ).exists()
+
+    if is_last_in_module:
+        module_assessments = Assessment.objects.filter(
+            module=lesson.module,
+            lesson__isnull=True,
+            is_published=True,
+        )
+        for assessment in module_assessments:
+            if not assessment_is_passed(assessment, enrollment.student):
+                return False
 
     return True
 

@@ -75,12 +75,12 @@
 
               {% if q.question_type == 'mcq' %}
                 <div class="d-flex flex-column gap-2">
-                  {% for opt in q.options %}
+                  {% for opt in q.get_choices %}
                     <label class="p-3 rounded border d-flex align-items-center gap-3 cursor-pointer transition mb-0"
                            style="background: var(--study-bg); border-color: var(--study-border) !important; cursor: pointer;"
                            onclick="this.parentNode.querySelectorAll('label').forEach(l=>l.style.background='var(--study-bg)'); this.style.background='#FEF9EE';">
-                      <input type="radio" class="form-check-input mt-0" name="question_{{ q.pk }}" value="{{ opt }}" required>
-                      <span class="small fw-semibold text-dark">{{ opt }}</span>
+                      <input type="radio" class="form-check-input mt-0" name="question_{{ q.pk }}" value="{{ opt.value }}" required>
+                      <span class="small fw-semibold text-dark">{{ opt.text }}</span>
                     </label>
                   {% endfor %}
                 </div>

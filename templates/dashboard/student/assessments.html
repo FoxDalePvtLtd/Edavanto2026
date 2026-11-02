@@ -61,6 +61,7 @@
             <div class="card-body p-4">
               <div class="small text-muted mb-1">
                 {{ a.module.course.title|truncatechars:26 }} &bull; Module {{ a.module.order }}
+                {% if a.lesson %}&bull; <span class="badge bg-light text-dark border">{{ a.lesson.title|truncatechars:24 }}</span>{% endif %}
               </div>
               <h5 class="h6 fw-bold mb-2 text-dark">{{ a.title }}</h5>
 

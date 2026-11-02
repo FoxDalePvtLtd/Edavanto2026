@@ -229,3 +229,55 @@ class SubsystemsTestCase(TestCase):
         result_resp = self.client.get(result_url)
         self.assertEqual(result_resp.status_code, 200)
         self.assertContains(result_resp, "Congratulations! You Passed")
+    def test_topic_assessment_and_dict_choices_handling(self):
+        """Verify topic-level assessments, dictionary options handling, and gating."""
+        from core.services.learning import lesson_assessment_requirement_met, complete_lesson
+
+        topic_assessment = Assessment.objects.create(
+            module=self.module,
+            lesson=self.lesson,
+            title="Topic 1.1 Assessment",
+            assessment_type=Assessment.AssessmentType.QUIZ,
+            total_marks=10,
+            pass_percentage=60,
+            is_published=True,
+            attempts_allowed=2,
+        )
+        q = Question.objects.create(
+            assessment=topic_assessment,
+            question_text="What does QA stand for?",
+            question_type=Question.QuestionType.MCQ,
+            options=[
+                {"text": "Quality Assurance", "is_correct": True},
+                {"text": "Quick Action", "is_correct": False},
+                {"text": "Query Access", "is_correct": False},
+            ],
+            marks=10,
+            order=1,
+        )
+
+        # Choices normalization test
+        choices = q.get_choices()
+        self.assertEqual(len(choices), 3)
+        self.assertEqual(choices[0]["text"], "Quality Assurance")
+        self.assertTrue(choices[0]["is_correct"])
+
+        # Check lesson_assessment_requirement_met before passing
+        self.assertFalse(lesson_assessment_requirement_met(self.enrollment, self.lesson))
+
+        # Take assessment and submit
+        self.client.force_login(self.student)
+        url = reverse("core:take_assessment", kwargs={"assessment_id": topic_assessment.pk})
+        resp = self.client.post(url, {f"question_{q.pk}": "Quality Assurance"})
+        self.assertEqual(resp.status_code, 302)
+
+        # Now lesson requirement should be met
+        self.assertTrue(lesson_assessment_requirement_met(self.enrollment, self.lesson))
+
+        # View result page
+        sub = Submission.objects.get(assessment=topic_assessment, student=self.student)
+        result_url = reverse("core:assessment_result", kwargs={"submission_id": sub.pk})
+        result_resp = self.client.get(result_url)
+        self.assertEqual(result_resp.status_code, 200)
+        self.assertContains(result_resp, "Quality Assurance")
+
