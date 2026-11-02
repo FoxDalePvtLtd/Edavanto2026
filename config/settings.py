@@ -37,9 +37,11 @@ ALLOWED_HOSTS = env.list(
     default=[
         "127.0.0.1",
         "localhost",
-        "192.168.56.1",
-        "192.168.1.25:6000",
-        "192.168.1.25",
+        "192.168.29.1",
+        "192.168.29.1:6000",
+        "192.168.29.1",
+        "192.168.1.14",
+        "192.168.1.14:6000",
     ],
 )
 
@@ -355,3 +357,8 @@ LOGGING = {
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 X_FRAME_OPTIONS = "DENY"
+
+# Razorpay Payment Gateway Configuration
+RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID", default="")
+RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET", default="")
+RAZORPAY_WEBHOOK_SECRET = env("RAZORPAY_WEBHOOK_SECRET", default="")

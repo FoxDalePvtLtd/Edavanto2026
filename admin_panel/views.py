@@ -1,3 +1,5 @@
+from core.services.payments import approve_offline_payment, reject_offline_payment
+from core.services.enrollment import approve_enrollment, reject_enrollment
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponseForbidden, JsonResponse
@@ -662,7 +664,108 @@ def enrollment_list(request):
             payment_status=Enrollment.PaymentStatus.PAID
         ).count(),
     }
+    # Attach latest order for offline info
+    enrollment_list_objs = list(page_obj.object_list)
+    student_ids = [e.student_id for e in enrollment_list_objs]
+    course_ids = [e.course_id for e in enrollment_list_objs]
+    orders = (
+        Order.objects
+        .filter(student_id__in=student_ids, course_id__in=course_ids)
+        .prefetch_related("transactions")
+        .order_by("-created_at")
+    )
+    order_map = {}
+    for o in orders:
+        key = (o.student_id, o.course_id)
+        if key not in order_map:
+            order_map[key] = o
+            o.latest_txn = o.transactions.order_by("-created_at").first()
+
+    for e in enrollment_list_objs:
+        e.order = order_map.get((e.student_id, e.course_id))
+
+    context["enrollments"] = enrollment_list_objs
     return render(request, "enrollments/enroll_list.html", context)
+
+
+@admin_required
+@require_POST
+def enrollment_approve(request, enrollment_id):
+    enrollment = get_object_or_404(
+        Enrollment.objects.select_related("student", "course"),
+        pk=enrollment_id,
+    )
+    offline_order = (
+        Order.objects
+        .filter(
+            student=enrollment.student,
+            course=enrollment.course,
+            payment_method=Order.PaymentMethod.OFFLINE,
+        )
+        .exclude(status=Order.Status.PAID)
+        .order_by("-created_at")
+        .first()
+    )
+
+    try:
+        if offline_order:
+            approve_offline_payment(order=offline_order, approved_by=request.user)
+            messages.success(
+                request,
+                f"Offline payment for '{enrollment.student.get_full_name() or enrollment.student.username}' on '{enrollment.course.title}' approved successfully! Course access activated."
+            )
+        else:
+            approve_enrollment(enrollment=enrollment, approved_by=request.user)
+            messages.success(
+                request,
+                f"Enrollment for '{enrollment.student.get_full_name() or enrollment.student.username}' on '{enrollment.course.title}' has been approved."
+            )
+    except Exception as exc:
+        messages.error(request, f"Approval error: {exc}")
+
+    return redirect("admin_panel:enrollment_list")
+
+
+@admin_required
+@require_POST
+def enrollment_reject(request, enrollment_id):
+    enrollment = get_object_or_404(
+        Enrollment.objects.select_related("student", "course"),
+        pk=enrollment_id,
+    )
+    reason = request.POST.get("reason", "Offline payment request rejected by administrator.").strip()
+
+    offline_order = (
+        Order.objects
+        .filter(
+            student=enrollment.student,
+            course=enrollment.course,
+            payment_method=Order.PaymentMethod.OFFLINE,
+        )
+        .exclude(status=Order.Status.PAID)
+        .order_by("-created_at")
+        .first()
+    )
+
+    try:
+        if offline_order:
+            reject_offline_payment(order=offline_order, rejected_by=request.user, reason=reason)
+            messages.warning(
+                request,
+                f"Offline payment request for '{enrollment.student.get_full_name() or enrollment.student.username}' was rejected."
+            )
+        else:
+            reject_enrollment(enrollment=enrollment, rejected_by=request.user, reason=reason)
+            messages.warning(
+                request,
+                f"Enrollment for '{enrollment.student.get_full_name() or enrollment.student.username}' was rejected."
+            )
+    except Exception as exc:
+        messages.error(request, f"Rejection error: {exc}")
+
+    return redirect("admin_panel:enrollment_list")
+
+
 # PAYMENTS
 @admin_required
 @require_GET
@@ -811,7 +914,27 @@ def assessment_edit(request, assessment_id):
 
 
 @admin_required
-@require_POST
+def assessment_toggle_publish(request, assessment_id):
+    """Toggle published state of an assessment (supports POST, GET, and AJAX)."""
+    assessment = get_object_or_404(Assessment, pk=assessment_id)
+    assessment.is_published = not assessment.is_published
+    assessment.save()
+    status_str = "Published" if assessment.is_published else "Draft"
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse({
+            "success": True,
+            "is_published": assessment.is_published,
+            "status_text": status_str,
+            "message": f"Assessment '{assessment.title}' is now {status_str}."
+        })
+    messages.success(request, f"Assessment '{assessment.title}' status updated to {status_str}.")
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        return redirect(referer)
+    return redirect("admin_panel:assessment_list")
+
+
+@admin_required
 def assessment_delete(request, assessment_id):
     """Delete an assessment."""
     assessment = get_object_or_404(Assessment, pk=assessment_id)

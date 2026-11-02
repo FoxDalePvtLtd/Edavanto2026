@@ -12,14 +12,15 @@
 <style>
   /* ---------- Assessment header banner ---------- */
   .edvanto-qb-banner {
-    background: linear-gradient(120deg, var(--edvanto-navy) 0%, #0A3E7A 55%, #0D4E96 100%);
-    border-radius: var(--edvanto-radius-card);
+    background: linear-gradient(135deg, var(--tj-color-theme-dark, #111111) 0%, var(--tj-color-theme-purple, #1B1B1B) 60%, #2a2312 100%);
+    border: 1px solid var(--tj-color-border-8, rgba(23, 23, 23, 0.2));
+    border-radius: var(--edvanto-radius-card, 16px);
     padding: 1.35rem 1.6rem;
-    color: var(--edvanto-white);
+    color: #ffffff;
     position: relative;
     overflow: hidden;
     margin-bottom: 1.5rem;
-    box-shadow: 0 8px 28px rgba(3, 42, 90, 0.14);
+    box-shadow: 0 8px 28px rgba(17, 17, 17, 0.12);
   }
   .edvanto-qb-banner::after {
     content: '';
@@ -29,7 +30,7 @@
     width: 220px;
     height: 220px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(1, 223, 254, 0.18) 0%, rgba(1, 223, 254, 0) 70%);
+    background: radial-gradient(circle, rgba(212, 166, 42, 0.25) 0%, rgba(212, 166, 42, 0) 70%);
     pointer-events: none;
   }
   .edvanto-qb-banner-inner {
@@ -45,13 +46,13 @@
     width: 58px;
     height: 58px;
     border-radius: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    border: 1px solid var(--tj-color-theme-primary, #D4A62A);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    color: var(--edvanto-cyan);
+    color: var(--tj-color-theme-primary, #D4A62A);
     flex-shrink: 0;
   }
   .edvanto-qb-banner-label {
@@ -82,7 +83,7 @@
     gap: 0.35rem;
   }
   .edvanto-qb-banner-meta i {
-    color: var(--edvanto-cyan);
+    color: var(--tj-color-theme-primary, #D4A62A);
     font-size: 0.88rem;
   }
   .edvanto-qb-banner-stats {
@@ -148,7 +149,7 @@
     margin-bottom: 1rem;
   }
   .edvanto-reorder-hint i {
-    color: var(--edvanto-violet);
+    color: var(--tj-color-theme-primary, #D4A62A);
     font-size: 0.9rem;
   }
 
@@ -169,12 +170,12 @@
   }
   .edvanto-q-card.dragging {
     opacity: 0.45;
-    box-shadow: 0 12px 32px rgba(69, 28, 238, 0.18);
+    box-shadow: 0 12px 32px rgba(212, 166, 42, 0.22);
   }
   .edvanto-q-card.drop-target {
-    outline: 2px dashed var(--edvanto-violet);
+    outline: 2px dashed var(--tj-color-theme-primary, #D4A62A);
     outline-offset: -2px;
-    background: rgba(69, 28, 238, 0.015);
+    background: rgba(212, 166, 42, 0.02);
   }
 
   /* Card header (clickable to expand) */
@@ -208,8 +209,8 @@
     align-items: center;
   }
   .edvanto-q-drag:hover {
-    color: var(--edvanto-violet);
-    background: rgba(69, 28, 238, 0.06);
+    color: var(--tj-color-theme-primary, #D4A62A);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
   }
   .edvanto-q-drag:active { cursor: grabbing; }
 
@@ -218,8 +219,8 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--edvanto-violet) 0%, #6B4EFF 100%);
-    color: var(--edvanto-white);
+    background: var(--tj-color-gradient-7, linear-gradient(90deg, #F6C95B 1.81%, #D4A62A 97.7%));
+    color: #171717;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -227,17 +228,17 @@
     font-size: 0.95rem;
     letter-spacing: -0.02em;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(69, 28, 238, 0.2);
+    box-shadow: 0 4px 12px rgba(212, 166, 42, 0.2);
   }
   .edvanto-q-num.text {
-    background: linear-gradient(135deg, #00B8D4 0%, var(--edvanto-cyan) 100%);
-    color: #003B47;
-    box-shadow: 0 4px 12px rgba(1, 223, 254, 0.25);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    color: #9C7924;
+    box-shadow: 0 4px 12px rgba(212, 166, 42, 0.15);
   }
   .edvanto-q-num.file {
-    background: linear-gradient(135deg, #E09400 0%, var(--edvanto-gold) 100%);
-    color: #4A3300;
-    box-shadow: 0 4px 12px rgba(255, 179, 3, 0.25);
+    background: var(--tj-color-theme-bg-9, rgba(212, 166, 42, 0.15));
+    color: var(--tj-color-theme-purple-2, #E0B83F);
+    box-shadow: 0 4px 12px rgba(212, 166, 42, 0.15);
   }
 
   /* Question info */
@@ -279,9 +280,9 @@
     border-radius: 999px;
     white-space: nowrap;
   }
-  .edvanto-q-type.mcq  { background: rgba(69, 28, 238, 0.08); color: var(--edvanto-violet); }
-  .edvanto-q-type.text { background: rgba(1, 223, 254, 0.13); color: #007A8F; }
-  .edvanto-q-type.file { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
+  .edvanto-q-type.mcq  { background: var(--tj-color-theme-bg-8, #F7EBD0); color: #9C7924; font-weight: 700; }
+  .edvanto-q-type.text { background: rgba(27, 27, 27, 0.08); color: var(--tj-color-heading-primary, #171717); font-weight: 700; }
+  .edvanto-q-type.file { background: var(--tj-color-theme-bg-9, rgba(212, 166, 42, 0.15)); color: #B8891F; font-weight: 700; }
 
   /* Marks chip */
   .edvanto-q-marks {
@@ -312,7 +313,7 @@
   }
   .edvanto-q-header[aria-expanded="true"] .edvanto-q-chevron {
     transform: rotate(180deg);
-    color: var(--edvanto-violet);
+    color: var(--tj-color-theme-primary, #D4A62A);
   }
 
   /* Action buttons */
@@ -331,8 +332,8 @@
     text-decoration: none;
   }
   .edvanto-action-btn:hover {
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    color: var(--tj-color-theme-primary, #D4A62A);
   }
   .edvanto-action-btn.danger:hover {
     background: rgba(220, 53, 69, 0.08);
@@ -361,8 +362,8 @@
     background-color: var(--edvanto-white);
   }
   .form-control:focus, .form-select:focus {
-    border-color: var(--edvanto-violet);
-    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+    border-color: var(--tj-color-theme-primary, #D4A62A);
+    box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.18);
   }
   textarea.form-control {
     min-height: 80px;
@@ -392,7 +393,7 @@
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .edvanto-option-row:hover {
-    border-color: rgba(69, 28, 238, 0.3);
+    border-color: var(--tj-color-theme-primary, #D4A62A);
   }
   .edvanto-option-row.correct {
     border-color: #0F9D58;
@@ -491,16 +492,16 @@
     margin-top: 0.5rem;
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--edvanto-violet);
+    color: var(--tj-color-theme-primary, #D4A62A);
     background: transparent;
-    border: 1px dashed rgba(69, 28, 238, 0.35);
-    border-radius: var(--edvanto-radius-sm);
+    border: 1px dashed var(--tj-color-theme-primary, #D4A62A);
+    border-radius: var(--edvanto-radius-sm, 10px);
     transition: all 0.15s ease;
     cursor: pointer;
   }
   .edvanto-add-option-btn:hover {
-    background: rgba(69, 28, 238, 0.04);
-    border-color: var(--edvanto-violet);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    border-color: var(--tj-color-theme-primary, #D4A62A);
   }
 
   /* ============================================================
@@ -515,8 +516,8 @@
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .edvanto-add-question-card:hover {
-    border-color: rgba(69, 28, 238, 0.4);
-    background: rgba(69, 28, 238, 0.01);
+    border-color: var(--tj-color-theme-primary, #D4A62A);
+    background: rgba(212, 166, 42, 0.02);
   }
   .edvanto-add-question-title {
     font-size: 0.92rem;
@@ -528,7 +529,7 @@
     gap: 0.5rem;
   }
   .edvanto-add-question-title i {
-    color: var(--edvanto-violet);
+    color: var(--tj-color-theme-primary, #D4A62A);
     font-size: 1rem;
   }
   .edvanto-add-question-grid {
@@ -551,10 +552,10 @@
     color: inherit;
   }
   .edvanto-add-type-btn:hover {
-    border-color: var(--edvanto-violet);
-    background: rgba(69, 28, 238, 0.03);
+    border-color: var(--tj-color-theme-primary, #D4A62A);
+    background: var(--tj-color-theme-bg, #FFFDF7);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(69, 28, 238, 0.08);
+    box-shadow: 0 4px 12px rgba(212, 166, 42, 0.1);
   }
   .edvanto-add-type-icon {
     width: 40px;
@@ -565,20 +566,20 @@
     justify-content: center;
     font-size: 1.15rem;
     flex-shrink: 0;
-    background: rgba(69, 28, 238, 0.08);
-    color: var(--edvanto-violet);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    color: var(--tj-color-theme-primary, #D4A62A);
   }
   .edvanto-add-type-btn.mcq .edvanto-add-type-icon {
-    background: rgba(69, 28, 238, 0.08);
-    color: var(--edvanto-violet);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    color: var(--tj-color-theme-primary, #D4A62A);
   }
   .edvanto-add-type-btn.text .edvanto-add-type-icon {
-    background: rgba(1, 223, 254, 0.13);
-    color: #007A8F;
+    background: rgba(27, 27, 27, 0.08);
+    color: var(--tj-color-heading-primary, #171717);
   }
   .edvanto-add-type-btn.file .edvanto-add-type-icon {
-    background: rgba(255, 179, 3, 0.14);
-    color: #9A6D00;
+    background: var(--tj-color-theme-bg-9, rgba(212, 166, 42, 0.15));
+    color: #B8891F;
   }
   .edvanto-add-type-info {
     min-width: 0;
@@ -636,7 +637,7 @@
     gap: 0.4rem;
   }
   .edvanto-actions-bar .total-marks .value {
-    color: var(--edvanto-violet);
+    color: var(--tj-color-theme-primary, #D4A62A);
     font-weight: 700;
     font-size: 0.95rem;
   }
@@ -676,7 +677,21 @@
       gap: 0.6rem;
     }
     .edvanto-q-info { order: 3; width: 100%; }
-    .edvanto-q-num { order: 1; }
+    .edvanto-q-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--tj-color-gradient-7, linear-gradient(90deg, #F6C95B 1.81%, #D4A62A 97.7%));
+    color: #171717;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(212, 166, 42, 0.2);
+  }
     .edvanto-q-actions { order: 2; margin-left: auto; }
     .edvanto-q-drag { display: none; }
     .edvanto-q-body { padding: 1rem; }
@@ -684,7 +699,17 @@
     .edvanto-qb-banner-stat:first-child { padding-left: 0; }
   }
   @media (max-width: 575.98px) {
-    .edvanto-qb-banner { padding: 1.1rem 1.25rem; }
+    .edvanto-qb-banner {
+    background: linear-gradient(135deg, var(--tj-color-theme-dark, #111111) 0%, var(--tj-color-theme-purple, #1B1B1B) 60%, #2a2312 100%);
+    border: 1px solid var(--tj-color-border-8, rgba(23, 23, 23, 0.2));
+    border-radius: var(--edvanto-radius-card, 16px);
+    padding: 1.35rem 1.6rem;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 28px rgba(17, 17, 17, 0.12);
+  }
     .edvanto-qb-banner-title { font-size: 1.1rem; }
     .edvanto-add-question-card { padding: 1.15rem 1.25rem; }
     .edvanto-option-row { padding: 0.6rem 0.7rem; gap: 0.55rem; }
@@ -766,770 +791,517 @@
 </div>
 
 <!-- ============================================================
-     TOOLBAR
+     TOOLBAR & QUESTIONS
      ============================================================ -->
-<div class="edvanto-qb-toolbar">
-  <div class="edvanto-qb-toolbar-left">
-    <i class="bi bi-list-ol" style="color: var(--edvanto-violet);"></i>
-    <span id="toolbarCountLabel">5 questions · 50 marks</span>
+{% if questions %}
+  <div class="edvanto-qb-toolbar">
+    <div class="edvanto-qb-toolbar-left">
+      <i class="bi bi-list-ol" style="color: var(--tj-color-theme-primary, #D4A62A);"></i>
+      <span id="toolbarCountLabel" class="fw-bold">{{ questions|length }} question{{ questions|length|pluralize }} &bull; {{ selected_assessment.total_marks }} marks</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <button type="button" class="btn btn-edvanto-outline btn-sm px-3" onclick="collapseAllQuestions()">
+        <i class="bi bi-arrows-collapse me-1"></i> Collapse All
+      </button>
+      <button type="button" class="btn btn-edvanto-outline btn-sm px-3" onclick="expandAllQuestions()">
+        <i class="bi bi-arrows-expand me-1"></i> Expand All
+      </button>
+      <button type="button" class="btn btn-edvanto-primary btn-sm px-3" onclick="openNewQuestionModal('mcq')">
+        <i class="bi bi-plus-lg me-1"></i> Add Question
+      </button>
+    </div>
   </div>
-  <div class="d-flex flex-wrap gap-2">
-    <button class="btn btn-edvanto-outline btn-sm px-3" onclick="collapseAll()">
-      <i class="bi bi-arrows-collapse me-1"></i> Collapse All
-    </button>
-    <button class="btn btn-edvanto-outline btn-sm px-3" onclick="expandAll()">
-      <i class="bi bi-arrows-expand me-1"></i> Expand All
-    </button>
-    <button class="btn btn-edvanto-primary btn-sm px-3" onclick="scrollToAddQuestion()">
-      <i class="bi bi-plus-lg me-1"></i> Add Question
-    </button>
-  </div>
-</div>
 
-<!-- ============================================================
-     REORDER HINT
-     ============================================================ -->
-<div class="edvanto-reorder-hint">
-  <i class="bi bi-hand-index-thumb"></i>
-  Drag the <i class="bi bi-grip-vertical" style="margin: 0 0.2rem;"></i> handle to reorder questions. Click a card to expand and edit.
-</div>
+  <div class="edvanto-reorder-hint">
+    <i class="bi bi-hand-index-thumb" style="color: var(--tj-color-theme-primary, #D4A62A);"></i>
+    <span>Click any question to view its details or edit. Reorder sequence using the order numbers.</span>
+  </div>
+{% endif %}
 
 <!-- ============================================================
      QUESTIONS LIST
      ============================================================ -->
 <div id="questionsContainer">
   {% for q in questions %}
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-primary rounded-pill px-3 py-2">Q{{ forloop.counter }}</span>
-          <span class="badge bg-light text-dark border text-uppercase">{{ q.get_question_type_display }}</span>
-          <span class="badge bg-light text-dark border"><i class="bi bi-trophy text-warning me-1"></i>{{ q.marks }} mark{{ q.marks|pluralize }}</span>
+    <div class="card border-0 shadow-sm mb-3 edvanto-q-card-item" id="qCard{{ q.pk }}" style="border-radius: var(--edvanto-radius-card, 16px); overflow: hidden; border: 1px solid var(--tj-color-border-1, #E6E0D2) !important;">
+      <div class="card-header bg-white py-3 px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2"
+           style="cursor: pointer; border-bottom: 1px solid var(--tj-color-border-2, rgba(23, 23, 23, 0.08));"
+           data-bs-toggle="collapse" data-bs-target="#qCollapse{{ q.pk }}" aria-expanded="true">
+        <div class="d-flex align-items-center gap-2 flex-wrap" style="min-width: 0;">
+          <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: var(--tj-color-theme-bg-8, #F7EBD0); color: #9C7924; font-size: 0.8rem;">Q{{ forloop.counter }}</span>
+          <span class="badge border text-uppercase" style="background: rgba(27, 27, 27, 0.06); color: var(--tj-color-heading-primary, #171717); font-weight: 700;">
+            {% if q.question_type == 'mcq' %}<i class="bi bi-ui-radios me-1"></i>MCQ{% elif q.question_type == 'text' %}<i class="bi bi-textarea-t me-1"></i>Text{% else %}<i class="bi bi-file-earmark-arrow-up me-1"></i>File{% endif %}
+          </span>
+          <span class="badge border" style="background: rgba(16, 185, 129, 0.12); color: #0c805a; font-weight: 700;">
+            <i class="bi bi-trophy me-1"></i>{{ q.marks }} mark{{ q.marks|pluralize }}
+          </span>
+          <span class="fw-bold text-dark text-truncate d-inline-block ms-1" style="max-width: 450px; font-size: 0.95rem;">
+            {{ q.question_text }}
+          </span>
         </div>
-        <form method="post" action="{% url 'admin_panel:question_delete' q.pk %}"
-              onsubmit="return confirm('Delete Question #{{ forloop.counter }}?');" class="m-0">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-sm btn-outline-danger">
-            <i class="bi bi-trash me-1"></i> Delete
+
+        <div class="d-flex align-items-center gap-2" onclick="event.stopPropagation();">
+          <button type="button" class="btn btn-sm btn-edvanto-outline" title="Edit Question"
+                  onclick="editQuestionModal('{{ q.pk }}', '{{ q.question_type }}', '{{ q.marks }}', '{{ q.order }}', '{{ q.question_text|escapejs }}', '{{ q.explanation|default:''|escapejs }}', '{{ q.correct_answer|default:''|escapejs }}', [{% for opt in q.options %}'{{ opt|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}])">
+            <i class="bi bi-pencil me-1"></i> Edit
           </button>
-        </form>
+          <form method="post" action="{% url 'admin_panel:question_delete' q.pk %}"
+                onsubmit="return confirm('Are you sure you want to delete Question #{{ forloop.counter }}?');" class="m-0 d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Question">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+          <span class="text-muted ms-1" data-bs-toggle="collapse" data-bs-target="#qCollapse{{ q.pk }}">
+            <i class="bi bi-chevron-down"></i>
+          </span>
+        </div>
       </div>
-      <div class="card-body p-4">
-        <h5 class="card-title h6 mb-3 text-dark fw-bold">{{ q.question_text }}</h5>
 
-        {% if q.question_type == 'mcq' %}
-          <div class="list-group list-group-flush mb-3">
-            {% for opt in q.options %}
-              <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 {% if opt == q.correct_answer %}bg-success-subtle text-success fw-bold border-success{% else %}bg-light{% endif %}">
-                <div>
-                  <span class="badge bg-secondary me-2">{{ forloop.counter }}</span>
-                  <span>{{ opt }}</span>
-                </div>
-                {% if opt == q.correct_answer %}
-                  <span class="badge bg-success"><i class="bi bi-check2 me-1"></i> Correct Answer</span>
-                {% endif %}
+      <div id="qCollapse{{ q.pk }}" class="collapse show">
+        <div class="card-body p-4" style="background: var(--tj-color-theme-bg, #FFFDF7);">
+          <div class="mb-3">
+            <div class="fw-bold text-dark mb-1" style="font-size: 1rem;">Question Statement:</div>
+            <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;">{{ q.question_text }}</p>
+          </div>
+
+          {% if q.question_type == 'mcq' %}
+            <div class="mb-3">
+              <div class="fw-bold text-muted small mb-2 text-uppercase" style="letter-spacing: 0.04em;">Answer Options:</div>
+              <div class="row g-2">
+                {% for opt in q.options %}
+                  <div class="col-12 col-md-6">
+                    <div class="p-3 rounded border d-flex align-items-center justify-content-between"
+                         style="background: {% if opt == q.correct_answer %}rgba(16, 185, 129, 0.08){% else %}#ffffff{% endif %}; border-color: {% if opt == q.correct_answer %}#10b981{% else %}var(--tj-color-border-1, #E6E0D2){% endif %} !important;">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
+                              style="width: 26px; height: 26px; background: {% if opt == q.correct_answer %}#10b981{% else %}var(--tj-color-theme-bg-2, #F7F3E8){% endif %}; color: {% if opt == q.correct_answer %}#ffffff{% else %}#171717{% endif %};">
+                          {{ forloop.counter|stringformat:"d"|slice:":1"|add:"64"|safe }}
+                        </span>
+                        <span class="{% if opt == q.correct_answer %}fw-bold text-dark{% else %}text-muted{% endif %}">{{ opt }}</span>
+                      </div>
+                      {% if opt == q.correct_answer %}
+                        <span class="badge" style="background: #10b981; color: #ffffff;"><i class="bi bi-check2 me-1"></i> Correct Answer</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% empty %}
+                  <div class="col-12 text-muted small">No options configured.</div>
+                {% endfor %}
               </div>
-            {% endfor %}
-          </div>
-        {% elif q.question_type == 'text' %}
-          <div class="p-3 bg-light rounded border text-muted small mb-2">
-            <strong>Expected Answer Guidance:</strong> {{ q.correct_answer|default:"Open-ended student text response." }}
-          </div>
-        {% else %}
-          <div class="p-3 bg-light rounded border text-muted small mb-2">
-            <i class="bi bi-file-earmark-arrow-up text-primary me-1"></i> Student is required to upload a document or code archive for manual review.
-          </div>
-        {% endif %}
+            </div>
+          {% elif q.question_type == 'text' %}
+            <div class="p-3 rounded border mb-3" style="background: var(--tj-color-theme-bg-2, #F7F3E8); border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+              <div class="fw-bold text-dark small mb-1"><i class="bi bi-card-text me-1 text-primary"></i> Expected Answer Guidance (For Grading):</div>
+              <div class="text-muted small">{{ q.correct_answer|default:"Open-ended student text response." }}</div>
+            </div>
+          {% else %}
+            <div class="p-3 rounded border mb-3" style="background: var(--tj-color-theme-bg-2, #F7F3E8); border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+              <div class="fw-bold text-dark small mb-1"><i class="bi bi-file-earmark-arrow-up me-1 text-primary"></i> File Upload Assignment:</div>
+              <div class="text-muted small">Student uploads project document or archive for manual review.</div>
+            </div>
+          {% endif %}
 
-        {% if q.explanation %}
-          <div class="small text-muted mt-2">
-            <i class="bi bi-info-circle me-1 text-primary"></i> <strong>Explanation:</strong> {{ q.explanation }}
-          </div>
-        {% endif %}
+          {% if q.explanation %}
+            <div class="small p-2 px-3 rounded" style="background: var(--tj-color-theme-bg-8, #F7EBD0); color: #9C7924;">
+              <i class="bi bi-info-circle-fill me-1"></i> <strong>Explanation:</strong> {{ q.explanation }}
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
   {% empty %}
-    <div class="card border-0 shadow-sm p-5 text-center text-muted">
-      <i class="bi bi-patch-question fs-1 d-block mb-3 text-secondary"></i>
-      <h5>No questions in this assessment yet</h5>
-      <p class="small text-muted mb-4">Click the button below to add your first question (MCQ, Text, or File Upload).</p>
-      <div>
-        <button class="btn btn-edvanto-primary" data-bs-toggle="modal" data-bs-target="#newQuestionModal">
-          <i class="bi bi-plus-lg me-1"></i> Add First Question
-        </button>
+    <!-- CLEAN, WELCOMING EMPTY STATE -->
+    <div class="card border-0 shadow-sm p-4 p-md-5 text-center" style="border-radius: var(--edvanto-radius-card, 16px); background: #ffffff; border: 1.5px dashed var(--tj-color-border-1, #E6E0D2) !important;">
+      <div class="mb-3">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 72px; height: 72px; background: var(--tj-color-theme-bg-8, #F7EBD0); color: var(--tj-color-theme-primary, #D4A62A); font-size: 2.2rem;">
+          <i class="bi bi-patch-question-fill"></i>
+        </div>
+      </div>
+      <h3 class="h5 fw-bold mb-2 text-dark">No questions in this assessment yet</h3>
+      <p class="text-muted small mb-4 mx-auto" style="max-width: 480px;">
+        Build your assessment by selecting a question format below. You can mix multiple choice, written text, and file upload assignments.
+      </p>
+
+      <div class="row g-3 justify-content-center mb-4" style="max-width: 760px; margin: 0 auto;">
+        <div class="col-12 col-md-4">
+          <div class="p-3 rounded border h-100 d-flex flex-column text-start" style="background: var(--tj-color-theme-bg, #FFFDF7); border-color: var(--tj-color-border-1, #E6E0D2) !important; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
+               onclick="openNewQuestionModal('mcq')" onmouseover="this.style.borderColor='var(--tj-color-theme-primary)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--tj-color-border-1)'; this.style.transform='none';">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge p-2 rounded" style="background: var(--tj-color-theme-bg-8, #F7EBD0); color: var(--tj-color-theme-primary, #D4A62A);"><i class="bi bi-ui-radios fs-6"></i></span>
+              <strong class="text-dark">Multiple Choice</strong>
+            </div>
+            <p class="small text-muted mb-3 flex-fill">Auto-graded with options and single correct answer.</p>
+            <button type="button" class="btn btn-sm btn-edvanto-primary w-100" onclick="event.stopPropagation(); openNewQuestionModal('mcq');">
+              <i class="bi bi-plus-lg me-1"></i> Add MCQ
+            </button>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="p-3 rounded border h-100 d-flex flex-column text-start" style="background: var(--tj-color-theme-bg, #FFFDF7); border-color: var(--tj-color-border-1, #E6E0D2) !important; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
+               onclick="openNewQuestionModal('text')" onmouseover="this.style.borderColor='var(--tj-color-theme-primary)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--tj-color-border-1)'; this.style.transform='none';">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge p-2 rounded" style="background: rgba(27, 27, 27, 0.08); color: var(--tj-color-heading-primary, #171717);"><i class="bi bi-textarea-t fs-6"></i></span>
+              <strong class="text-dark">Text Response</strong>
+            </div>
+            <p class="small text-muted mb-3 flex-fill">Written answer evaluated manually with grading guidance.</p>
+            <button type="button" class="btn btn-sm btn-edvanto-outline w-100" onclick="event.stopPropagation(); openNewQuestionModal('text');">
+              <i class="bi bi-plus-lg me-1"></i> Add Text Q
+            </button>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="p-3 rounded border h-100 d-flex flex-column text-start" style="background: var(--tj-color-theme-bg, #FFFDF7); border-color: var(--tj-color-border-1, #E6E0D2) !important; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
+               onclick="openNewQuestionModal('file')" onmouseover="this.style.borderColor='var(--tj-color-theme-primary)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--tj-color-border-1)'; this.style.transform='none';">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge p-2 rounded" style="background: var(--tj-color-theme-bg-9, rgba(212, 166, 42, 0.15)); color: #B8891F;"><i class="bi bi-file-earmark-arrow-up fs-6"></i></span>
+              <strong class="text-dark">File Upload</strong>
+            </div>
+            <p class="small text-muted mb-3 flex-fill">Student uploads document, code, or project assignment.</p>
+            <button type="button" class="btn btn-sm btn-edvanto-outline w-100" onclick="event.stopPropagation(); openNewQuestionModal('file');">
+              <i class="bi bi-plus-lg me-1"></i> Add File Q
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   {% endfor %}
 </div>
 
-<!-- ADD QUESTION MODAL -->
-<div class="modal fade" id="newQuestionModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow">
-      <form method="post" action="{% url 'admin_panel:question_save' %}">
-        {% csrf_token %}
-        <input type="hidden" name="assessment_id" value="{{ selected_assessment.pk }}">
-        <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title h6 mb-0 text-white">
-            <i class="bi bi-plus-circle me-2 text-primary"></i>
-            Add Question to {{ selected_assessment.title }}
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body p-4">
-          <div class="row g-3">
-            <div class="col-12 col-md-8">
-              <label class="form-label small fw-bold">Question Type *</label>
-              <select class="form-select" name="question_type" id="qTypeSelect" onchange="toggleQTypeInputs(this.value)">
-                {% for code, label in question_type_choices %}
-                  <option value="{{ code }}">{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-6 col-md-2">
-              <label class="form-label small fw-bold">Marks *</label>
-              <input type="number" class="form-control" name="marks" value="1" min="1" required>
-            </div>
-            <div class="col-6 col-md-2">
-              <label class="form-label small fw-bold">Order</label>
-              <input type="number" class="form-control" name="order" value="{{ questions|length|add:1 }}">
-            </div>
-            <div class="col-12">
-              <label class="form-label small fw-bold">Question Text *</label>
-              <textarea class="form-control" name="question_text" rows="3" required
-                        placeholder="Write question statement here..."></textarea>
-            </div>
-
-            <!-- MCQ OPTIONS SECTION -->
-            <div id="mcqOptionsSection" class="col-12">
-              <label class="form-label small fw-bold">Options (For MCQ)</label>
-              <div class="row g-2 mb-2">
-                <div class="col-12 col-md-6">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light">A</span>
-                    <input type="text" class="form-control" name="option_0" placeholder="Option A text">
-                  </div>
-                </div>
-                <div class="col-12 col-md-6">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light">B</span>
-                    <input type="text" class="form-control" name="option_1" placeholder="Option B text">
-                  </div>
-                </div>
-                <div class="col-12 col-md-6">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light">C</span>
-                    <input type="text" class="form-control" name="option_2" placeholder="Option C text">
-                  </div>
-                </div>
-                <div class="col-12 col-md-6">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light">D</span>
-                    <input type="text" class="form-control" name="option_3" placeholder="Option D text">
-                  </div>
-                </div>
-              </div>
-              <label class="form-label small fw-bold mt-2">Correct Answer (Exact text matching correct option above)</label>
-              <input type="text" class="form-control" name="correct_answer" placeholder="e.g. Value matching Option A, B, C or D">
-            </div>
-
-            <div class="col-12">
-              <label class="form-label small fw-bold">Explanation (Shown after submission)</label>
-              <textarea class="form-control" name="explanation" rows="2"
-                        placeholder="Explain why this answer is correct..."></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer bg-light py-2">
-          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-sm btn-edvanto-primary"><i class="bi bi-check2 me-1"></i> Save Question</button>
-        </div>
-      </form>
+{% if questions %}
+  <!-- Bottom quick add buttons when questions exist -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 p-3 bg-white rounded border" style="border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+    <div class="d-flex align-items-center gap-2">
+      <span class="fw-bold text-dark small"><i class="bi bi-plus-circle-fill me-1" style="color: var(--tj-color-theme-primary);"></i> Quick Add:</span>
+      <button type="button" class="btn btn-sm btn-edvanto-outline" onclick="openNewQuestionModal('mcq')"><i class="bi bi-ui-radios me-1"></i> MCQ</button>
+      <button type="button" class="btn btn-sm btn-edvanto-outline" onclick="openNewQuestionModal('text')"><i class="bi bi-textarea-t me-1"></i> Text</button>
+      <button type="button" class="btn btn-sm btn-edvanto-outline" onclick="openNewQuestionModal('file')"><i class="bi bi-file-earmark-arrow-up me-1"></i> File</button>
+    </div>
+    <div>
+      <a href="{% url 'admin_panel:assessment_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Assessments
+      </a>
     </div>
   </div>
-</div>
-
-<script>
-function toggleQTypeInputs(val) {
-  var sec = document.getElementById('mcqOptionsSection');
-  if (sec) {
-    sec.style.display = (val === 'mcq') ? 'block' : 'none';
-  }
-}
-</script>
+{% endif %}
 
 <!-- ============================================================
-     ADD QUESTION CARD
+     QUESTION EDITOR MODAL (Intuitive Radio-Based Correct Answer)
      ============================================================ -->
-<div class="edvanto-add-question-card" id="addQuestionCard">
-  <div class="edvanto-add-question-title">
-    <i class="bi bi-plus-circle-fill"></i> Add a New Question
-  </div>
-  <div class="edvanto-add-question-grid">
+<div class="modal fade edvanto-editor-modal" id="newQuestionModal" tabindex="-1" aria-labelledby="questionModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <form class="modal-content border-0 shadow" method="post" action="{% url 'admin_panel:question_save' %}" id="questionForm">
+      {% csrf_token %}
+      <input type="hidden" name="assessment_id" value="{{ selected_assessment.pk }}">
+      <input type="hidden" name="question_id" id="modalQuestionId" value="">
+      <input type="hidden" name="correct_answer" id="modalCorrectAnswer" value="">
 
-    <button type="button" class="edvanto-add-type-btn mcq" onclick="addQuestion('mcq')">
-      <span class="edvanto-add-type-icon"><i class="bi bi-ui-radios"></i></span>
-      <span class="edvanto-add-type-info">
-        <span class="edvanto-add-type-label">Multiple Choice</span>
-        <span class="edvanto-add-type-desc">Auto-graded with one or more correct options.</span>
-      </span>
-    </button>
-
-    <button type="button" class="edvanto-add-type-btn text" onclick="addQuestion('text')">
-      <span class="edvanto-add-type-icon"><i class="bi bi-textarea-t"></i></span>
-      <span class="edvanto-add-type-info">
-        <span class="edvanto-add-type-label">Text Answer</span>
-        <span class="edvanto-add-type-desc">Manually graded, with expected answer guidance.</span>
-      </span>
-    </button>
-
-    <button type="button" class="edvanto-add-type-btn file" onclick="addQuestion('file')">
-      <span class="edvanto-add-type-icon"><i class="bi bi-file-earmark-arrow-up"></i></span>
-      <span class="edvanto-add-type-info">
-        <span class="edvanto-add-type-label">File Upload</span>
-        <span class="edvanto-add-type-desc">Students submit files for manual review.</span>
-      </span>
-    </button>
-
-  </div>
-</div>
-
-<!-- ============================================================
-     STICKY ACTIONS BAR
-     ============================================================ -->
-<div class="edvanto-actions-bar">
-  <div class="total-marks">
-    <i class="bi bi-trophy" style="color: var(--edvanto-violet);"></i>
-    Total marks: <span class="value" id="totalMarksValue">50</span>
-    <span style="color: var(--edvanto-gray-400);">·</span>
-    <span id="questionCountLabel">5 questions</span>
-  </div>
-  <div class="d-flex flex-wrap gap-2">
-    <a href="#assessments' %}" class="btn btn-edvanto-outline">
-      <i class="bi bi-x-lg me-1"></i> Cancel
-    </a>
-    <button type="button" class="btn btn-edvanto-outline" onclick="saveDraft()">
-      <i class="bi bi-file-earmark me-1"></i> Save Draft
-    </button>
-    <button type="button" class="btn btn-edvanto-primary" onclick="saveQuestions()">
-      <i class="bi bi-check-lg me-1"></i> Save Questions
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================
-     CONFIRM DELETE MODAL
-     ============================================================ -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content" style="border-radius: var(--edvanto-radius-card); border: none;">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title" id="deleteModalLabel" style="font-weight: 700; color: var(--edvanto-navy); font-size: 1rem;">
-          <i class="bi bi-exclamation-triangle-fill me-2" style="color: #DC3545;"></i>
-          Delete Question
+      <div class="modal-header">
+        <h5 class="modal-title" id="questionModalTitle">
+          <i class="bi bi-patch-question-fill"></i>
+          <span id="questionModalTitleText">Add Question</span>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body pt-2" style="font-size: 0.88rem; color: var(--edvanto-gray-600);">
-        <span id="deleteModalMessage">Are you sure?</span>
+
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <!-- Question Type -->
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="qTypeSelect">Question Type <span class="req">*</span></label>
+            <select class="form-select" name="question_type" id="qTypeSelect" onchange="handleQuestionTypeChange(this.value)" required>
+              <option value="mcq">Multiple Choice (MCQ)</option>
+              <option value="text">Short Answer / Text</option>
+              <option value="file">File Upload Assignment</option>
+            </select>
+          </div>
+
+          <!-- Marks -->
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="modalQuestionMarks">Marks <span class="req">*</span></label>
+            <input type="number" class="form-control" name="marks" id="modalQuestionMarks" value="2" min="1" required>
+          </div>
+
+          <!-- Order -->
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="modalQuestionOrder">Order #</label>
+            <input type="number" class="form-control" name="order" id="modalQuestionOrder" value="{{ questions|length|add:1 }}" min="1">
+          </div>
+
+          <!-- Question Statement -->
+          <div class="col-12">
+            <label class="form-label" for="modalQuestionText">Question Statement <span class="req">*</span></label>
+            <textarea class="form-control" name="question_text" id="modalQuestionText" rows="3" required
+                      placeholder="Write the question statement clearly here..."></textarea>
+          </div>
+
+          <!-- MCQ OPTIONS SECTION -->
+          <div id="mcqOptionsSection" class="col-12">
+            <div class="p-3 rounded border" style="background: var(--tj-color-theme-bg-2, #F7F3E8); border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <label class="form-label mb-0 fw-bold"><i class="bi bi-ui-radios me-1 text-warning"></i> Multiple Choice Options</label>
+                <span class="small text-muted"><i class="bi bi-info-circle text-primary me-1"></i>Select the radio button next to the correct answer.</span>
+              </div>
+
+              <div class="d-flex flex-column gap-2 mb-2">
+                <!-- Option A -->
+                <div class="p-2 px-3 rounded border bg-white d-flex align-items-center gap-2 option-row" id="optionRow0">
+                  <span class="badge rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #171717; color: #ffffff;">A</span>
+                  <input type="text" class="form-control form-control-sm border-0 option-input" name="option_0" id="optInput0" placeholder="Option A text..." oninput="syncCorrectAnswer()">
+                  <div class="form-check m-0 d-flex align-items-center gap-1 ps-2" style="white-space: nowrap;">
+                    <input class="form-check-input" type="radio" name="correct_choice_radio" id="radioOpt0" value="0" onchange="selectCorrectRadio(0)">
+                    <label class="form-check-label small fw-bold" for="radioOpt0" style="cursor: pointer;">Correct</label>
+                  </div>
+                </div>
+
+                <!-- Option B -->
+                <div class="p-2 px-3 rounded border bg-white d-flex align-items-center gap-2 option-row" id="optionRow1">
+                  <span class="badge rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #171717; color: #ffffff;">B</span>
+                  <input type="text" class="form-control form-control-sm border-0 option-input" name="option_1" id="optInput1" placeholder="Option B text..." oninput="syncCorrectAnswer()">
+                  <div class="form-check m-0 d-flex align-items-center gap-1 ps-2" style="white-space: nowrap;">
+                    <input class="form-check-input" type="radio" name="correct_choice_radio" id="radioOpt1" value="1" onchange="selectCorrectRadio(1)">
+                    <label class="form-check-label small fw-bold" for="radioOpt1" style="cursor: pointer;">Correct</label>
+                  </div>
+                </div>
+
+                <!-- Option C -->
+                <div class="p-2 px-3 rounded border bg-white d-flex align-items-center gap-2 option-row" id="optionRow2">
+                  <span class="badge rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #171717; color: #ffffff;">C</span>
+                  <input type="text" class="form-control form-control-sm border-0 option-input" name="option_2" id="optInput2" placeholder="Option C text..." oninput="syncCorrectAnswer()">
+                  <div class="form-check m-0 d-flex align-items-center gap-1 ps-2" style="white-space: nowrap;">
+                    <input class="form-check-input" type="radio" name="correct_choice_radio" id="radioOpt2" value="2" onchange="selectCorrectRadio(2)">
+                    <label class="form-check-label small fw-bold" for="radioOpt2" style="cursor: pointer;">Correct</label>
+                  </div>
+                </div>
+
+                <!-- Option D -->
+                <div class="p-2 px-3 rounded border bg-white d-flex align-items-center gap-2 option-row" id="optionRow3">
+                  <span class="badge rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #171717; color: #ffffff;">D</span>
+                  <input type="text" class="form-control form-control-sm border-0 option-input" name="option_3" id="optInput3" placeholder="Option D text..." oninput="syncCorrectAnswer()">
+                  <div class="form-check m-0 d-flex align-items-center gap-1 ps-2" style="white-space: nowrap;">
+                    <input class="form-check-input" type="radio" name="correct_choice_radio" id="radioOpt3" value="3" onchange="selectCorrectRadio(3)">
+                    <label class="form-check-label small fw-bold" for="radioOpt3" style="cursor: pointer;">Correct</label>
+                  </div>
+                </div>
+              </div>
+
+              <div id="correctAnswerFeedback" class="small mt-2 p-2 rounded text-success fw-bold d-none" style="background: rgba(16, 185, 129, 0.1);">
+                <i class="bi bi-check-circle-fill me-1"></i> Correct Answer Set: <span id="correctAnswerPreview">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TEXT EXPECTED ANSWER SECTION -->
+          <div id="textAnswerSection" class="col-12 d-none">
+            <div class="p-3 rounded border" style="background: var(--tj-color-theme-bg-2, #F7F3E8); border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+              <label class="form-label fw-bold mb-1"><i class="bi bi-textarea-t me-1 text-primary"></i> Expected Answer / Evaluation Guidelines</label>
+              <textarea class="form-control" name="text_correct_guidance" id="textCorrectGuidance" rows="3"
+                        placeholder="Provide the key points or ideal answer for grading this question..." oninput="syncTextAnswer(this.value)"></textarea>
+              <div class="form-text mt-1">This guidance will be shown to the instructor when reviewing and grading student submissions.</div>
+            </div>
+          </div>
+
+          <!-- FILE SUBMISSION GUIDANCE SECTION -->
+          <div id="fileUploadSection" class="col-12 d-none">
+            <div class="p-3 rounded border" style="background: var(--tj-color-theme-bg-2, #F7F3E8); border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+              <label class="form-label fw-bold mb-1"><i class="bi bi-file-earmark-arrow-up me-1 text-primary"></i> Submission Guidelines for Students</label>
+              <textarea class="form-control" name="file_guidance" id="fileGuidance" rows="3"
+                        placeholder="Specify allowed file extensions (e.g. .pdf, .zip, .docx) and submission rules..." oninput="syncTextAnswer(this.value)"></textarea>
+              <div class="form-text mt-1">Students will see these instructions before uploading their assignment files.</div>
+            </div>
+          </div>
+
+          <!-- EXPLANATION -->
+          <div class="col-12">
+            <label class="form-label" for="modalExplanation">Explanation / Solution Note (Optional)</label>
+            <textarea class="form-control" name="explanation" id="modalExplanation" rows="2"
+                      placeholder="Explain why the answer is correct. Shown to students after completion..."></textarea>
+          </div>
+        </div>
       </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-edvanto-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-sm text-white" style="background: #DC3545;"
-                onclick="performDelete()">
-          Delete
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-edvanto-primary" id="btnSaveQuestion">
+          <i class="bi bi-check2 me-1"></i> <span id="btnSaveQuestionText">Save Question</span>
         </button>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 
-<!-- ============================================================
-     PAGE JAVASCRIPT
-     ============================================================ -->
+
 <script>
-  (function () {
-    'use strict';
+(function() {
+  'use strict';
 
-    /* ============================================================
-       MCQ: TOGGLE CORRECT ANSWER
-       ============================================================ */
-    window.toggleCorrect = function (btn) {
-      /* Single correct answer per question (radio behaviour) */
-      var optionRow = btn.closest('.edvanto-option-row');
-      var optionsList = btn.closest('.edvanto-options-list');
-      if (!optionsList) return;
+  var selectedRadioIndex = 0;
 
-      /* Remove correct from all */
-      optionsList.querySelectorAll('.edvanto-option-row').forEach(function (row) {
-        row.classList.remove('correct');
-        var t = row.querySelector('.edvanto-option-toggle');
-        if (t) t.classList.remove('checked');
-      });
+  window.handleQuestionTypeChange = function(type) {
+    var mcqSec = document.getElementById('mcqOptionsSection');
+    var textSec = document.getElementById('textAnswerSection');
+    var fileSec = document.getElementById('fileUploadSection');
 
-      /* Add correct to this one */
-      optionRow.classList.add('correct');
-      btn.classList.add('checked');
-    };
+    if (mcqSec) mcqSec.classList.toggle('d-none', type !== 'mcq');
+    if (textSec) textSec.classList.toggle('d-none', type !== 'text');
+    if (fileSec) fileSec.classList.toggle('d-none', type !== 'file');
 
-    /* ============================================================
-       MCQ: ADD / REMOVE OPTIONS
-       ============================================================ */
-    window.addOption = function (btn) {
-      var list = btn.previousElementSibling;
-      if (!list || !list.classList.contains('edvanto-options-list')) return;
-
-      var count = list.querySelectorAll('.edvanto-option-row').length;
-      if (count >= 8) {
-        edvantoToast('Maximum 8 options per question.', 'warning');
-        return;
-      }
-
-      var letters = 'ABCDEFGH';
-      var letter = letters[count] || String(count + 1);
-
-      var row = document.createElement('div');
-      row.className = 'edvanto-option-row';
-      row.innerHTML =
-        '<button type="button" class="edvanto-option-toggle" title="Mark as correct answer" onclick="toggleCorrect(this)">' +
-          '<i class="bi bi-check-lg"></i>' +
-        '</button>' +
-        '<span class="edvanto-option-letter">' + letter + '</span>' +
-        '<input type="text" class="edvanto-option-input" placeholder="Option text…">' +
-        '<button type="button" class="edvanto-option-remove" title="Remove option" onclick="removeOption(this)">' +
-          '<i class="bi bi-x-lg"></i>' +
-        '</button>';
-
-      list.appendChild(row);
-      row.querySelector('.edvanto-option-input').focus();
-    };
-
-    window.removeOption = function (btn) {
-      var row = btn.closest('.edvanto-option-row');
-      var list = row.parentElement;
-      if (!list) return;
-
-      if (list.querySelectorAll('.edvanto-option-row').length <= 2) {
-        edvantoToast('At least 2 options required.', 'warning');
-        return;
-      }
-
-      row.remove();
-      relabelOptions(list);
-    };
-
-    function relabelOptions(list) {
-      var letters = 'ABCDEFGH';
-      list.querySelectorAll('.edvanto-option-row').forEach(function (row, i) {
-        var letterEl = row.querySelector('.edvanto-option-letter');
-        if (letterEl) letterEl.textContent = letters[i] || (i + 1);
-      });
+    if (type === 'mcq') {
+      syncCorrectAnswer();
+    } else if (type === 'text') {
+      var tg = document.getElementById('textCorrectGuidance');
+      syncTextAnswer(tg ? tg.value : '');
+    } else {
+      var fg = document.getElementById('fileGuidance');
+      syncTextAnswer(fg ? fg.value : 'File submission');
     }
+  };
 
-    /* ============================================================
-       MARKS RECALCULATION
-       ============================================================ */
-    function recalcAll() {
-      var total = 0;
-      document.querySelectorAll('#questionsContainer .edvanto-q-card').forEach(function (card) {
-        var marksInput = card.querySelector('.marks-input');
-        if (marksInput) {
-          var val = parseFloat(marksInput.value) || 0;
-          total += val;
+  window.selectCorrectRadio = function(idx) {
+    selectedRadioIndex = idx;
+    for (var i = 0; i < 4; i++) {
+      var row = document.getElementById('optionRow' + i);
+      var radio = document.getElementById('radioOpt' + i);
+      if (row) {
+        if (i === idx) {
+          row.style.borderColor = '#10b981';
+          row.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+        } else {
+          row.style.borderColor = 'var(--tj-color-border-1, #E6E0D2)';
+          row.style.backgroundColor = '#ffffff';
         }
-      });
+      }
+      if (radio && i === idx) radio.checked = true;
+    }
+    syncCorrectAnswer();
+  };
 
-      var count = document.querySelectorAll('#questionsContainer .edvanto-q-card').length;
+  window.syncCorrectAnswer = function() {
+    var type = document.getElementById('qTypeSelect').value;
+    if (type !== 'mcq') return;
+    var inp = document.getElementById('optInput' + selectedRadioIndex);
+    var val = inp ? inp.value.trim() : '';
+    document.getElementById('modalCorrectAnswer').value = val;
 
-      document.getElementById('totalMarksValue').textContent = total;
-      document.getElementById('questionCountLabel').textContent =
-        count + (count === 1 ? ' question' : ' questions');
-      document.getElementById('bannerTotalQuestions').textContent = count;
-      document.getElementById('bannerTotalMarks').textContent = total;
-
-      var toolbarLabel = document.getElementById('toolbarCountLabel');
-      if (toolbarLabel) {
-        toolbarLabel.textContent = count + (count === 1 ? ' question' : ' questions') +
-                                    ' · ' + total + ' marks';
+    var fb = document.getElementById('correctAnswerFeedback');
+    var preview = document.getElementById('correctAnswerPreview');
+    if (fb && preview) {
+      if (val) {
+        fb.classList.remove('d-none');
+        var letters = ['A', 'B', 'C', 'D'];
+        preview.textContent = 'Option ' + letters[selectedRadioIndex] + ' ("' + val + '")';
+      } else {
+        fb.classList.add('d-none');
       }
     }
+  };
 
-    window.recalculateMarks = recalcAll;
+  window.syncTextAnswer = function(val) {
+    document.getElementById('modalCorrectAnswer').value = val ? val.trim() : '';
+  };
 
-    /* ============================================================
-       COLLAPSE / EXPAND ALL
-       ============================================================ */
-    window.collapseAll = function () {
-      document.querySelectorAll('#questionsContainer .collapse').forEach(function (el) {
-        var c = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
-        c.hide();
-      });
-    };
+  window.openNewQuestionModal = function(type) {
+    var form = document.getElementById('questionForm');
+    if (form) form.reset();
 
-    window.expandAll = function () {
-      document.querySelectorAll('#questionsContainer .collapse').forEach(function (el) {
-        var c = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
-        c.show();
-      });
-    };
+    document.getElementById('modalQuestionId').value = '';
+    document.getElementById('questionModalTitleText').textContent = 'Add Question';
+    document.getElementById('btnSaveQuestionText').textContent = 'Save Question';
 
-    /* ============================================================
-       DUPLICATE QUESTION
-       ============================================================ */
-    window.duplicateQuestion = function (btn) {
-      var card = btn.closest('.edvanto-q-card');
-      if (!card) return;
+    var typeSelect = document.getElementById('qTypeSelect');
+    if (typeSelect) {
+      typeSelect.value = type || 'mcq';
+      handleQuestionTypeChange(typeSelect.value);
+    }
+    selectCorrectRadio(0);
 
-      var clone = card.cloneNode(true);
-      /* Remove ids to avoid duplicates */
-      clone.querySelectorAll('[id]').forEach(function (el) { el.removeAttribute('id'); });
-      clone.querySelectorAll('[data-bs-target]').forEach(function (el) { el.removeAttribute('data-bs-target'); });
-      clone.querySelectorAll('[aria-controls]').forEach(function (el) { el.removeAttribute('aria-controls'); });
-      clone.querySelectorAll('.collapse').forEach(function (el) {
-        el.classList.remove('show');
-        el.classList.add('show'); /* keep open for editing */
-      });
-      clone.classList.remove('dragging', 'drop-target');
+    var modalEl = document.getElementById('newQuestionModal');
+    if (modalEl) {
+      new bootstrap.Modal(modalEl).show();
+    }
+  };
 
-      card.parentNode.insertBefore(clone, card.nextSibling);
-      renumberQuestions();
-      recalcAll();
-      initDrag();
+  window.editQuestionModal = function(qId, qType, qMarks, qOrder, qText, qExplanation, qCorrectAnswer, qOptions) {
+    document.getElementById('modalQuestionId').value = qId;
+    document.getElementById('questionModalTitleText').textContent = 'Edit Question #' + qOrder;
+    document.getElementById('btnSaveQuestionText').textContent = 'Update Question';
 
-      edvantoToast('Question duplicated.', 'success');
-    };
-
-    /* ============================================================
-       DELETE QUESTION
-       ============================================================ */
-    var pendingDeleteCard = null;
-
-    window.confirmDeleteQuestion = function (btn, title) {
-      pendingDeleteCard = btn.closest('.edvanto-q-card');
-      document.getElementById('deleteModalMessage').innerHTML =
-        'Delete question <strong class="text-edvanto-navy">' +
-        (title.length > 60 ? title.substring(0, 60) + '…' : title) +
-        '</strong>? This cannot be undone.';
-      new bootstrap.Modal(document.getElementById('deleteModal')).show();
-    };
-
-    window.performDelete = function () {
-      var modalEl = document.getElementById('deleteModal');
-      var modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      if (pendingDeleteCard) {
-        pendingDeleteCard.remove();
-        pendingDeleteCard = null;
-        renumberQuestions();
-        recalcAll();
-        edvantoToast('Question deleted.', 'warning');
-      }
-    };
-
-    /* ============================================================
-       RENUMBER QUESTIONS
-       ============================================================ */
-    function renumberQuestions() {
-      var cards = document.querySelectorAll('#questionsContainer .edvanto-q-card');
-      cards.forEach(function (card, i) {
-        var numEl = card.querySelector('.edvanto-q-num');
-        if (numEl) numEl.textContent = i + 1;
-
-        var type = card.dataset.type || 'mcq';
-        numEl.classList.remove('text', 'file');
-        if (type === 'text') numEl.classList.add('text');
-        if (type === 'file') numEl.classList.add('file');
-      });
+    var typeSelect = document.getElementById('qTypeSelect');
+    if (typeSelect) {
+      typeSelect.value = qType;
+      handleQuestionTypeChange(qType);
     }
 
-    /* ============================================================
-       ADD QUESTION (dynamic)
-       ============================================================ */
-    window.addQuestion = function (type) {
-      var container = document.getElementById('questionsContainer');
-      var count = container.querySelectorAll('.edvanto-q-card').length + 1;
+    document.getElementById('modalQuestionMarks').value = qMarks;
+    document.getElementById('modalQuestionOrder').value = qOrder;
+    document.getElementById('modalQuestionText').value = qText;
+    document.getElementById('modalExplanation').value = qExplanation;
 
-      var card = document.createElement('div');
-      card.className = 'edvanto-q-card';
-      card.setAttribute('draggable', 'true');
-      card.dataset.questionId = 'new_' + Date.now();
-      card.dataset.type = type;
-
-      var headerClass = type === 'text' ? 'text' : (type === 'file' ? 'file' : '');
-      var typeBadge = type === 'mcq'
-        ? '<span class="edvanto-q-type mcq"><i class="bi bi-ui-radios"></i> MCQ</span>'
-        : (type === 'text'
-          ? '<span class="edvanto-q-type text"><i class="bi bi-textarea-t"></i> Text</span>'
-          : '<span class="edvanto-q-type file"><i class="bi bi-file-earmark-arrow-up"></i> File Upload</span>');
-
-      var defaultTitle = type === 'mcq'
-        ? 'New multiple choice question'
-        : (type === 'text' ? 'New text answer question' : 'New file upload question');
-
-      card.innerHTML =
-        '<div class="edvanto-q-header" data-bs-toggle="collapse" aria-expanded="true">' +
-          '<span class="edvanto-q-drag" title="Drag to reorder">' +
-            '<i class="bi bi-grip-vertical"></i>' +
-          '</span>' +
-          '<div class="edvanto-q-num ' + headerClass + '">' + count + '</div>' +
-          '<div class="edvanto-q-info">' +
-            '<h3 class="edvanto-q-title">' + defaultTitle + '</h3>' +
-            '<div class="edvanto-q-meta">' +
-              typeBadge +
-              '<span class="edvanto-q-marks"><i class="bi bi-trophy"></i> 10 marks</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="edvanto-q-actions">' +
-            '<button class="edvanto-action-btn" title="Duplicate" onclick="duplicateQuestion(this)">' +
-              '<i class="bi bi-files"></i>' +
-            '</button>' +
-            '<button class="edvanto-action-btn danger" title="Delete" onclick="confirmDeleteQuestion(this, \'' + defaultTitle + '\')">' +
-              '<i class="bi bi-trash"></i>' +
-            '</button>' +
-          '</div>' +
-          '<i class="bi bi-chevron-down edvanto-q-chevron"></i>' +
-        '</div>' +
-        '<div class="collapse show">' +
-          '<div class="edvanto-q-body">' + buildBodyForType(type) + '</div>' +
-        '</div>';
-
-      container.appendChild(card);
-      renumberQuestions();
-      recalcAll();
-      initDrag();
-
-      /* Expand newly added card */
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      edvantoToast('New ' + type + ' question added.', 'success');
-    };
-
-    function buildBodyForType(type) {
-      if (type === 'mcq') {
-        return '' +
-          '<div class="mb-3">' +
-            '<label class="form-label">Question <span class="req">*</span></label>' +
-            '<textarea class="form-control" rows="2" placeholder="Enter your question…"></textarea>' +
-          '</div>' +
-          '<div class="mb-2">' +
-            '<label class="form-label">Options <span class="req">*</span></label>' +
-            '<div class="edvanto-options-list">' +
-              buildOptionRow('A', '', true) +
-              buildOptionRow('B', '', false) +
-              buildOptionRow('C', '', false) +
-              buildOptionRow('D', '', false) +
-            '</div>' +
-            '<button type="button" class="edvanto-add-option-btn" onclick="addOption(this)">' +
-              '<i class="bi bi-plus-lg"></i> Add Option' +
-            '</button>' +
-          '</div>' +
-          '<div class="row g-3 mt-2">' +
-            '<div class="col-12 col-sm-4">' +
-              '<label class="form-label">Marks <span class="req">*</span></label>' +
-              '<input type="number" class="form-control marks-input" value="10" min="0" step="1" oninput="recalculateMarks()">' +
-            '</div>' +
-            '<div class="col-12 col-sm-8">' +
-              '<label class="form-label">Explanation</label>' +
-              '<input type="text" class="form-control" placeholder="Shown to students after they answer…">' +
-            '</div>' +
-          '</div>';
-      }
-      if (type === 'text') {
-        return '' +
-          '<div class="mb-3">' +
-            '<label class="form-label">Question <span class="req">*</span></label>' +
-            '<textarea class="form-control" rows="2" placeholder="Enter your question…"></textarea>' +
-          '</div>' +
-          '<div class="mb-3">' +
-            '<label class="form-label">Expected Answer / Grading Guidance</label>' +
-            '<textarea class="form-control" rows="4" placeholder="Describe what a good answer should contain…"></textarea>' +
-            '<div class="form-text mt-1">Visible to instructors during grading.</div>' +
-          '</div>' +
-          '<div class="row g-3">' +
-            '<div class="col-12 col-sm-4">' +
-              '<label class="form-label">Marks <span class="req">*</span></label>' +
-              '<input type="number" class="form-control marks-input" value="10" min="0" step="1" oninput="recalculateMarks()">' +
-            '</div>' +
-          '</div>';
-      }
-      /* file */
-      return '' +
-        '<div class="mb-3">' +
-          '<label class="form-label">Question <span class="req">*</span></label>' +
-          '<textarea class="form-control" rows="2" placeholder="Describe what students should upload…"></textarea>' +
-        '</div>' +
-        '<div class="row g-3">' +
-          '<div class="col-12 col-sm-6">' +
-            '<label class="form-label">Allowed File Types <span class="req">*</span></label>' +
-            '<input type="text" class="form-control" placeholder="e.g. .pdf, .docx, .zip" value=".pdf">' +
-            '<div class="form-text mt-1">Comma-separated list of extensions.</div>' +
-          '</div>' +
-          '<div class="col-12 col-sm-3">' +
-            '<label class="form-label">Max File Size <span class="req">*</span></label>' +
-            '<div class="input-group">' +
-              '<input type="number" class="form-control" value="10" min="1" step="1">' +
-              '<span class="input-group-text" style="font-size: 0.82rem; font-weight: 600; color: var(--edvanto-gray-600); background: var(--edvanto-gray-50);">MB</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="col-12 col-sm-3">' +
-            '<label class="form-label">Marks <span class="req">*</span></label>' +
-            '<input type="number" class="form-control marks-input" value="10" min="0" step="1" oninput="recalculateMarks()">' +
-          '</div>' +
-        '</div>';
-    }
-
-    function buildOptionRow(letter, value, isCorrect) {
-      return '' +
-        '<div class="edvanto-option-row' + (isCorrect ? ' correct' : '') + '">' +
-          '<button type="button" class="edvanto-option-toggle' + (isCorrect ? ' checked' : '') + '" onclick="toggleCorrect(this)">' +
-            '<i class="bi bi-check-lg"></i>' +
-          '</button>' +
-          '<span class="edvanto-option-letter">' + letter + '</span>' +
-          '<input type="text" class="edvanto-option-input" placeholder="Option text…" value="' + value + '">' +
-          '<button type="button" class="edvanto-option-remove" onclick="removeOption(this)">' +
-            '<i class="bi bi-x-lg"></i>' +
-          '</button>' +
-        '</div>';
-    }
-
-    /* ============================================================
-       DRAG & DROP REORDERING
-       ============================================================ */
-    var dragEl = null;
-
-    function initDrag() {
-      var container = document.getElementById('questionsContainer');
-      if (!container) return;
-
-      container.querySelectorAll('.edvanto-q-card').forEach(function (card) {
-        /* prevent duplicate listeners */
-        if (card.dataset.dragBound === '1') return;
-        card.dataset.dragBound = '1';
-
-        card.addEventListener('dragstart', function (e) {
-          dragEl = card;
-          card.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', card.dataset.questionId || '');
-        });
-
-        card.addEventListener('dragend', function () {
-          card.classList.remove('dragging');
-          container.querySelectorAll('.edvanto-q-card.drop-target').forEach(function (el) {
-            el.classList.remove('drop-target');
-          });
-          dragEl = null;
-          renumberQuestions();
-          persistOrder();
-        });
-
-        card.addEventListener('dragover', function (e) {
-          e.preventDefault();
-          if (!dragEl || dragEl === card) return;
-          e.dataTransfer.dropEffect = 'move';
-          card.classList.add('drop-target');
-        });
-
-        card.addEventListener('dragleave', function () {
-          card.classList.remove('drop-target');
-        });
-
-        card.addEventListener('drop', function (e) {
-          e.preventDefault();
-          card.classList.remove('drop-target');
-          if (!dragEl || dragEl === card) return;
-
-          var cards = Array.from(container.querySelectorAll('.edvanto-q-card'));
-          var fromIdx = cards.indexOf(dragEl);
-          var toIdx = cards.indexOf(card);
-
-          if (fromIdx < toIdx) {
-            container.insertBefore(dragEl, card.nextSibling);
-          } else {
-            container.insertBefore(dragEl, card);
-          }
-          renumberQuestions();
-          edvantoToast('Question reordered.');
-        });
-      });
-    }
-
-    /* ============================================================
-       PERSIST ORDER (replace with fetch to Django)
-       ============================================================ */
-    function persistOrder() {
-      var order = [];
-      document.querySelectorAll('#questionsContainer .edvanto-q-card').forEach(function (card) {
-        order.push(card.dataset.questionId);
-      });
-      console.log('[Edvanto] Question order:', order);
-      /* Example:
-         fetch('#}', {
-           method: 'POST',
-           headers: {
-             'X-CSRFToken': '{{ csrf_token }}',
-             'Content-Type': 'application/json'
-           },
-           body: JSON.stringify({ order: order })
-         });
-      */
-    }
-
-    /* ============================================================
-       SAVE
-       ============================================================ */
-    window.saveDraft = function () {
-      edvantoToast('Questions saved as draft.', 'info');
-      /* Replace with a real fetch() to your Django endpoint */
-    };
-
-    window.saveQuestions = function () {
-      /* Validate each MCQ has at least one correct answer */
-      var invalid = false;
-      document.querySelectorAll('#questionsContainer .edvanto-q-card[data-type="mcq"]').forEach(function (card) {
-        var correct = card.querySelector('.edvanto-option-row.correct');
-        if (!correct) {
-          invalid = true;
-          card.classList.add('drop-target');
-          setTimeout(function () { card.classList.remove('drop-target'); }, 1500);
+    if (qType === 'mcq') {
+      var foundIndex = 0;
+      for (var i = 0; i < 4; i++) {
+        var optVal = (qOptions && qOptions[i] !== undefined) ? qOptions[i] : '';
+        var inp = document.getElementById('optInput' + i);
+        if (inp) inp.value = optVal;
+        if (optVal && optVal === qCorrectAnswer) {
+          foundIndex = i;
         }
-      });
-
-      if (invalid) {
-        edvantoToast('Some MCQ questions have no correct answer selected.', 'error');
-        return;
       }
+      selectCorrectRadio(foundIndex);
+      document.getElementById('modalCorrectAnswer').value = qCorrectAnswer;
+    } else if (qType === 'text') {
+      var tg = document.getElementById('textCorrectGuidance');
+      if (tg) tg.value = qCorrectAnswer;
+      syncTextAnswer(qCorrectAnswer);
+    } else {
+      var fg = document.getElementById('fileGuidance');
+      if (fg) fg.value = qCorrectAnswer;
+      syncTextAnswer(qCorrectAnswer);
+    }
 
-      edvantoToast('All questions saved successfully.', 'success');
-      /* Replace with a real fetch() to your Django endpoint */
-    };
+    var modalEl = document.getElementById('newQuestionModal');
+    if (modalEl) {
+      new bootstrap.Modal(modalEl).show();
+    }
+  };
 
-    /* ============================================================
-       SCROLL TO ADD QUESTION
-       ============================================================ */
-    window.scrollToAddQuestion = function () {
-      var el = document.getElementById('addQuestionCard');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    };
-
-    /* ============================================================
-       INIT
-       ============================================================ */
-    document.addEventListener('DOMContentLoaded', function () {
-      initDrag();
-      renumberQuestions();
-      recalcAll();
-
-      /* Prevent collapse toggle when clicking option rows or inputs */
-      document.querySelectorAll('.edvanto-q-body').forEach(function (body) {
-        body.addEventListener('click', function (e) {
-          e.stopPropagation();
-        });
-      });
+  window.collapseAllQuestions = function() {
+    document.querySelectorAll('#questionsContainer .collapse').forEach(function(el) {
+      bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
     });
+  };
 
-  })();
+  window.expandAllQuestions = function() {
+    document.querySelectorAll('#questionsContainer .collapse').forEach(function(el) {
+      bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).show();
+    });
+  };
+
+  // Form submit validation for MCQ
+  var qForm = document.getElementById('questionForm');
+  if (qForm) {
+    qForm.addEventListener('submit', function(e) {
+      var type = document.getElementById('qTypeSelect').value;
+      if (type === 'mcq') {
+        syncCorrectAnswer();
+        var correct = document.getElementById('modalCorrectAnswer').value;
+        if (!correct) {
+          e.preventDefault();
+          alert('Please enter text for the selected correct option before saving.');
+          var inp = document.getElementById('optInput' + selectedRadioIndex);
+          if (inp) inp.focus();
+        }
+      }
+    });
+  }
+
+  // Initial setup on load
+  document.addEventListener('DOMContentLoaded', function() {
+    selectCorrectRadio(0);
+  });
+})();
 </script>
 
 {% endblock %}

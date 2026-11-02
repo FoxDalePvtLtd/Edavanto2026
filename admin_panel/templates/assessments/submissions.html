@@ -33,11 +33,11 @@
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--edvanto-violet) 0%, var(--edvanto-cyan) 100%);
-    opacity: 0.85;
+    background: var(--tj-color-gradient-7, linear-gradient(90deg, #F6C95B 1.81%, #D4A62A 97.7%));
+    opacity: 0.95;
   }
-  .edvanto-stat-card.gold::before  { background: linear-gradient(90deg, var(--edvanto-gold) 0%, #FFC93C 100%); }
-  .edvanto-stat-card.cyan::before  { background: linear-gradient(90deg, #00B8D4 0%, var(--edvanto-cyan) 100%); }
+  .edvanto-stat-card.gold::before  { background: var(--tj-color-gradient-4, linear-gradient(90deg, #F6C95B 20%, #B8891F 100%)); }
+  .edvanto-stat-card.cyan::before  { background: var(--tj-color-gradient-10, linear-gradient(90deg, #FFC857 0%, #E2B93B 50%, #9C7924 100%)); }
   .edvanto-stat-card.green::before { background: linear-gradient(90deg, #0F9D58 0%, #16B86B 100%); }
 
   .edvanto-stat-icon {
@@ -48,12 +48,12 @@
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    color: var(--tj-color-theme-primary, #D4A62A);
     margin-bottom: 0.9rem;
   }
-  .edvanto-stat-icon.gold  { background: rgba(255, 179, 3, 0.08); color: var(--edvanto-gold); }
-  .edvanto-stat-icon.cyan  { background: rgba(1, 223, 254, 0.08); color: #0099B5; }
+  .edvanto-stat-icon.gold  { background: var(--tj-color-theme-bg-8, #F7EBD0); color: var(--tj-color-theme-primary, #D4A62A); }
+  .edvanto-stat-icon.cyan  { background: var(--tj-color-theme-bg-9, rgba(212, 166, 42, 0.15)); color: var(--tj-color-theme-purple-2, #E0B83F); }
   .edvanto-stat-icon.green { background: rgba(15, 157, 88, 0.08); color: #0F9D58; }
 
   .edvanto-stat-label {
@@ -103,9 +103,9 @@
   }
   .edvanto-filter-bar .form-control:focus,
   .edvanto-filter-bar .form-select:focus {
-    border-color: var(--edvanto-violet);
-    background-color: var(--edvanto-white);
-    box-shadow: 0 0 0 3px rgba(69, 28, 238, 0.1);
+    border-color: var(--tj-color-theme-primary, #D4A62A);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(212, 166, 42, 0.18);
   }
   .edvanto-filter-bar .input-icon-wrapper {
     position: relative;
@@ -143,11 +143,11 @@
     flex-shrink: 0;
     letter-spacing: -0.02em;
   }
-  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #451CEE 0%, #6B4EFF 100%); }
-  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #032A5A 0%, #0A4A8F 100%); }
-  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #01DFFE 0%, #00A8C5 100%); }
-  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #FFB303 0%, #E09400 100%); }
-  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #6B4EFF 0%, #9B7AFF 100%); }
+  .edvanto-avatar-sm.v1 { background: linear-gradient(135deg, #FFC857 0%, #D4A62A 100%); color: #171717; }
+  .edvanto-avatar-sm.v2 { background: linear-gradient(135deg, #171717 0%, #333333 100%); color: #ffffff; }
+  .edvanto-avatar-sm.v3 { background: linear-gradient(135deg, #E0B83F 0%, #B8891F 100%); color: #171717; }
+  .edvanto-avatar-sm.v4 { background: linear-gradient(135deg, #D4A62A 0%, #9C7924 100%); color: #ffffff; }
+  .edvanto-avatar-sm.v5 { background: linear-gradient(135deg, #555555 0%, #171717 100%); color: #ffffff; }
   .edvanto-avatar-sm.v6 { background: linear-gradient(135deg, #0F9D58 0%, #0B7A43 100%); }
 
   .edvanto-user-name {
@@ -217,7 +217,7 @@
   .badge-sub-pending     { background: rgba(255, 179, 3, 0.14); color: #9A6D00; }
   .badge-sub-graded      { background: rgba(15, 157, 88, 0.10); color: #0F6B3E; }
   .badge-sub-returned    { background: rgba(220, 53, 69, 0.10); color: #B02A37; }
-  .badge-sub-in-progress { background: rgba(69, 28, 238, 0.09); color: var(--edvanto-violet); }
+  .badge-sub-in-progress { background: var(--tj-color-theme-bg-8, #F7EBD0); color: #9C7924; }
 
   /* ---------- Table ---------- */
   .edvanto-table {
@@ -226,6 +226,7 @@
     font-size: 0.88rem;
     border-collapse: separate;
     border-spacing: 0;
+    min-width: 820px;
   }
   .edvanto-table thead th {
     font-size: 0.68rem;
@@ -246,12 +247,11 @@
     font-weight: 500;
   }
   .edvanto-table tbody tr:last-child td { border-bottom: none; }
-  .edvanto-table tbody tr:hover { background: rgba(69, 28, 238, 0.015); }
+  .edvanto-table tbody tr:hover { background: rgba(212, 166, 42, 0.03); }
   .table-responsive-edvanto {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    margin: 0 -0.25rem;
-    padding: 0 0.25rem;
+    width: 100%;
   }
 
   /* ---------- Action buttons ---------- */
@@ -270,8 +270,8 @@
     text-decoration: none;
   }
   .edvanto-action-btn:hover {
-    background: rgba(69, 28, 238, 0.06);
-    color: var(--edvanto-violet);
+    background: var(--tj-color-theme-bg-8, #F7EBD0);
+    color: var(--tj-color-theme-primary, #D4A62A);
   }
   .edvanto-action-btn.gold:hover {
     background: rgba(255, 179, 3, 0.10);
@@ -323,18 +323,22 @@
   .edvanto-submission-card-row .value { color: var(--edvanto-navy); font-weight: 600; text-align: right; }
   .edvanto-submission-card-actions {
     display: flex;
-    gap: 0.4rem;
-    margin-top: 0.75rem;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--edvanto-gray-100);
     flex-wrap: wrap;
   }
   .edvanto-submission-card-actions .btn {
-    flex: 1;
-    font-size: 0.72rem;
+    flex: 1 1 calc(50% - 0.5rem);
+    font-size: 0.78rem;
     font-weight: 600;
-    border-radius: var(--edvanto-radius-xs);
-    padding: 0.45rem 0.4rem;
+    border-radius: var(--edvanto-radius-sm, 10px);
+    padding: 0.5rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
   }
 
   /* ============================================================
@@ -901,7 +905,7 @@
           <button type="submit" class="btn btn-edvanto-primary btn-sm flex-fill" style="height: 42px;">
             Apply
           </button>
-          <a href="#assessment_submissions' %}" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
+          <a href="{% url 'admin_panel:assessment_submissions' %}" class="btn btn-edvanto-outline btn-sm flex-fill d-flex align-items-center justify-content-center"
              style="height: 42px;" title="Reset filters">
             <i class="bi bi-arrow-counterclockwise"></i>
           </a>
@@ -921,7 +925,7 @@
     <h2 class="edvanto-card-title">All Submissions</h2>
     <div class="d-flex align-items-center gap-2">
       <span class="edvanto-badge" style="font-size:0.7rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:999px;background:rgba(3,42,90,0.07);color:var(--edvanto-navy);">
-        185 submissions
+        {{ total_count|default:"0" }} submission{{ total_count|pluralize }}
       </span>
       <div class="dropdown">
         <button class="edvanto-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Sort">
@@ -1001,62 +1005,7 @@
                   </button>
                 </div>
 
-                <!-- GRADING MODAL FOR SUBMISSION -->
-                <div class="modal fade text-start" id="gradeModal{{ sub.pk }}" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content border-0 shadow">
-                      <form method="post" action="{% url 'admin_panel:submission_grade' sub.pk %}">
-                        {% csrf_token %}
-                        <div class="modal-header bg-dark text-white">
-                          <h5 class="modal-title h6 mb-0 text-white">
-                            <i class="bi bi-award me-2 text-warning"></i>
-                            Grade Submission #{{ sub.pk }} — {{ sub.student.get_full_name|default:sub.student.username }}
-                          </h5>
-                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                          <div class="p-3 bg-light rounded border mb-3">
-                            <div class="fw-bold">{{ sub.assessment.title }} (Max Marks: {{ sub.assessment.total_marks }}, Pass: {{ sub.assessment.pass_percentage }}%)</div>
-                            <div class="small text-muted">Student: {{ sub.student.get_full_name|default:sub.student.username }} ({{ sub.student.email }})</div>
-                            <div class="small text-muted">Submitted At: {{ sub.submitted_at|date:"d M Y, h:i A" }}</div>
-                            {% if sub.uploaded_file %}
-                              <div class="mt-2">
-                                <a href="{{ sub.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                  <i class="bi bi-download me-1"></i> Download Uploaded File
-                                </a>
-                              </div>
-                            {% endif %}
-                          </div>
-
-                          <div class="mb-3">
-                            <label class="form-label small fw-bold">Student Answers (JSON / Responses):</label>
-                            <pre class="bg-light p-3 rounded border small text-dark" style="max-height: 200px; overflow-y: auto;">{{ sub.answers }}</pre>
-                          </div>
-
-                          <div class="row g-3">
-                            <div class="col-12 col-md-6">
-                              <label class="form-label small fw-bold">Score Awarded (out of {{ sub.assessment.total_marks }}) *</label>
-                              <input type="number" step="0.5" min="0" max="{{ sub.assessment.total_marks }}"
-                                     class="form-control" name="score" value="{{ sub.score|default:'' }}" required>
-                            </div>
-                            <div class="col-12 col-md-6">
-                              <label class="form-label small fw-bold">Status *</label>
-                              <select class="form-select" name="status">
-                                {% for code, label in status_choices %}
-                                  <option value="{{ code }}" {% if sub.status == code %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="modal-footer bg-light py-2">
-                          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                          <button type="submit" class="btn btn-sm btn-edvanto-primary"><i class="bi bi-check2 me-1"></i> Save Grade</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
+                
               </td>
             </tr>
           {% empty %}
@@ -1074,58 +1023,88 @@
 
   <!-- ---------- MOBILE CARDS ---------- -->
   <div class="edvanto-submissions-cards">
-
-    <div class="edvanto-submission-card">
-      <div class="edvanto-submission-card-header">
-        <span class="edvanto-avatar-sm v1">AK</span>
-        <div style="flex:1;min-width:0;">
-          <div class="edvanto-user-name">Ananya Kapoor</div>
-          <div class="edvanto-user-meta">HTML5 Fundamentals Quiz</div>
+    {% for sub in submissions %}
+      <div class="edvanto-submission-card">
+        <div class="edvanto-submission-card-header">
+          <span class="edvanto-avatar-sm v{{ forloop.counter|divisibleby:2|yesno:'2,1' }}">
+            {{ sub.student.first_name|slice:":1"|default:sub.student.username|slice:":1"|upper }}{{ sub.student.last_name|slice:":1"|default:""|upper }}
+          </span>
+          <div style="flex:1;min-width:0;">
+            <div class="edvanto-user-name">{{ sub.student.get_full_name|default:sub.student.username }}</div>
+            <div class="edvanto-user-meta">{{ sub.assessment.title }}</div>
+          </div>
+          {% if sub.status == 'graded' %}
+            <span class="edvanto-badge badge-sub-graded">Graded</span>
+          {% elif sub.status == 'submitted' %}
+            <span class="edvanto-badge badge-sub-pending">Submitted</span>
+          {% else %}
+            <span class="edvanto-badge badge-sub-draft">{{ sub.get_status_display }}</span>
+          {% endif %}
         </div>
-        <span class="edvanto-badge badge-sub-pending">Pending</span>
-      </div>
-      <div class="edvanto-submission-card-row"><span class="label">Submitted</span><span class="value">15 Apr, 7:22 PM</span></div>
-      <div class="edvanto-submission-card-row"><span class="label">Score</span><span class="value" style="color: var(--edvanto-gold);">Awaiting</span></div>
-      <div class="edvanto-submission-card-row"><span class="label">Graded By</span><span class="value">—</span></div>
-      <div class="edvanto-submission-card-actions">
-        <button class="btn btn-edvanto-outline" onclick="openGradeModal(1)"><i class="bi bi-pencil-square me-1"></i>Grade</button>
-        <button class="btn btn-edvanto-outline text-danger" onclick="returnSubmission('Ananya Kapoor')"><i class="bi bi-arrow-counterclockwise me-1"></i>Return</button>
-      </div>
-    </div>
-
-    <div class="edvanto-submission-card">
-      <div class="edvanto-submission-card-header">
-        <span class="edvanto-avatar-sm v3">PM</span>
-        <div style="flex:1;min-width:0;">
-          <div class="edvanto-user-name">Priya Mehta</div>
-          <div class="edvanto-user-meta">HTML5 Fundamentals Quiz</div>
+        <div class="edvanto-submission-card-row">
+          <span class="label">Submitted</span>
+          <span class="value">{{ sub.submitted_at|date:"d M, h:i A" }}</span>
         </div>
-        <span class="edvanto-badge badge-sub-graded">Graded</span>
+        <div class="edvanto-submission-card-row">
+          <span class="label">Score</span>
+          <span class="value" {% if sub.status == 'graded' %}style="color:#0F6B3E;"{% else %}style="color:var(--edvanto-gold);"{% endif %}>
+            {% if sub.score is not None %}{{ sub.score }} / {{ sub.assessment.total_marks }}{% else %}Awaiting Grade{% endif %}
+          </span>
+        </div>
+        <div class="edvanto-submission-card-row">
+          <span class="label">Course</span>
+          <span class="value">{{ sub.assessment.module.course.title|truncatewords:4 }}</span>
+        </div>
+        <div class="edvanto-submission-card-actions">
+          <button type="button" class="btn btn-edvanto-outline flex-fill" data-bs-toggle="modal" data-bs-target="#gradeModal{{ sub.pk }}">
+            <i class="bi bi-pencil-square me-1"></i>Grade / Review
+          </button>
+          {% if sub.uploaded_file %}
+            <a href="{{ sub.uploaded_file.url }}" target="_blank" class="btn btn-edvanto-outline flex-fill text-primary">
+              <i class="bi bi-download me-1"></i>File
+            </a>
+          {% endif %}
+        </div>
       </div>
-      <div class="edvanto-submission-card-row"><span class="label">Submitted</span><span class="value">14 Apr, 8:05 PM</span></div>
-      <div class="edvanto-submission-card-row"><span class="label">Score</span><span class="value" style="color:#0F6B3E;">42 / 50 (84%)</span></div>
-      <div class="edvanto-submission-card-row"><span class="label">Graded By</span><span class="value">Priya Nair</span></div>
-      <div class="edvanto-submission-card-actions">
-        <button class="btn btn-edvanto-outline" onclick="openGradeModal(3)"><i class="bi bi-eye me-1"></i>View</button>
-        <button class="btn btn-edvanto-outline text-danger" onclick="returnSubmission('Priya Mehta')"><i class="bi bi-arrow-counterclockwise me-1"></i>Return</button>
+    {% empty %}
+      <div class="card border-0 shadow-sm p-4 text-center text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+        No submissions found matching your filters.
       </div>
-    </div>
-
+    {% endfor %}
   </div>
 
   <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
   <nav class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <span class="text-muted" style="font-size: 0.82rem;">Showing 1–6 of 185 submissions</span>
+    <span class="text-muted" style="font-size: 0.82rem;">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} submissions</span>
     <ul class="pagination pagination-sm mb-0">
-      <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
-      <li class="page-item active"><a class="page-link" href="#">1</a></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item disabled"><span class="page-link">…</span></li>
-      <li class="page-item"><a class="page-link" href="#">26</a></li>
-      <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.assessment %}&assessment={{ request.GET.assessment }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.assessment %}&assessment={{ request.GET.assessment }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.assessment %}&assessment={{ request.GET.assessment }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+      {% endif %}
     </ul>
   </nav>
+  {% else %}
+  <div class="mt-3 text-muted" style="font-size: 0.82rem;">
+    Showing {{ page_obj.paginator.count }} submission{{ page_obj.paginator.count|pluralize }}
+  </div>
+  {% endif %}
 
 </div>
 
@@ -1818,5 +1797,70 @@
 
   })();
 </script>
+
+
+
+
+
+<!-- ============================================================
+     SUBMISSION GRADING MODALS (Rendered at page level for mobile/desktop reliability)
+     ============================================================ -->
+<div class="edvanto-submission-modals">
+  {% for sub in submissions %}
+    <div class="modal fade text-start" id="gradeModal{{ sub.pk }}" tabindex="-1" aria-labelledby="gradeModalLabel{{ sub.pk }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <form class="modal-content border-0 shadow" method="post" action="{% url 'admin_panel:submission_grade' sub.pk %}" style="border-radius: var(--edvanto-radius-card, 16px); overflow: hidden;">
+          {% csrf_token %}
+          <div class="modal-header" style="flex-shrink: 0; background: linear-gradient(135deg, var(--tj-color-theme-dark, #111111) 0%, var(--tj-color-theme-purple, #1B1B1B) 100%); color: #ffffff; padding: 1.15rem 1.4rem;">
+            <h5 class="modal-title h6 mb-0 text-white" id="gradeModalLabel{{ sub.pk }}">
+              <i class="bi bi-award me-2" style="color: var(--tj-color-theme-primary, #D4A62A);"></i>
+              Grade Submission #{{ sub.pk }} — {{ sub.student.get_full_name|default:sub.student.username }}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4" style="background: var(--tj-color-theme-bg, #FFFDF7); overflow-y: auto !important; max-height: calc(100vh - 200px);">
+            <div class="p-3 rounded border mb-3" style="background: var(--tj-color-theme-bg-2, #F7F3E8); border-color: var(--tj-color-border-1, #E6E0D2) !important;">
+              <div class="fw-bold" style="color: var(--tj-color-heading-primary, #171717);">{{ sub.assessment.title }} (Max Marks: {{ sub.assessment.total_marks }}, Pass: {{ sub.assessment.pass_percentage }}%)</div>
+              <div class="small" style="color: var(--tj-color-text-body-2, #555555);">Student: {{ sub.student.get_full_name|default:sub.student.username }} ({{ sub.student.email }})</div>
+              <div class="small" style="color: var(--tj-color-text-body-3, #777777);">Submitted At: {{ sub.submitted_at|date:"d M Y, h:i A" }}</div>
+              {% if sub.uploaded_file %}
+                <div class="mt-2">
+                  <a href="{{ sub.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-edvanto-outline">
+                    <i class="bi bi-download me-1"></i> Download Uploaded File
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold" style="color: var(--tj-color-heading-primary, #171717);">Student Answers (JSON / Responses):</label>
+              <pre class="p-3 rounded border small" style="background: #ffffff; border-color: var(--tj-color-border-1, #E6E0D2) !important; color: var(--tj-color-heading-primary, #171717); max-height: 200px; overflow-y: auto;">{{ sub.answers }}</pre>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label small fw-bold" style="color: var(--tj-color-heading-primary, #171717);">Score Awarded (out of {{ sub.assessment.total_marks }}) *</label>
+                <input type="number" step="0.5" min="0" max="{{ sub.assessment.total_marks }}"
+                       class="form-control" name="score" value="{{ sub.score|default:'' }}" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label small fw-bold" style="color: var(--tj-color-heading-primary, #171717);">Status *</label>
+                <select class="form-select" name="status">
+                  {% for code, label in status_choices %}
+                    <option value="{{ code }}" {% if sub.status == code %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="flex-shrink: 0; background: #ffffff; border-top: 1px solid var(--tj-color-border-1, #E6E0D2); padding: 0.85rem 1.4rem;">
+            <button type="button" class="btn btn-sm btn-edvanto-outline" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-edvanto-primary"><i class="bi bi-check2 me-1"></i> Save Grade</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+</div>
 
 {% endblock %}

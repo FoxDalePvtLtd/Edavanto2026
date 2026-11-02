@@ -234,6 +234,8 @@ class StudyWorkflowTests(TestCase):
         response = self.client.get(reverse("admin_panel:dashboard"))
         self.assertEqual(response.status_code, 200)
         content = response.content.decode("utf-8")
+        idx = content.find("Lesson 1.1: Architecture")
+        print("DEBUG HTML SNIPPET:\n", content[idx-100:idx+600])
         self.assertIn("edvanto-footer-inner", content)
         self.assertIn("&bull;", content)
         self.assertNotIn("\ufffd", content)

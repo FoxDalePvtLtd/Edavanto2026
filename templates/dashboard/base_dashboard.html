@@ -9,7 +9,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Urbanist:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -21,13 +21,293 @@
     (function () {
       try {
         var saved = localStorage.getItem('edvanto-theme');
-        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        var theme = saved || 'light';
         document.documentElement.setAttribute('data-bs-theme', theme);
       } catch (e) {
         document.documentElement.setAttribute('data-bs-theme', 'light');
       }
     })();
   </script>
+
+  <style id="edvanto-study-theme">
+    /* ============================================================
+       EDVANTO MINIMALIST STUDY ENVIRONMENT PALETTE & CORE STYLES
+       Palette: Warm Ivory, Deep Charcoal, Edvanto Gold (#D4A62A)
+       ============================================================ */
+    :root {
+      --tj-color-theme-primary: #D4A62A;
+      --tj-color-theme-primary-hover: #B8891F;
+      --tj-color-theme-bg: #FFFDF7;
+      --tj-color-theme-bg-2: #FAF8F2;
+      --tj-color-heading-primary: #171717;
+      --tj-color-text-body: #4a4a4a;
+      --tj-color-text-body-2: #666666;
+      --tj-color-border-1: #E8E3D7;
+      --study-bg: #FAF8F2;
+      --study-card: #FFFFFF;
+      --study-ink: #171717;
+      --study-muted: #777777;
+      --study-gold: #D4A62A;
+      --study-gold-hover: #B8891F;
+      --study-gold-light: #FEF9EE;
+      --study-border: #E8E3D7;
+    }
+
+    body.edvanto-dashboard-body {
+      background-color: var(--study-bg) !important;
+      color: var(--tj-color-text-body);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* ========================================================
+       PREMIUM DARK SIDEBAR & TOPBAR FOR HIGH-CONTRAST LOGO
+       ======================================================== */
+    .edvanto-dash-sidebar {
+      background: #171717 !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 18px !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      backdrop-filter: none !important;
+    }
+
+    .edvanto-dash-brand {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding-bottom: 14px !important;
+    }
+    .edvanto-dash-brand img {
+      max-height: 40px !important;
+      width: auto !important;
+    }
+    .edvanto-dash-brand-text {
+      color: #FFFFFF !important;
+    }
+    .edvanto-dash-brand-text small {
+      color: var(--study-gold) !important;
+      font-weight: 700 !important;
+    }
+
+    .edvanto-dash-mode {
+      background: rgba(212, 166, 42, 0.12) !important;
+      border: 1px solid rgba(212, 166, 42, 0.28) !important;
+      color: #F6D98B !important;
+    }
+    .edvanto-dash-mode i {
+      color: var(--study-gold) !important;
+    }
+
+    .edvanto-dash-nav-section {
+      color: #D4A62A !important;
+      font-size: 0.7rem !important;
+      letter-spacing: 0.14em !important;
+      text-transform: uppercase !important;
+      font-weight: 700 !important;
+    }
+    .edvanto-dash-nav-section::after {
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .edvanto-dash-nav-link {
+      color: rgba(255, 255, 255, 0.78) !important;
+      font-weight: 500 !important;
+      border-radius: 10px !important;
+      transition: all 0.2s ease !important;
+    }
+    .edvanto-dash-nav-link i {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+    .edvanto-dash-nav-link:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #FFFFFF !important;
+    }
+    .edvanto-dash-nav-link:hover i {
+      color: var(--study-gold) !important;
+    }
+    .edvanto-dash-nav-link.is-active {
+      background: linear-gradient(90deg, rgba(212, 166, 42, 0.22) 0%, rgba(212, 166, 42, 0.06) 100%) !important;
+      border: 1px solid rgba(212, 166, 42, 0.38) !important;
+      color: #F6D98B !important;
+      font-weight: 700 !important;
+    }
+    .edvanto-dash-nav-link.is-active i {
+      color: var(--study-gold) !important;
+    }
+
+    /* Premium Dark Topbar */
+    .edvanto-dash-topbar {
+      background: #171717 !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2) !important;
+      padding: 14px 20px !important;
+      margin-bottom: 20px !important;
+    }
+    .edvanto-dash-topbar-title {
+      font-family: 'Urbanist', sans-serif !important;
+      font-weight: 700 !important;
+      color: #FFFFFF !important;
+      font-size: 1.35rem !important;
+    }
+    .edvanto-dash-topbar-context {
+      color: rgba(255, 255, 255, 0.65) !important;
+      font-size: 0.85rem !important;
+    }
+
+    /* Topbar Dark Buttons */
+    .edvanto-dash-topbar .btn-light {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      color: #FFFFFF !important;
+    }
+    .edvanto-dash-topbar .btn-light:hover {
+      background: rgba(255, 255, 255, 0.16) !important;
+      color: #FFFFFF !important;
+    }
+    .edvanto-dash-topbar .btn-outline-secondary {
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: rgba(255, 255, 255, 0.85) !important;
+    }
+    .edvanto-dash-topbar .btn-outline-secondary:hover {
+      background: var(--study-gold) !important;
+      border-color: var(--study-gold) !important;
+      color: #171717 !important;
+    }
+    .edvanto-dash-topbar > div .text-dark {
+      color: #FFFFFF !important;
+    }
+    .edvanto-dash-topbar .dropdown-menu {
+      background: #FFFFFF !important;
+      color: #171717 !important;
+      border: 1px solid #E8E3D7 !important;
+    }
+    .edvanto-dash-topbar .dropdown-menu .text-dark {
+      color: #171717 !important;
+    }
+    .edvanto-dash-topbar .dropdown-menu .dropdown-item {
+      color: #333333 !important;
+    }
+    .edvanto-dash-topbar .dropdown-menu .dropdown-item:hover {
+      background-color: #FAF4E5 !important;
+      color: #9C7924 !important;
+    }
+
+    /* Dark Mobile Drawer */
+    #edvantoDashSidebarOffcanvas {
+      background: #171717 !important;
+      color: #FFFFFF !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    #edvantoDashSidebarOffcanvas .offcanvas-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    #edvantoDashSidebarOffcanvas .btn-close {
+      filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    /* Unified Minimalist Buttons */
+    .btn-primary, .md-btn-primary, .mc-btn-primary {
+      background-color: var(--study-gold) !important;
+      border-color: var(--study-gold) !important;
+      color: #171717 !important;
+      font-weight: 600 !important;
+      border-radius: 10px !important;
+      box-shadow: 0 2px 6px rgba(212, 166, 42, 0.2) !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-primary:hover, .md-btn-primary:hover, .mc-btn-primary:hover {
+      background-color: var(--study-gold-hover) !important;
+      border-color: var(--study-gold-hover) !important;
+      color: #FFFFFF !important;
+      transform: translateY(-1px);
+    }
+    .btn-outline-primary, .md-btn-outline, .mc-btn-outline {
+      border: 1.5px solid var(--study-gold) !important;
+      color: #9C7924 !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+      border-radius: 10px !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-outline-primary:hover, .md-btn-outline:hover, .mc-btn-outline:hover {
+      background-color: var(--study-gold) !important;
+      color: #171717 !important;
+      border-color: var(--study-gold) !important;
+    }
+
+    /* Cards in Study Workspace */
+    .card, .edvanto-study-card {
+      background: #FFFFFF !important;
+      border: 1px solid var(--study-border) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 2px 8px rgba(23, 23, 23, 0.03) !important;
+    }
+    .card-header {
+      background: #FFFFFF !important;
+      border-bottom: 1px solid var(--study-border) !important;
+    }
+
+    /* Subtle Minimalist Badges */
+    .badge {
+      font-weight: 600 !important;
+      border-radius: 6px !important;
+      letter-spacing: 0.02em !important;
+    }
+    .badge.bg-primary, .badge.bg-primary-subtle {
+      background-color: #FEF9EE !important;
+      color: #92400E !important;
+      border: 1px solid #FDE68A !important;
+    }
+    .badge.bg-success, .badge.bg-success-subtle {
+      background-color: #ECFDF5 !important;
+      color: #065F46 !important;
+      border: 1px solid #A7F3D0 !important;
+    }
+    .badge.bg-danger, .badge.bg-danger-subtle {
+      background-color: #FEF2F2 !important;
+      color: #991B1B !important;
+      border: 1px solid #FECACA !important;
+    }
+    .badge.bg-warning, .badge.bg-warning-subtle {
+      background-color: #FFFBEB !important;
+      color: #B45309 !important;
+      border: 1px solid #FDE68A !important;
+    }
+    .badge.bg-info, .badge.bg-info-subtle {
+      background-color: #F0FDF4 !important;
+      color: #166534 !important;
+      border: 1px solid #BBF7D0 !important;
+    }
+    .badge.bg-secondary, .badge.bg-secondary-subtle, .badge.bg-light {
+      background-color: #F4F4F5 !important;
+      color: #52525B !important;
+      border: 1px solid #E4E4E7 !important;
+    }
+
+    /* Progress bar */
+    .progress-bar, .md-progress-fill, .mc-overview-bar-fill {
+      background-color: var(--study-gold) !important;
+    }
+
+    /* Nav badges count */
+    .edvanto-nav-badge {
+      background: #D4A62A !important;
+      color: #171717 !important;
+      font-weight: 700 !important;
+    }
+
+    /* Study links */
+    a.study-link {
+      color: #9C7924;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a.study-link:hover {
+      color: #B8891F;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 
 <body class="edvanto-dashboard-body">
@@ -36,125 +316,169 @@
 
 <div class="edvanto-dash">
 
+  
   <aside class="edvanto-dash-sidebar d-none d-lg-block" aria-label="Student dashboard navigation">
 
-    <a href="{% url 'core:home' %}" class="edvanto-dash-brand">
+    <!-- Logo / Brand link to home -->
+    <a href="{% url 'core:home' %}" class="edvanto-dash-brand" title="Back to Edvanto Home">
       <img src="{% static 'images/logos/logo.png' %}" alt="Edvanto"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
       <span class="edvanto-dash-brand-text edvanto-dash-brand-text--fallback">
         Edvanto
-        <small>Student Area</small>
+        <small>Student Portal</small>
       </span>
     </a>
 
-    <div class="edvanto-dash-mode">
-      <i class="bi {% if mode == 'offline' %}bi-geo-alt{% else %}bi-wifi{% endif %}"></i>
+    <!-- Mode Badge -->
+    <div class="edvanto-dash-mode mb-3">
+      <i class="bi {% if mode == 'offline' %}bi-geo-alt-fill{% elif mode == 'both' %}bi-layers-fill{% else %}bi-wifi{% endif %}"></i>
       {% if mode == 'offline' %}
-        Offline Learning
+        Offline Campus
       {% elif mode == 'both' %}
-        Online &amp; Offline
+        Hybrid Learning
       {% else %}
-        Online Learning
+        Online Study
       {% endif %}
     </div>
 
-    {% if mode == 'online' or mode == 'both' %}
-      <p class="edvanto-dash-nav-section">Learning</p>
-      <ul class="edvanto-dash-nav">
-        <li>
-          <a href="{% url 'core:dashboard' %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'dashboard' %}is-active{% endif %}">
-            <i class="bi bi-house"></i><span>Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% endif %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
-            <i class="bi bi-play-circle"></i><span>My Course</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'core:student_assessments' %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
-            <i class="bi bi-clipboard-check"></i><span>Assessments</span>
-            {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'core:student_doubts' %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
-            <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
-            {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
-          </a>
-        </li>
-      </ul>
-    {% endif %}
-
-    <p class="edvanto-dash-nav-section">Resources</p>
+    <!-- Section 1: Study Area -->
+    <p class="edvanto-dash-nav-section">Study Area</p>
     <ul class="edvanto-dash-nav">
       <li>
-        <a href="#"
-           class="edvanto-dash-nav-link {% if dash_section == 'materials' %}is-active{% endif %}">
-          <i class="bi bi-folder2-open"></i><span>Materials</span>
+        <a href="{% url 'core:dashboard' %}"
+           class="edvanto-dash-nav-link {% if dash_section == 'dashboard' %}is-active{% endif %}">
+          <i class="bi bi-grid-1x2"></i><span>Overview</span>
+        </a>
+      </li>
+      {% if active_enrollment and active_enrollment.course.mode == 'offline' %}
+        <li>
+          <a href="{% url 'core:dashboard' %}#schedule"
+             class="edvanto-dash-nav-link">
+            <i class="bi bi-calendar-week"></i><span>Class Schedule</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'core:dashboard' %}#attendance"
+             class="edvanto-dash-nav-link">
+            <i class="bi bi-person-check"></i><span>Attendance Record</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'core:dashboard' %}#handouts"
+             class="edvanto-dash-nav-link">
+            <i class="bi bi-journal-text"></i><span>Class Handouts &amp; Notes</span>
+          </a>
+        </li>
+      {% else %}
+        <li>
+          <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% else %}{% url 'core:courses' %}{% endif %}"
+             class="edvanto-dash-nav-link {% if dash_section == 'course_curriculum' or dash_section == 'my_course' %}is-active{% endif %}">
+            <i class="bi bi-journal-bookmark"></i><span>Course Curriculum</span>
+          </a>
+        </li>
+        {% if active_enrollment and active_enrollment.course %}
+          <li>
+            <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% endif %}"
+               class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
+              <i class="bi bi-play-circle-fill" style="color: var(--study-gold) !important;"></i><span>Current Lesson</span>
+            </a>
+          </li>
+        {% endif %}
+      {% endif %}
+      <li>
+        <a href="{% url 'core:student_assessments' %}"
+           class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
+          <i class="bi bi-patch-check"></i><span>Assessments</span>
+          {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
         </a>
       </li>
       <li>
-        <a href="{% url 'core:payment' active_enrollment.course.slug %}"
+        <a href="{% url 'core:student_doubts' %}"
+           class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
+          <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
+          {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
+        </a>
+      </li>
+    </ul>
+
+    <!-- Section 2: Resources & Consultation -->
+    <p class="edvanto-dash-nav-section mt-4">Resources</p>
+    <ul class="edvanto-dash-nav">
+      <li>
+        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}#curriculum{% else %}{% url 'core:courses' %}{% endif %}"
+           class="edvanto-dash-nav-link {% if dash_section == 'materials' %}is-active{% endif %}">
+          <i class="bi bi-folder2-open"></i><span>Study Materials</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#careerConsultationModal"
+           class="edvanto-dash-nav-link">
+          <i class="bi bi-headset"></i><span>Career Guidance</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#studentCertModal"
+           class="edvanto-dash-nav-link">
+          <i class="bi bi-award"></i><span>Certificates</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Section 3: Account -->
+    <p class="edvanto-dash-nav-section mt-4">Account</p>
+    <ul class="edvanto-dash-nav">
+      <li>
+        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:payment' active_enrollment.course.slug %}{% else %}#{% endif %}"
            class="edvanto-dash-nav-link {% if dash_section == 'payments' %}is-active{% endif %}">
           <i class="bi bi-wallet2"></i><span>Payments</span>
           {% if pending_payments %}<span class="edvanto-nav-badge">{{ pending_payments }}</span>{% endif %}
         </a>
       </li>
       <li>
-        <a href="#"
-           class="edvanto-dash-nav-link {% if dash_section == 'certificates' %}is-active{% endif %}">
-          <i class="bi bi-award"></i><span>Certificates</span>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#studentProfileModal"
+           class="edvanto-dash-nav-link">
+          <i class="bi bi-person-circle"></i><span>My Profile</span>
         </a>
       </li>
     </ul>
 
-    <p class="edvanto-dash-nav-section">Account</p>
-    <ul class="edvanto-dash-nav">
-      <li>
-        <a href="#"
-           class="edvanto-dash-nav-link {% if dash_section == 'profile' %}is-active{% endif %}">
-          <i class="bi bi-person"></i><span>Profile</span>
-        </a>
-      </li>
-    </ul>
+    <div class="edvanto-dash-nav-divider my-3" style="border-top: 1px solid var(--study-border);"></div>
 
-    <div class="edvanto-dash-nav-divider"></div>
-
+    <!-- Logout -->
     <form method="post" action="{% url 'core:logout' %}" class="m-0">
       {% csrf_token %}
-      <button type="submit" class="edvanto-dash-logout border-0 bg-transparent w-100 text-start">
-        <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+      <button type="submit" class="edvanto-dash-logout border-0 bg-transparent w-100 text-start text-danger d-flex align-items-center gap-2 py-2 px-2"
+              onclick="return confirm('Do you want to log out of your student portal?');">
+        <i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span>
       </button>
     </form>
 
   </aside>
 
-  
+
+ 
+         
   <main class="edvanto-dash-main">
 
-    <div class="edvanto-dash-topbar">
+    <!-- Topbar -->
+    <div class="edvanto-dash-topbar d-flex justify-content-between align-items-center">
 
-      <div class="edvanto-dash-topbar-left">
-
-        <button class="edvanto-dash-toggle"
+      <div class="edvanto-dash-topbar-left d-flex align-items-center gap-3">
+        <!-- Mobile Drawer Toggle -->
+        <button class="edvanto-dash-toggle d-lg-none btn btn-light border"
                 type="button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#edvantoDashSidebarOffcanvas"
                 aria-controls="edvantoDashSidebarOffcanvas"
                 aria-label="Open navigation">
-          <i class="bi bi-list"></i>
+          <i class="bi bi-list fs-5"></i>
         </button>
 
         <div class="edvanto-dash-topbar-text">
-          <h1 class="edvanto-dash-topbar-title">
+          <h1 class="edvanto-dash-topbar-title h5 mb-0">
             {% block page_title %}Dashboard{% endblock %}
           </h1>
-          <p class="edvanto-dash-topbar-context">
+          <p class="edvanto-dash-topbar-context small mb-0 text-muted">
             {% block page_context %}
               Welcome back{% if student_name %}, {{ student_name }}{% endif %}
             {% endblock %}
@@ -162,114 +486,95 @@
         </div>
       </div>
 
-      <div class="edvanto-dash-topbar-actions">
+      <!-- Topbar Actions -->
+      <div class="edvanto-dash-topbar-actions d-flex align-items-center gap-2">
 
-        <button class="edvanto-dash-icon-btn edvanto-theme-toggle"
-                type="button"
-                id="edvantoThemeToggle"
-                aria-label="Toggle theme">
-          <i class="bi bi-moon"></i>
-          <i class="bi bi-sun"></i>
-        </button>
+        <!-- Home Site Link -->
+        <a href="{% url 'core:home' %}" class="btn btn-sm btn-outline-secondary d-none d-sm-inline-flex align-items-center gap-1" title="Visit Edvanto Website">
+          <i class="bi bi-globe2"></i> <span class="d-none d-md-inline">Website</span>
+        </a>
 
+        <!-- Notifications -->
         <div class="dropdown">
-          <button class="edvanto-dash-icon-btn"
+          <button class="btn btn-sm btn-light border position-relative"
                   type="button"
                   id="edvantoNotifTrigger"
                   data-bs-toggle="dropdown"
-                  data-bs-auto-close="outside"
                   aria-expanded="false"
                   aria-label="Notifications">
             <i class="bi bi-bell"></i>
             {% if unread_notifications %}
-              <span class="edvanto-badge-dot">{{ unread_notifications }}</span>
+              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
             {% endif %}
           </button>
 
-          <div class="dropdown-menu dropdown-menu-end edvanto-notif-menu"
-               aria-labelledby="edvantoNotifTrigger">
-            <div class="edvanto-notif-menu-header">
-              <h6>Notifications</h6>
-              {% if unread_notifications %}
-                <span>{{ unread_notifications }} unread</span>
-              {% endif %}
+          <div class="dropdown-menu dropdown-menu-end shadow-sm border p-0" style="min-width: 280px;" aria-labelledby="edvantoNotifTrigger">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+              <span class="fw-bold small text-dark">Notifications</span>
+              <span class="badge bg-secondary-subtle text-secondary small">Study Updates</span>
             </div>
-
             {% if notifications %}
-              <ul class="edvanto-notif-list">
+              <ul class="list-unstyled mb-0" style="max-height: 260px; overflow-y: auto;">
                 {% for n in notifications %}
-                  <li>
-                    <a href="{{ n.url|default:'#' }}"
-                       class="edvanto-notif-item {% if not n.is_read %}is-unread{% endif %}">
-                      <span class="edvanto-notif-icon">
-                        <i class="bi bi-bell"></i>
-                      </span>
-                      <div class="edvanto-notif-body">
-                        <p class="edvanto-notif-title">{{ n.title }}</p>
-                        <p class="edvanto-notif-text">{{ n.message }}</p>
-                        <span class="edvanto-notif-time">{{ n.time_ago }}</span>
-                      </div>
+                  <li class="border-bottom p-3 small">
+                    <a href="{{ n.url|default:'#' }}" class="text-decoration-none text-dark d-block">
+                      <div class="fw-bold mb-1">{{ n.title }}</div>
+                      <div class="text-muted">{{ n.message }}</div>
                     </a>
                   </li>
                 {% endfor %}
               </ul>
             {% else %}
-              <div class="edvanto-notif-empty">
-                <i class="bi bi-bell edvanto-notif-empty-icon"></i>
-                You're all caught up.
+              <div class="p-4 text-center text-muted small">
+                <i class="bi bi-bell-slash d-block fs-4 text-secondary mb-2"></i>
+                You are all caught up!
               </div>
             {% endif %}
-
-            <div class="edvanto-notif-footer">
-              <a href="#">View all notifications</a>
-            </div>
           </div>
         </div>
 
+        <!-- Student Profile Pill Dropdown -->
         <div class="dropdown">
           <a href="#"
-             class="edvanto-dash-profile"
+             class="btn btn-sm btn-light border d-flex align-items-center gap-2 text-decoration-none"
              data-bs-toggle="dropdown"
-             aria-expanded="false"
-             role="button">
-            <span class="edvanto-dash-avatar">
-              {% if student_avatar %}
-                <img src="{{ student_avatar }}" alt="{{ student_name }}">
-              {% else %}
-                {{ student_initials|default:"S" }}
-              {% endif %}
+             aria-expanded="false">
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center fw-bold text-dark"
+                  style="width: 28px; height: 28px; background: #FDF6E2; border: 1px solid #F6D98B; font-size: 0.78rem;">
+              {{ student_initials|default:"S" }}
             </span>
-            <span class="edvanto-dash-profile-name">
+            <span class="d-none d-sm-inline fw-semibold small" style="color: #FFFFFF;">
               {{ student_name|default:"Student" }}
             </span>
+            <i class="bi bi-chevron-down small text-muted"></i>
           </a>
 
-          <ul class="dropdown-menu dropdown-menu-end edvanto-profile-menu">
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+            <li class="px-3 py-2 border-bottom bg-light">
+              <div class="fw-bold text-dark small">{{ student_name|default:"Student" }}</div>
+              <div class="text-muted small" style="font-size: 0.75rem;">Student Portal</div>
+            </li>
             <li>
-              <a class="dropdown-item edvanto-profile-item" href="#">
-                <i class="bi bi-person"></i>
-                My Profile
+              <a class="dropdown-item small py-2" href="#" data-bs-toggle="modal" data-bs-target="#studentProfileModal">
+                <i class="bi bi-person-circle me-2 text-primary"></i> My Profile
               </a>
             </li>
             <li>
-              <a class="dropdown-item edvanto-profile-item" href="#">
-                <i class="bi bi-wallet2"></i>
-                Payments
+              <a class="dropdown-item small py-2" href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% else %}{% url 'core:dashboard' %}{% endif %}">
+                <i class="bi bi-journal-bookmark me-2 text-primary"></i> Course Curriculum
               </a>
             </li>
             <li>
-              <a class="dropdown-item edvanto-profile-item" href="#">
-                <i class="bi bi-award"></i>
-                Certificates
+              <a class="dropdown-item small py-2" href="{% if active_enrollment and active_enrollment.course %}{% url 'core:payment' active_enrollment.course.slug %}{% else %}#{% endif %}">
+                <i class="bi bi-wallet2 me-2 text-primary"></i> Billing &amp; Receipts
               </a>
             </li>
-            <li><hr class="dropdown-divider edvanto-profile-divider"></li>
+            <li><hr class="dropdown-divider my-1"></li>
             <li>
               <form method="post" action="{% url 'core:logout' %}" class="m-0">
                 {% csrf_token %}
-                <button type="submit" class="dropdown-item edvanto-profile-item border-0 bg-transparent w-100 text-start">
-                  <i class="bi bi-box-arrow-right"></i>
-                  Logout
+                <button type="submit" class="dropdown-item small py-2 text-danger border-0 bg-transparent w-100 text-start">
+                  <i class="bi bi-box-arrow-right me-2"></i> Log Out
                 </button>
               </form>
             </li>
@@ -279,7 +584,8 @@
       </div>
     </div>
 
-    <div class="edvanto-dash-content">
+    <!-- Main Content Injection -->
+    <div class="edvanto-dash-content pb-5">
       {% block dashboard_content %}{% endblock %}
     </div>
 
@@ -287,145 +593,421 @@
 </div>
 
 
-<div class="offcanvas offcanvas-start edvanto-dash-offcanvas"
-     tabindex="-1"
-     id="edvantoDashSidebarOffcanvas"
-     aria-labelledby="edvantoDashSidebarOffcanvasLabel">
-
-  <div class="offcanvas-header">
-    <a href="{% url 'core:home' %}" class="edvanto-dash-brand edvanto-dash-brand--mobile">
-      <img src="{% static 'images/logos/logo.png' %}" alt="Edvanto"
+<!-- ========================================================
+     MOBILE OFFCANVAS SIDEBAR
+     ======================================================== -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="edvantoDashSidebarOffcanvas" aria-labelledby="edvantoDashSidebarOffcanvasLabel" style="width: 290px;">
+  <div class="offcanvas-header border-bottom">
+    <a href="{% url 'core:home' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+      <img src="{% static 'images/logos/logo.png' %}" alt="Edvanto" style="max-height: 32px;"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-      <span class="edvanto-dash-brand-text edvanto-dash-brand-text--fallback">
-        Edvanto
-        <small>Student Area</small>
-      </span>
+      <span class="fw-bold text-dark fs-5" style="display:none;">Edvanto</span>
     </a>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
 
-  <div class="offcanvas-body">
-
-    <div class="edvanto-dash-mode">
-      <i class="bi {% if mode == 'offline' %}bi-geo-alt{% else %}bi-wifi{% endif %}"></i>
-      {% if mode == 'offline' %}
-        Offline Learning
-      {% elif mode == 'both' %}
-        Online &amp; Offline
-      {% else %}
-        Online Learning
-      {% endif %}
+  <div class="offcanvas-body p-3">
+    <div class="edvanto-dash-mode mb-3 w-100 justify-content-center">
+      <i class="bi {% if mode == 'offline' %}bi-geo-alt-fill{% elif mode == 'both' %}bi-layers-fill{% else %}bi-wifi{% endif %}"></i>
+      {% if mode == 'offline' %}Offline Campus{% elif mode == 'both' %}Hybrid Learning{% else %}Online Study{% endif %}
     </div>
 
-    {% if mode == 'online' or mode == 'both' %}
-      <p class="edvanto-dash-nav-section">Learning</p>
-      <ul class="edvanto-dash-nav">
+    <p class="edvanto-dash-nav-section">Study Area</p>
+    <ul class="edvanto-dash-nav mb-3">
+      <li>
+        <a href="{% url 'core:dashboard' %}" class="edvanto-dash-nav-link {% if dash_section == 'dashboard' %}is-active{% endif %}">
+          <i class="bi bi-grid-1x2"></i><span>Overview</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% else %}{% url 'core:courses' %}{% endif %}" class="edvanto-dash-nav-link {% if dash_section == 'course_curriculum' or dash_section == 'my_course' %}is-active{% endif %}">
+          <i class="bi bi-journal-bookmark"></i><span>Course Curriculum</span>
+        </a>
+      </li>
+      {% if active_enrollment and active_enrollment.course %}
         <li>
-          <a href="{% url 'core:dashboard' %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'dashboard' %}is-active{% endif %}">
-            <i class="bi bi-house"></i><span>Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:dashboard' %}{% endif %}"
+          <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:course_dashboard' active_enrollment.course.slug %}{% endif %}"
              class="edvanto-dash-nav-link {% if dash_section == 'lesson' %}is-active{% endif %}">
-            <i class="bi bi-play-circle"></i><span>My Course</span>
+            <i class="bi bi-play-circle-fill text-warning"></i><span>Current Lesson</span>
           </a>
         </li>
-        <li>
-          <a href="{% url 'core:student_assessments' %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
-            <i class="bi bi-clipboard-check"></i><span>Assessments</span>
-            {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'core:student_doubts' %}"
-             class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
-            <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
-            {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
-          </a>
-        </li>
-      </ul>
-    {% endif %}
+      {% endif %}
+      <li>
+        <a href="{% url 'core:student_assessments' %}" class="edvanto-dash-nav-link {% if dash_section == 'assessment' %}is-active{% endif %}">
+          <i class="bi bi-patch-check"></i><span>Assessments</span>
+          {% if pending_assessments %}<span class="edvanto-nav-badge">{{ pending_assessments }}</span>{% endif %}
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'core:student_doubts' %}" class="edvanto-dash-nav-link {% if dash_section == 'doubts' %}is-active{% endif %}">
+          <i class="bi bi-chat-dots"></i><span>Doubt Clearance</span>
+          {% if open_doubts %}<span class="edvanto-nav-badge">{{ open_doubts }}</span>{% endif %}
+        </a>
+      </li>
+    </ul>
 
     <p class="edvanto-dash-nav-section">Resources</p>
-    <ul class="edvanto-dash-nav">
+    <ul class="edvanto-dash-nav mb-3">
       <li>
-        <a href="#"
-           class="edvanto-dash-nav-link {% if dash_section == 'materials' %}is-active{% endif %}">
-          <i class="bi bi-folder2-open"></i><span>Materials</span>
+        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}#curriculum{% else %}{% url 'core:courses' %}{% endif %}" class="edvanto-dash-nav-link">
+          <i class="bi bi-folder2-open"></i><span>Study Materials</span>
         </a>
       </li>
       <li>
-        <a href="{% url 'core:payment' active_enrollment.course.slug %}"
-           class="edvanto-dash-nav-link {% if dash_section == 'payments' %}is-active{% endif %}">
-          <i class="bi bi-wallet2"></i><span>Payments</span>
-          {% if pending_payments %}<span class="edvanto-nav-badge">{{ pending_payments }}</span>{% endif %}
+        <a href="#" data-bs-toggle="modal" data-bs-target="#careerConsultationModal" class="edvanto-dash-nav-link">
+          <i class="bi bi-headset"></i><span>Career Guidance</span>
         </a>
       </li>
       <li>
-        <a href="#"
-           class="edvanto-dash-nav-link {% if dash_section == 'certificates' %}is-active{% endif %}">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#studentCertModal" class="edvanto-dash-nav-link">
           <i class="bi bi-award"></i><span>Certificates</span>
         </a>
       </li>
     </ul>
 
     <p class="edvanto-dash-nav-section">Account</p>
-    <ul class="edvanto-dash-nav">
+    <ul class="edvanto-dash-nav mb-3">
       <li>
-        <a href="#"
-           class="edvanto-dash-nav-link {% if dash_section == 'profile' %}is-active{% endif %}">
-          <i class="bi bi-person"></i><span>Profile</span>
+        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:payment' active_enrollment.course.slug %}{% else %}#{% endif %}" class="edvanto-dash-nav-link">
+          <i class="bi bi-wallet2"></i><span>Payments</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#studentProfileModal" class="edvanto-dash-nav-link">
+          <i class="bi bi-person-circle"></i><span>My Profile</span>
         </a>
       </li>
     </ul>
 
-    <div class="edvanto-dash-nav-divider"></div>
-
-    <form method="post" action="{% url 'core:logout' %}" class="m-0">
-      {% csrf_token %}
-      <button type="submit" class="edvanto-dash-logout border-0 bg-transparent w-100 text-start">
-        <i class="bi bi-box-arrow-right"></i><span>Logout</span>
-      </button>
-    </form>
-
+    <div class="border-top pt-3">
+      <form method="post" action="{% url 'core:logout' %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+          <i class="bi bi-box-arrow-right me-1"></i> Log Out
+        </button>
+      </form>
+    </div>
   </div>
 </div>
+
+
+<!-- ========================================================
+     STUDENT PROFILE MODAL
+     ======================================================== -->
+<div class="modal fade" id="studentProfileModal" tabindex="-1" aria-labelledby="studentProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom py-3" style="background: var(--study-bg);">
+        <h5 class="modal-title h6 fw-bold text-dark mb-0" id="studentProfileModalLabel">
+          <i class="bi bi-person-circle text-warning me-2"></i> Student Profile
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded" style="background: var(--study-bg); border: 1px solid var(--study-border);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 text-dark"
+               style="width: 56px; height: 56px; background: #FDF6E2; border: 2px solid #F6D98B;">
+            {{ student_initials|default:"S" }}
+          </div>
+          <div>
+            <h5 class="h6 fw-bold text-dark mb-1">{{ student_name|default:request.user.username }}</h5>
+            <span class="badge bg-primary-subtle text-primary">Student Account</span>
+          </div>
+        </div>
+
+        <div class="list-group list-group-flush border rounded mb-3 small">
+          <div class="list-group-item d-flex justify-content-between py-2">
+            <span class="text-muted">Username</span>
+            <span class="fw-semibold text-dark">{{ request.user.username }}</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between py-2">
+            <span class="text-muted">Email</span>
+            <span class="fw-semibold text-dark">{{ request.user.email|default:"Not specified" }}</span>
+          </div>
+          {% if request.user.phone %}
+            <div class="list-group-item d-flex justify-content-between py-2">
+              <span class="text-muted">Phone</span>
+              <span class="fw-semibold text-dark">{{ request.user.phone }}</span>
+            </div>
+          {% endif %}
+          {% if active_enrollment and active_enrollment.course %}
+            <div class="list-group-item d-flex justify-content-between py-2">
+              <span class="text-muted">Active Course</span>
+              <span class="fw-semibold text-dark">{{ active_enrollment.course.title|truncatechars:24 }}</span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between py-2">
+              <span class="text-muted">Curriculum Progress</span>
+              <span class="fw-bold text-success">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="{% url 'core:forgot_password' %}" class="btn btn-outline-secondary btn-sm flex-fill">
+            <i class="bi bi-key me-1"></i> Reset Password
+          </a>
+          <button type="button" class="btn btn-primary btn-sm flex-fill" data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================
+     STUDENT CERTIFICATE MODAL
+     ======================================================== -->
+<div class="modal fade" id="studentCertModal" tabindex="-1" aria-labelledby="studentCertModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom py-3" style="background: var(--study-bg);">
+        <h5 class="modal-title h6 fw-bold text-dark mb-0" id="studentCertModalLabel">
+          <i class="bi bi-award-fill text-warning me-2"></i> Course Certificate
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        {% if active_enrollment.progress_percent >= 100 %}
+          <div class="mb-3">
+            <i class="bi bi-patch-check-fill text-success fs-1"></i>
+          </div>
+          <h5 class="h6 fw-bold text-dark mb-2">Congratulations! Course Completed</h5>
+          <p class="text-muted small mb-4">
+            You have satisfied all lesson milestones and requirements for <strong>{{ active_enrollment.course.title }}</strong>.
+          </p>
+          <a href="#" class="btn btn-primary btn-sm px-4">
+            <i class="bi bi-download me-1"></i> Download Certificate (PDF)
+          </a>
+        {% else %}
+          <div class="mb-3">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                 style="width: 64px; height: 64px; background: #FDF6E2; border: 2px dashed #F6D98B;">
+              <i class="bi bi-award text-warning fs-3"></i>
+            </div>
+          </div>
+          <h5 class="h6 fw-bold text-dark mb-2">Course in Progress</h5>
+          <p class="text-muted small mb-3">
+            Official certificate of completion will unlock once you finish 100% of the course lessons and pass all required assessments.
+          </p>
+          <div class="p-3 rounded border mb-4 text-start small bg-light">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Current Progress:</span>
+              <span class="fw-bold text-dark">{{ active_enrollment.progress_percent|default:0|floatformat:"0" }}%</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" style="width: {{ active_enrollment.progress_percent|default:0 }}%;"></div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">
+            Continue Studying
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================
+     CAREER CONSULTATION & GUIDANCE MODAL
+     ======================================================== -->
+<div class="modal fade" id="careerConsultationModal" tabindex="-1" aria-labelledby="careerConsultationLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      
+      <!-- MODAL HEADER -->
+      <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #171717 0%, #2A2415 60%, #D4A62A 100%) !important;">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-white bg-opacity-10 p-2 d-flex align-items-center justify-content-center text-warning" style="width: 48px; height: 48px;">
+            <i class="bi bi-headset fs-3 text-warning"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-white mb-1" id="careerConsultationLabel">1-on-1 Career Consultation</h5>
+            <p class="mb-0 small text-white-50">Expert career roadmap reviews &bull; Exclusive for registered students</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- MODAL BODY -->
+      <div class="modal-body p-4 bg-light">
+
+        <!-- SECTION 1: FAQ -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-question-circle-fill text-warning me-2"></i> Frequently Asked Questions (FAQ)</h6>
+          </div>
+          <div class="card-body p-3">
+            <div class="accordion accordion-flush" id="dashConsultFaqAccordion">
+              
+              <div class="accordion-item border-bottom">
+                <h2 class="accordion-header" id="dashFaqHead1">
+                  <button class="accordion-button collapsed py-3 fw-semibold small text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#dashFaqCol1" aria-expanded="false" aria-controls="dashFaqCol1">
+                    1. What is the Edvanto 1-on-1 Career Consultation?
+                  </button>
+                </h2>
+                <div id="dashFaqCol1" class="accordion-collapse collapse" aria-labelledby="dashFaqHead1" data-bs-parent="#dashConsultFaqAccordion">
+                  <div class="accordion-body small text-muted pt-0 pb-3">
+                    Our 1-on-1 Career Consultation is a personalized mentoring session with senior industry professionals. We analyze your career goals, audit your resume and portfolio, recommend customized learning roadmaps, and offer actionable advice for career transitions or high-growth tech roles.
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h2 class="accordion-header" id="dashFaqHead2">
+                  <button class="accordion-button collapsed py-3 fw-semibold small text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#dashFaqCol2" aria-expanded="false" aria-controls="dashFaqCol2">
+                    2. Who is eligible to request a career consultation?
+                  </button>
+                </h2>
+                <div id="dashFaqCol2" class="accordion-collapse collapse" aria-labelledby="dashFaqHead2" data-bs-parent="#dashConsultFaqAccordion">
+                  <div class="accordion-body small text-muted pt-0 pb-3">
+                    <strong class="text-dark">Career consultation is strictly exclusive to registered students of Edvanto.</strong> As an enrolled student, you are fully eligible to request a consultation at zero cost.
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h2 class="accordion-header" id="dashFaqHead3">
+                  <button class="accordion-button collapsed py-3 fw-semibold small text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#dashFaqCol3" aria-expanded="false" aria-controls="dashFaqCol3">
+                    3. How and when is the consultation session conducted?
+                  </button>
+                </h2>
+                <div id="dashFaqCol3" class="accordion-collapse collapse" aria-labelledby="dashFaqHead3" data-bs-parent="#dashConsultFaqAccordion">
+                  <div class="accordion-body small text-muted pt-0 pb-3">
+                    Sessions are held live online via Google Meet or Zoom. Once you submit your preferred date and time, our academic counselors will review your profile and confirm the meeting schedule within 24 business hours.
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="dashFaqHead4">
+                  <button class="accordion-button collapsed py-3 fw-semibold small text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#dashFaqCol4" aria-expanded="false" aria-controls="dashFaqCol4">
+                    4. What topics can I discuss during the session?
+                  </button>
+                </h2>
+                <div id="dashFaqCol4" class="accordion-collapse collapse" aria-labelledby="dashFaqHead4" data-bs-parent="#dashConsultFaqAccordion">
+                  <div class="accordion-body small text-muted pt-0 pb-3">
+                    You can ask about curriculum choices, tech stack comparisons (e.g. Full-Stack vs AI/Data Science vs UI/UX), project portfolio guidance, interview preparation strategies, salary negotiation insights, and industry expectations.
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: REQUEST FORM -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-calendar2-plus-fill text-warning me-2"></i> Request Your Consultation</h6>
+          </div>
+          <div class="card-body p-4">
+
+            <div id="dashConsultAlert" class="alert d-none" role="alert"></div>
+
+            <form id="dashCareerConsultForm" method="post" action="{% url 'core:career_consultation_request' %}">
+              {% csrf_token %}
+              
+              <div class="p-3 bg-light rounded border mb-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-shield-check me-1"></i> Verified Student</span>
+                  <span class="fw-bold text-dark">{{ request.user.get_full_name|default:request.user.username }}</span>
+                </div>
+                <div class="small text-muted"><i class="bi bi-envelope me-1"></i> {{ request.user.email|default:"No email set" }}</div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-bold">Phone Number (with Country Code) <span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" name="phone" id="dashConsultPhone" required
+                         placeholder="e.g. +91 9876543210" value="{{ request.user.phone|default:'' }}">
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-bold">Preferred Consultation Date &amp; Time</label>
+                  <input type="datetime-local" class="form-control" name="preferred_date" id="dashConsultPreferredDate">
+                  <div class="form-text small" style="font-size: 0.72rem;">Optional. We will do our best to match your schedule.</div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Your Career Goals / Specific Questions</label>
+                  <textarea class="form-control" name="message" id="dashConsultMessage" rows="3"
+                            placeholder="Briefly tell us what you would like to discuss (e.g. transitioning from non-IT to Full Stack, portfolio feedback, interview tips)..."></textarea>
+                </div>
+
+                <div class="col-12 pt-2">
+                  <button type="submit" id="dashConsultSubmitBtn" class="btn btn-primary w-100 py-2 fw-semibold">
+                    <i class="bi bi-send-check me-1"></i> Book My 1-on-1 Consultation
+                  </button>
+                </div>
+              </div>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var consultForm = document.getElementById("dashCareerConsultForm");
+  var consultAlert = document.getElementById("dashConsultAlert");
+  var consultBtn = document.getElementById("dashConsultSubmitBtn");
+
+  if (consultForm) {
+    consultForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      consultBtn.disabled = true;
+      consultBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Submitting...';
+
+      var fd = new FormData(consultForm);
+      fetch("{% url 'core:career_consultation_request' %}", {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": fd.get("csrfmiddlewaretoken") || "{{ csrf_token }}"
+        },
+        body: fd
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        consultBtn.disabled = false;
+        consultBtn.innerHTML = '<i class="bi bi-send-check me-1"></i> Book My 1-on-1 Consultation';
+
+        if (consultAlert) {
+          consultAlert.classList.remove("d-none", "alert-danger", "alert-success");
+          if (data.status === "success") {
+            consultAlert.classList.add("alert-success");
+            consultAlert.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>' + data.message;
+            consultForm.reset();
+          } else {
+            consultAlert.classList.add("alert-danger");
+            consultAlert.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + data.message;
+          }
+        }
+      })
+      .catch(function () {
+        consultBtn.disabled = false;
+        consultBtn.innerHTML = '<i class="bi bi-send-check me-1"></i> Book My 1-on-1 Consultation';
+        if (consultAlert) {
+          consultAlert.classList.remove("d-none", "alert-success");
+          consultAlert.classList.add("alert-danger");
+          consultAlert.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> An unexpected network error occurred. Please try again.';
+        }
+      });
+    });
+  }
+});
+</script>
 
 {% endwith %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-(function () {
-  var root = document.documentElement;
-  var KEY = 'edvanto-theme';
-
-  function apply(theme) {
-    root.setAttribute('data-bs-theme', theme);
-    try { localStorage.setItem(KEY, theme); } catch (e) {}
-  }
-
-  var toggle = document.getElementById('edvantoThemeToggle');
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      var current = root.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
-      apply(current === 'dark' ? 'light' : 'dark');
-    });
-  }
-
-  try {
-    var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    mq.addEventListener && mq.addEventListener('change', function (e) {
-      var saved = null;
-      try { saved = localStorage.getItem(KEY); } catch (err) {}
-      if (!saved) apply(e.matches ? 'dark' : 'light');
-    });
-  } catch (e) {}
-})();
-</script>
 
 </body>
 </html>

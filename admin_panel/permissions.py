@@ -1,4 +1,3 @@
-
 from functools import wraps
 
 from django.conf import settings
@@ -16,16 +15,17 @@ def _is_json_request(request):
 
 def _is_authorized_admin(user):
     """
-    Conservative initial policy:
-    only active superusers can access the admin panel.
-
-    This intentionally fails closed for custom user models that do not
-    expose Django's is_superuser field.
+    Authorized administrators:
+    active superusers, staff members, or users with role='admin'.
     """
     return (
         user.is_authenticated
         and getattr(user, "is_active", False)
-        and getattr(user, "is_superuser", False)
+        and (
+            getattr(user, "is_superuser", False)
+            or getattr(user, "is_staff", False)
+            or getattr(user, "role", None) in ("admin",)
+        )
     )
 
 
@@ -58,7 +58,9 @@ def admin_required(view_func):
                     status=403,
                 )
 
-            return HttpResponseForbidden("Permission denied.")
+            return HttpResponseForbidden(
+                "You do not have permission to access the admin panel."
+            )
 
         return view_func(request, *args, **kwargs)
 

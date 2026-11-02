@@ -1,565 +1,408 @@
 {% extends "dashboard/base_dashboard.html" %}
 {% load static %}
 
-{% comment %}
-============================================================
- EDVANTO STUDENT DASHBOARD — LANDING PAGE
- dashboard/student/dashboard.html
-
- Markup + Django logic only. Styles live in
- static/css/student_dashboard.css.
-
- Preserved Django context (do NOT rename):
-   active_enrollment, active_enrollment.course,
-   active_enrollment.progress_percent,
-   active_enrollment.payment_status / approval_status /
-   access_paused / get_payment_status_display /
-   get_approval_status_display
-   course.thumbnail / title / instructor / modules / price /
-   discounted_price / slug
-   learning_progress (status, lesson.title, lesson.id,
-   get_status_display)
-   current_lesson (title, module.title, id)
-   student_name, student_avatar, student_initials
-   notifications, unread_notifications
-   assessment_status, recent_doubt, materials_summary, certificate
-
- Preserved URL names:
-   core:home, core:dashboard, core:lesson, core:payment, core:logout
-============================================================
-{% endcomment %}
-
 {% block dashboard_title %}Dashboard{% endblock %}
 
 {% block page_title %}
-  {% if student_name %}Welcome back, {{ student_name }}{% else %}Welcome back{% endif %}
+  Welcome back{% if student_name %}, {{ student_name }}{% endif %}
 {% endblock %}
 
 {% block page_context %}
   {% if active_enrollment.course.mode == 'offline' %}
-    Your offline learning overview
+    Offline campus learning portal
   {% elif active_enrollment.course.mode == 'both' %}
-    Your online &amp; offline learning overview
+    Hybrid online &amp; campus learning portal
   {% else %}
-    Your online learning journey
+    Online learning workspace
   {% endif %}
 {% endblock %}
 
 {% block dashboard_content %}
-{% with course=active_enrollment.course mode=active_enrollment.course.mode %}
+{% with course=active_enrollment.course mode=active_enrollment.course.mode|default:"online" %}
 
-<div class="md-dash">
+<div class="container-fluid px-0">
 
-  
-  <section class="md-hero">
-
-    <div class="md-hero-art" aria-hidden="true">
-      <i class="bi bi-mortarboard"></i>
-      <i class="bi bi-journal-text"></i>
-      <i class="bi bi-bar-chart"></i>
-      <i class="bi bi-stars"></i>
-    </div>
-
-    <div class="md-hero-text">
-      <div class="md-hero-eyebrow">
-        <i class="bi {% if mode == 'offline' %}bi-geo-alt{% elif mode == 'both' %}bi-layers{% else %}bi-stars{% endif %}"></i>
-        {% if mode == 'offline' %}
-          Offline Learning
-        {% elif mode == 'both' %}
-          Online &amp; Offline
-        {% else %}
-          Online Learning
-        {% endif %}
-      </div>
-
-      <h2 class="md-hero-title">
-        {% if student_name %}Hi {{ student_name }}, ready to continue?{% else %}Ready to continue your learning?{% endif %}
-      </h2>
-
-      <p class="md-hero-sub">
-        {% if current_lesson %}
-          Pick up where you left off — <strong>{{ current_lesson.title }}</strong> is waiting for you.
-        {% elif course %}
-          Your enrolled course <strong>{{ course.title }}</strong> is in progress.
-        {% else %}
-          Explore your enrolled courses, materials, and progress below.
-        {% endif %}
-      </p>
-    </div>
-
-    <div class="md-hero-actions">
-      {% if current_lesson %}
-        <a href="{% url 'core:lesson' current_lesson.id %}" class="md-btn md-btn-primary">
-          <i class="bi bi-play-circle"></i> Continue Learning
-        </a>
-      {% elif course %}
-        <a href="{% url 'core:course_dashboard' course.slug %}" class="md-btn md-btn-primary">
-          <i class="bi bi-play-circle"></i> Open Course
-        </a>
-      {% endif %}
-      <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-outline">
-        <i class="bi bi-credit-card"></i> Payment
-      </a>
-    </div>
-  </section>
-
-  
-  <section aria-label="Learning snapshot">
-    <div class="snapshot-strip">
-
-      <div class="snapshot-item">
-        <span class="snapshot-icon"><i class="bi bi-bar-chart"></i></span>
-        <div class="snapshot-body">
-          <span class="snapshot-label">Progress</span>
-          <span class="snapshot-value gold">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
-        </div>
-      </div>
-
-      {% if current_lesson %}
-        <div class="snapshot-item">
-          <span class="snapshot-icon"><i class="bi bi-play-circle"></i></span>
-          <div class="snapshot-body">
-            <span class="snapshot-label">Current Lesson</span>
-            <span class="snapshot-value">{{ current_lesson.title }}</span>
-          </div>
-        </div>
-      {% endif %}
-
-      <div class="snapshot-item">
-        <span class="snapshot-icon">
-          <i class="bi {% if mode == 'offline' %}bi-geo-alt{% elif mode == 'both' %}bi-layers{% else %}bi-wifi{% endif %}"></i>
-        </span>
-        <div class="snapshot-body">
-          <span class="snapshot-label">Mode</span>
-          <span class="snapshot-value">
-            {% if mode == 'offline' %}Offline{% elif mode == 'both' %}Hybrid{% else %}Online{% endif %}
-          </span>
-        </div>
-      </div>
-
-      <div class="snapshot-item">
-        <span class="snapshot-icon"><i class="bi bi-wallet2"></i></span>
-        <div class="snapshot-body">
-          <span class="snapshot-label">Payment</span>
-          <span class="snapshot-value">{{ active_enrollment.get_payment_status_display }}</span>
-        </div>
-      </div>
-
-      {% if pending_assessments %}
-        <div class="snapshot-item">
-          <span class="snapshot-icon"><i class="bi bi-clipboard-check"></i></span>
-          <div class="snapshot-body">
-            <span class="snapshot-label">Assessments</span>
-            <span class="snapshot-value">{{ pending_assessments }} pending</span>
-          </div>
-        </div>
-      {% endif %}
-
-      {% if open_doubts %}
-        <div class="snapshot-item">
-          <span class="snapshot-icon"><i class="bi bi-chat-dots"></i></span>
-          <div class="snapshot-body">
-            <span class="snapshot-label">Doubts</span>
-            <span class="snapshot-value">{{ open_doubts }} open</span>
-          </div>
-        </div>
-      {% endif %}
-
-    </div>
-  </section>
-
- 
-  <section aria-label="Your course">
-    <p class="md-section-label">Your Course</p>
-
-    <div class="course-editorial">
-      <div class="course-editorial-thumb">
-        {% if course.thumbnail %}
-          <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
-        {% else %}
-          <i class="bi bi-book"></i>
-        {% endif %}
-      </div>
-
-      <div class="course-editorial-body">
-        <div class="course-editorial-top">
-          <h3 class="course-editorial-title">{{ course.title }}</h3>
-          {% if mode == 'offline' %}
-            <span class="md-mode offline"><i class="bi bi-geo-alt"></i> Offline</span>
-          {% elif mode == 'both' %}
-            <span class="md-mode online"><i class="bi bi-layers"></i> Hybrid</span>
-          {% else %}
-            <span class="md-mode online"><i class="bi bi-wifi"></i> Online</span>
-          {% endif %}
-        </div>
-
-        <div class="course-editorial-meta">
-          {% if course.instructor %}
-            <span><i class="bi bi-person"></i> {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
-          {% endif %}
-          <span><i class="bi bi-play-circle"></i> {{ learning_progress|length }} tracked lessons</span>
-          <span><i class="bi bi-layers"></i> {{ course.modules.all|length }} modules</span>
-        </div>
-
-        <div class="md-progress">
-          <div class="md-progress-head">
-            <span class="label">Progress</span>
-            <span class="value">{{ active_enrollment.progress_percent|floatformat:"0" }}%</span>
-          </div>
-          <div class="md-progress-track">
-            <div class="md-progress-fill" style="width: {{ active_enrollment.progress_percent }}%;"></div>
-          </div>
-        </div>
-
-        <div class="d-flex flex-wrap gap-2">
-          {% if active_enrollment.payment_status == 'paid' %}
-            <span class="md-tag md-tag-success"><i class="bi bi-check-circle"></i> {{ active_enrollment.get_payment_status_display }}</span>
-          {% elif active_enrollment.payment_status == 'partially_paid' %}
-            <span class="md-tag md-tag-bright"><i class="bi bi-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
-          {% elif active_enrollment.payment_status == 'pending' %}
-            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> {{ active_enrollment.get_payment_status_display }}</span>
-          {% else %}
-            <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
-          {% endif %}
-
-          {% if active_enrollment.approval_status == 'accepted' %}
-            <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> {{ active_enrollment.get_approval_status_display }}</span>
-          {% elif active_enrollment.approval_status == 'rejected' %}
-            <span class="md-tag md-tag-danger"><i class="bi bi-lock"></i> {{ active_enrollment.get_approval_status_display }}</span>
-          {% else %}
-            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> {{ active_enrollment.get_approval_status_display }}</span>
-          {% endif %}
-
-          {% if active_enrollment.access_paused %}
-            <span class="md-tag md-tag-danger"><i class="bi bi-lock"></i> Access Paused</span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  
-  {% if mode != 'offline' %}
-    <section aria-label="Lesson path">
-      <p class="md-section-label">Lesson Path</p>
-
-      {% if learning_progress %}
-        <div class="lesson-journey">
-          <div class="lesson-journey-track">
-            {% for progress in learning_progress %}
-
-              {% if progress.status == 'completed' %}
-                <div class="lesson-journey-item is-completed">
-                  <span class="lesson-journey-dot"><i class="bi bi-check-circle"></i></span>
-                  <p class="lesson-journey-title">{{ progress.lesson.title }}</p>
-                  <span class="lesson-journey-meta">Completed</span>
-                </div>
-
-              {% elif progress.status == 'in_progress' or progress.status == 'unlocked' %}
-                <a href="{% url 'core:lesson' progress.lesson.id %}" class="lesson-journey-item is-current">
-                  <span class="lesson-journey-dot"><i class="bi bi-play-circle"></i></span>
-                  <p class="lesson-journey-title">{{ progress.lesson.title }}</p>
-                  <span class="lesson-journey-meta">{{ progress.get_status_display }}</span>
-                </a>
-
-              {% else %}
-                <div class="lesson-journey-item is-locked" aria-disabled="true">
-                  <span class="lesson-journey-dot"><i class="bi bi-lock"></i></span>
-                  <p class="lesson-journey-title">{{ progress.lesson.title }}</p>
-                  <span class="lesson-journey-meta">Locked</span>
-                </div>
-              {% endif %}
-
-            {% endfor %}
-          </div>
-        </div>
-      {% else %}
-        <div class="md-empty">
-          <i class="bi bi-journal-text"></i>
-          <h4>Lesson path will appear here</h4>
-          <p>Published sequential lessons will appear here once learning progress is initialized.</p>
-        </div>
-      {% endif %}
-    </section>
-
-    
-    <section aria-label="Student activity">
-      <div class="activity-rail">
-
-        {# ---- Assessment ---- #}
-        <div class="activity-block">
-          <div class="activity-block-head">
-            <h3><i class="bi bi-clipboard-check"></i> Assessment</h3>
-            <a href="#">Open</a>
-          </div>
-
-          {% if assessment_status %}
-            <div class="activity-row">
-              <div class="md-status-info">
-                <p class="title">{{ assessment_status.title }}</p>
-                <span class="meta">
-                  {% if assessment_status.due_at %}Due {{ assessment_status.due_at }}{% else %}No due date{% endif %}
-                </span>
-              </div>
-              {% if assessment_status.state == 'locked' %}
-                <span class="md-tag md-tag-soft"><i class="bi bi-lock"></i> Locked</span>
-              {% elif assessment_status.state == 'available' %}
-                <span class="md-tag md-tag-bright"><i class="bi bi-play-circle"></i> Available</span>
-              {% elif assessment_status.state == 'submitted' %}
-                <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Submitted</span>
-              {% elif assessment_status.state == 'graded' %}
-                <span class="md-tag md-tag-success">
-                  <i class="bi bi-award"></i>
-                  {% if assessment_status.score %}{{ assessment_status.score }}{% else %}Graded{% endif %}
-                </span>
-              {% endif %}
-            </div>
-          {% else %}
-            <div class="md-empty">
-              <i class="bi bi-clipboard-check"></i>
-              <h4>No active assessment</h4>
-              <p>Your next assessment will appear here once it unlocks.</p>
-            </div>
-          {% endif %}
-        </div>
-
-        {# ---- Doubts ---- #}
-        <div class="activity-block">
-          <div class="activity-block-head">
-            <h3><i class="bi bi-chat-dots"></i> Doubts</h3>
-            <a href="#">Open</a>
-          </div>
-
-          {% if recent_doubt %}
-            <div class="activity-row">
-              <div class="md-status-info">
-                <p class="title">{{ recent_doubt.subject }}</p>
-                <span class="meta">
-                  {% if recent_doubt.updated_ago %}Updated {{ recent_doubt.updated_ago }}{% endif %}
-                </span>
-              </div>
-              {% if recent_doubt.state == 'answered' %}
-                <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Answered</span>
-              {% elif recent_doubt.state == 'resolved' %}
-                <span class="md-tag md-tag-success"><i class="bi bi-check-circle"></i> Resolved</span>
-              {% elif recent_doubt.state == 'open' %}
-                <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> Open</span>
-              {% else %}
-                <span class="md-tag md-tag-soft">{{ recent_doubt.state|title }}</span>
-              {% endif %}
-            </div>
-          {% else %}
-            <div class="md-empty">
-              <i class="bi bi-question-circle"></i>
-              <h4>No doubts raised yet</h4>
-              <p>Ask a question anytime from your current lesson.</p>
-            </div>
-          {% endif %}
-        </div>
-
-      </div>
-    </section>
-
-  {% else %}
-    {# ---- Offline mode: materials ---- #}
-    <section aria-label="Materials">
-      <p class="md-section-label">Materials</p>
-      <div class="activity-block">
-        <div class="activity-block-head">
-          <h3><i class="bi bi-folder2-open"></i> Materials</h3>
-          <a href="#">Open</a>
-        </div>
-
-        {% if materials_summary %}
-          <div class="activity-row">
-            <div class="md-status-info">
-              <p class="title">Available resources</p>
-              <span class="meta">For your enrolled course</span>
-            </div>
-            <span class="md-tag md-tag-dark">
-              <i class="bi bi-folder2-open"></i> {{ materials_summary.count }} files
+  <!-- ========================================================
+     1. MINIMALIST HERO STUDY BANNER
+     ======================================================== -->
+  <div class="card border-0 mb-4 overflow-hidden" style="border-radius: 16px; background: #FFFFFF; border: 1px solid var(--study-border) !important;">
+    <div class="p-4 p-md-5">
+      <div class="row align-items-center g-4">
+        <div class="col-12 col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-primary-subtle text-primary px-3 py-1 text-uppercase" style="font-size: 0.75rem;">
+              <i class="bi {% if mode == 'offline' %}bi-geo-alt-fill{% elif mode == 'both' %}bi-layers-fill{% else %}bi-wifi{% endif %} me-1"></i>
+              {% if mode == 'offline' %}Offline Campus{% elif mode == 'both' %}Hybrid Learning{% else %}Online Study{% endif %}
             </span>
+            {% if active_enrollment.approval_status == 'accepted' and active_enrollment.payment_status == 'paid' %}
+              <span class="badge bg-success-subtle text-success px-3 py-1"><i class="bi bi-check-circle-fill me-1"></i> Active Enrollment</span>
+            {% elif active_enrollment.access_paused %}
+              <span class="badge bg-danger-subtle text-danger px-3 py-1"><i class="bi bi-pause-circle-fill me-1"></i> Access Paused</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning px-3 py-1">{{ active_enrollment.get_payment_status_display }}</span>
+            {% endif %}
           </div>
-          {% if materials_summary.latest %}
-            <div class="activity-row">
-              <div class="md-status-info">
-                <p class="title">{{ materials_summary.latest.title }}</p>
-                <span class="meta">Latest upload</span>
-              </div>
-              <span class="md-tag md-tag-soft"><i class="bi bi-download"></i> View</span>
+
+          <h2 class="h3 fw-bold text-dark mb-2" style="font-family: 'Urbanist', sans-serif;">
+            {% if current_lesson %}
+              Ready to continue {{ course.title }}?
+            {% elif course %}
+              Welcome to {{ course.title }}
+            {% else %}
+              Welcome to your learning dashboard
+            {% endif %}
+          </h2>
+
+          <p class="text-muted small mb-4" style="max-width: 620px;">
+            {% if current_lesson %}
+              Your next lesson <strong class="text-dark">"{{ current_lesson.title }}"</strong> is ready. Pick up right where you left off.
+            {% elif course %}
+              Follow your structured curriculum, review study notes, and complete module assessments.
+            {% else %}
+              Explore your enrolled courses, syllabus, and progress below.
+            {% endif %}
+          </p>
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if current_lesson %}
+              <a href="{% url 'core:lesson' current_lesson.id %}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-play-circle-fill me-2"></i> Continue Learning
+              </a>
+            {% elif course %}
+              <a href="{% url 'core:course_dashboard' course.slug %}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-play-circle-fill me-2"></i> Start Course
+              </a>
+            {% endif %}
+
+            {% if course %}
+              <a href="{% url 'core:course_dashboard' course.slug %}" class="btn btn-outline-primary px-3 py-2">
+                <i class="bi bi-journal-bookmark me-1"></i> View Curriculum
+              </a>
+              <a href="{% url 'core:payment' course.slug %}" class="btn btn-sm btn-light border px-3 py-2 text-dark">
+                <i class="bi bi-wallet2 me-1"></i> Billing &amp; Plan
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Progress ring or graphic -->
+        <div class="col-12 col-lg-4 text-center text-lg-end">
+          <div class="d-inline-block text-center p-4 rounded-4" style="background: var(--study-bg); border: 1px solid var(--study-border); min-width: 190px;">
+            <div class="text-muted small text-uppercase fw-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.08em;">Curriculum Progress</div>
+            <div class="display-6 fw-bold text-dark mb-2" style="font-family: 'Urbanist', sans-serif; color: var(--study-gold) !important;">
+              {{ active_enrollment.progress_percent|default:0|floatformat:"0" }}%
             </div>
-          {% endif %}
-        {% else %}
-          <div class="md-empty">
-            <i class="bi bi-folder2-open"></i>
-            <h4>No materials yet</h4>
-            <p>Learning materials for your course will appear here once uploaded.</p>
+            <div class="progress mb-2" style="height: 6px; background: #E8E3D7;">
+              <div class="progress-bar" style="width: {{ active_enrollment.progress_percent|default:0 }}%;"></div>
+            </div>
+            <div class="text-muted small" style="font-size: 0.75rem;">
+              {{ learning_progress|length }} tracked lesson{{ learning_progress|length|pluralize }}
+            </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+     2. FOUR-CARD MINIMALIST METRICS STRIP
+     ======================================================== -->
+  <div class="row g-3 mb-4">
+    <!-- Metric 1: Overall Progress -->
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 p-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center"
+               style="width: 44px; height: 44px; background: #FEF9EE; color: var(--study-gold); font-size: 1.25rem;">
+            <i class="bi bi-bar-chart-line-fill"></i>
+          </div>
+          <div>
+            <div class="text-muted small text-uppercase" style="font-size: 0.7rem; font-weight: 700;">Progress</div>
+            <div class="h5 fw-bold mb-0 text-dark">{{ active_enrollment.progress_percent|default:0|floatformat:"0" }}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric 2: Current Lesson -->
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 p-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center"
+               style="width: 44px; height: 44px; background: #ECFDF5; color: #10b981; font-size: 1.25rem;">
+            <i class="bi bi-play-circle-fill"></i>
+          </div>
+          <div class="text-truncate">
+            <div class="text-muted small text-uppercase" style="font-size: 0.7rem; font-weight: 700;">Current Lesson</div>
+            <div class="h6 fw-bold mb-0 text-dark text-truncate" title="{{ current_lesson.title }}">
+              {{ current_lesson.title|default:"Beginning" }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric 3: Assessments -->
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 p-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center"
+               style="width: 44px; height: 44px; background: #EFF6FF; color: #3B82F6; font-size: 1.25rem;">
+            <i class="bi bi-patch-check-fill"></i>
+          </div>
+          <div>
+            <div class="text-muted small text-uppercase" style="font-size: 0.7rem; font-weight: 700;">Assessments</div>
+            <div class="h5 fw-bold mb-0 text-dark">
+              <a href="{% url 'core:student_assessments' %}" class="text-decoration-none text-dark">
+                {% if pending_assessments %}{{ pending_assessments }} Pending{% else %}Check Quizzes{% endif %}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric 4: Doubts -->
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 p-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center"
+               style="width: 44px; height: 44px; background: #FDF2F8; color: #EC4899; font-size: 1.25rem;">
+            <i class="bi bi-chat-dots-fill"></i>
+          </div>
+          <div>
+            <div class="text-muted small text-uppercase" style="font-size: 0.7rem; font-weight: 700;">Mentor Doubts</div>
+            <div class="h5 fw-bold mb-0 text-dark">
+              <a href="{% url 'core:student_doubts' %}" class="text-decoration-none text-dark">
+                {% if open_doubts %}{{ open_doubts }} Active{% else %}Ask Mentor{% endif %}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+     3. UP NEXT IN CURRICULUM (LINEAR TIMELINE)
+     ======================================================== -->
+  {% if learning_progress %}
+    <div class="card border-0 mb-4">
+      <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="h6 fw-bold mb-0 text-dark"><i class="bi bi-signpost-split text-warning me-2"></i> Curriculum Path</h3>
+          <span class="text-muted small">Your sequential lesson milestones</span>
+        </div>
+        {% if course %}
+          <a href="{% url 'core:course_dashboard' course.slug %}" class="btn btn-sm btn-outline-secondary">
+            View Full Syllabus <i class="bi bi-arrow-right ms-1"></i>
+          </a>
         {% endif %}
       </div>
-    </section>
+      <div class="card-body p-4">
+        <div class="d-flex gap-3 overflow-auto pb-2" style="scrollbar-width: thin;">
+          {% for p in learning_progress %}
+            <div class="flex-shrink-0 p-3 rounded-3 text-start"
+                 style="min-width: 220px; max-width: 260px; border: 1px solid var(--study-border); background: {% if p.status == 'completed' %}#F0FDF4{% elif p.status == 'in_progress' or p.status == 'unlocked' %}#FEF9EE{% else %}#FAFAFA{% endif %};">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge {% if p.status == 'completed' %}bg-success-subtle text-success{% elif p.status == 'in_progress' or p.status == 'unlocked' %}bg-primary-subtle text-primary{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                  {% if p.status == 'completed' %}<i class="bi bi-check-circle-fill me-1"></i> Done{% elif p.status == 'in_progress' %}<i class="bi bi-hourglass-split me-1"></i> Studying{% elif p.status == 'unlocked' %}<i class="bi bi-play-circle me-1"></i> Ready{% else %}<i class="bi bi-lock me-1"></i> Locked{% endif %}
+                </span>
+                <span class="text-muted small" style="font-size: 0.7rem;">M{{ p.lesson.module.order }}·L{{ p.lesson.order }}</span>
+              </div>
+              <h5 class="h6 fw-bold text-dark text-truncate mb-2" title="{{ p.lesson.title }}">
+                {{ p.lesson.title }}
+              </h5>
+              <div>
+                {% if p.status == 'completed' or p.status == 'in_progress' or p.status == 'unlocked' %}
+                  <a href="{% url 'core:lesson' p.lesson.id %}" class="btn btn-sm btn-primary w-100 py-1" style="font-size: 0.78rem;">
+                    {% if p.status == 'completed' %}Review Lesson{% else %}Open Lesson{% endif %}
+                  </a>
+                {% else %}
+                  <span class="btn btn-sm btn-light border text-muted w-100 py-1 disabled" style="font-size: 0.78rem;">
+                    <i class="bi bi-lock me-1"></i> Locked
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   {% endif %}
 
-  
-  <section aria-label="Payments and certificate">
-    <p class="md-section-label">Services</p>
 
-    <div class="service-strip">
+  <!-- ========================================================
+     4. TWO-COLUMN STUDY ACTIVITY (ASSESSMENTS & DOUBTS)
+     ======================================================== -->
+  <div class="row g-4 mb-4">
 
-      {# ---- Payments ---- #}
-      <div class="service-block">
-        <div class="service-head">
-          <h3><i class="bi bi-wallet2"></i> Payments</h3>
-          <a href="{% url 'core:payment' course.slug %}">Open</a>
-        </div>
-
-        <div class="service-amount">
-          {% if course.discounted_price %}₹{{ course.discounted_price|floatformat:"0" }}{% else %}₹{{ course.price|floatformat:"0" }}{% endif %}
-        </div>
-
-        <div class="service-meta">
-          {% if active_enrollment.payment_status == 'paid' %}
-            <span class="md-tag md-tag-success"><i class="bi bi-check-circle"></i> Paid</span>
-          {% elif active_enrollment.payment_status == 'partially_paid' %}
-            <span class="md-tag md-tag-bright"><i class="bi bi-clock"></i> Partial</span>
-          {% elif active_enrollment.payment_status == 'pending' %}
-            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> Pending</span>
-          {% else %}
-            <span class="md-tag md-tag-soft">{{ active_enrollment.get_payment_status_display }}</span>
-          {% endif %}
-
-          {% if active_enrollment.access_paused %}
-            <span class="md-tag md-tag-danger"><i class="bi bi-lock"></i> Paused</span>
-          {% elif active_enrollment.approval_status == 'accepted' %}
-            <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Active</span>
-          {% else %}
-            <span class="md-tag md-tag-gold"><i class="bi bi-clock"></i> Waiting</span>
-          {% endif %}
-        </div>
-
-        <div class="service-cta">
-          <a href="{% url 'core:payment' course.slug %}" class="md-btn md-btn-tonal w-100">
-            Open Payment <i class="bi bi-arrow-right"></i>
+    <!-- Assessments Panel -->
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 border-0">
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+          <h3 class="h6 fw-bold mb-0 text-dark">
+            <i class="bi bi-clipboard-check text-warning me-2"></i> Module Assessments
+          </h3>
+          <a href="{% url 'core:student_assessments' %}" class="small study-link">
+            All Assessments <i class="bi bi-arrow-right"></i>
           </a>
         </div>
-      </div>
-
-      {# ---- Certificate ---- #}
-      <div class="service-block">
-        <div class="service-head">
-          <h3><i class="bi bi-award"></i> Certificate</h3>
-          <a href="#">View</a>
-        </div>
-
-        {% if certificate %}
-          {% if certificate.state == 'issued' %}
-            <div class="service-amount">{{ certificate.title }}</div>
-            <div class="service-meta">
-              <span class="md-tag md-tag-dark"><i class="bi bi-check-circle"></i> Issued</span>
-              <span class="md-tag md-tag-soft"><i class="bi bi-clock"></i> {{ certificate.issued_on }}</span>
-            </div>
-            <div class="service-cta">
-              <a href="#" class="md-btn md-btn-outline w-100">
-                <i class="bi bi-download"></i> View Certificate
-              </a>
-            </div>
-          {% elif certificate.state == 'available' %}
-            <div class="service-amount">{{ certificate.title }}</div>
-            <div class="service-meta">
-              <span class="md-tag md-tag-bright"><i class="bi bi-award"></i> Ready</span>
-            </div>
-            <div class="service-cta">
-              <a href="#" class="md-btn md-btn-outline w-100">
-                <i class="bi bi-download"></i> Download
+        <div class="card-body p-4">
+          {% if assessment_status %}
+            <div class="p-3 rounded border mb-3" style="background: var(--study-bg);">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark">{{ assessment_status.title }}</span>
+                {% if assessment_status.state == 'graded' %}
+                  <span class="badge bg-success-subtle text-success"><i class="bi bi-award me-1"></i> Graded</span>
+                {% elif assessment_status.state == 'submitted' %}
+                  <span class="badge bg-warning-subtle text-warning">Under Review</span>
+                {% else %}
+                  <span class="badge bg-primary-subtle text-primary">Ready to Attempt</span>
+                {% endif %}
+              </div>
+              <div class="text-muted small mb-3">
+                {% if assessment_status.due_at %}Due: {{ assessment_status.due_at }}{% else %}Validated upon module completion{% endif %}
+              </div>
+              <a href="{% url 'core:student_assessments' %}" class="btn btn-sm btn-primary">
+                Open Assessment
               </a>
             </div>
           {% else %}
-            <div class="service-amount" style="font-size: 17px;">Certificate locked</div>
-            <div class="service-meta">
-              <span class="md-tag md-tag-soft"><i class="bi bi-lock"></i>
-                {% if certificate.progress_percent is not None %}
-                  {{ certificate.progress_percent }}% required
-                {% else %}Locked{% endif %}
-              </span>
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-patch-question fs-2 d-block text-secondary mb-2"></i>
+              <h5 class="h6 text-dark mb-1">No Active Assessments</h5>
+              <p class="small text-muted mb-3">Quizzes and module assignments will appear here as you unlock curriculum milestones.</p>
+              <a href="{% url 'core:student_assessments' %}" class="btn btn-sm btn-outline-secondary">
+                View Assessments Hub
+              </a>
             </div>
           {% endif %}
-        {% else %}
-          <div class="service-amount" style="font-size: 17px;">No certificate yet</div>
-          <div class="service-meta">
-            <span class="md-tag md-tag-soft"><i class="bi bi-award"></i> Complete course</span>
-          </div>
-        {% endif %}
+        </div>
       </div>
-
     </div>
-  </section>
 
-  
-  <section aria-label="Recent notifications">
-    <p class="md-section-label">Recent Notifications</p>
-
-    {% if notifications %}
-      <ul class="notif-feed">
-        {% for n in notifications|slice:":4" %}
-          <li>
-            <a href="{{ n.url|default:'#' }}" class="notif-feed-item {% if not n.is_read %}is-unread{% endif %}">
-              <span class="notif-feed-icon"><i class="bi bi-bell"></i></span>
-              <div class="notif-feed-body">
-                <p class="notif-feed-title">{{ n.title }}</p>
-                <p class="notif-feed-text">{{ n.message }}</p>
-                <span class="notif-feed-time">{{ n.time_ago }}</span>
+    <!-- Doubt Clearance Panel -->
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 border-0">
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+          <h3 class="h6 fw-bold mb-0 text-dark">
+            <i class="bi bi-chat-left-dots text-warning me-2"></i> Doubt Clearance
+          </h3>
+          <a href="{% url 'core:student_doubts' %}" class="small study-link">
+            View All <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+        <div class="card-body p-4">
+          {% if recent_doubt %}
+            <div class="p-3 rounded border mb-3" style="background: var(--study-bg);">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark text-truncate" style="max-width: 250px;">{{ recent_doubt.subject }}</span>
+                {% if recent_doubt.state == 'answered' %}
+                  <span class="badge bg-info-subtle text-info">Instructor Replied</span>
+                {% elif recent_doubt.state == 'resolved' %}
+                  <span class="badge bg-success-subtle text-success">Resolved</span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning">Waiting on Mentor</span>
+                {% endif %}
               </div>
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <div class="md-empty">
-        <i class="bi bi-bell"></i>
-        <h4>You're all caught up</h4>
-        <p>No new notifications right now.</p>
+              <div class="text-muted small mb-3">
+                {% if recent_doubt.updated_ago %}Updated {{ recent_doubt.updated_ago }}{% else %}Recent activity{% endif %}
+              </div>
+              <a href="{% url 'core:student_doubts' %}" class="btn btn-sm btn-primary">
+                Open Thread
+              </a>
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-chat-quote fs-2 d-block text-secondary mb-2"></i>
+              <h5 class="h6 text-dark mb-1">No Open Doubts</h5>
+              <p class="small text-muted mb-3">Stuck on a concept? You can ask questions directly inside each lesson room.</p>
+              <a href="{% url 'core:student_doubts' %}" class="btn btn-sm btn-outline-secondary">
+                Go to Doubt Clearance
+              </a>
+            </div>
+          {% endif %}
+        </div>
       </div>
-    {% endif %}
-  </section>
-
-  
-  <section aria-label="Quick links">
-    <p class="md-section-label">Quick Access</p>
-    <div class="quick-scroll">
-
-      {% if mode != 'offline' %}
-        <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% else %}{% url 'core:dashboard' %}{% endif %}" class="quick-tile">
-          <i class="bi bi-play-circle"></i> My Course
-        </a>
-      {% endif %}
-
-      <a href="#" class="quick-tile">
-        <i class="bi bi-folder2-open"></i> Materials
-      </a>
-
-      <a href="{% url 'core:payment' course.slug %}" class="quick-tile">
-        <i class="bi bi-wallet2"></i> Payments
-      </a>
-
-      <a href="#" class="quick-tile">
-        <i class="bi bi-award"></i> Certificates
-      </a>
-
-      {% if mode != 'offline' %}
-        <a href="#" class="quick-tile">
-          <i class="bi bi-clipboard-check"></i> Assessments
-        </a>
-        <a href="#" class="quick-tile">
-          <i class="bi bi-chat-dots"></i> Doubts
-        </a>
-      {% endif %}
-
-      <a href="#" class="quick-tile">
-        <i class="bi bi-person"></i> Profile
-      </a>
-
     </div>
-  </section>
+
+  </div>
+
+
+  <!-- ========================================================
+     5. SIX QUICK ACCESS NAVIGATION TILES
+     ======================================================== -->
+  <div class="card border-0 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="h6 fw-bold mb-0 text-dark">Quick Access Navigation</h3>
+      <span class="text-muted small">One-click portal links</span>
+    </div>
+
+    <div class="row g-2">
+      <!-- Syllabus -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% if course %}{% url 'core:course_dashboard' course.slug %}{% else %}{% url 'core:courses' %}{% endif %}"
+           class="p-3 rounded border text-center d-flex flex-column align-items-center gap-2 text-decoration-none text-dark h-100 hover-shadow transition"
+           style="background: var(--study-bg);">
+          <i class="bi bi-journal-bookmark fs-4 text-warning"></i>
+          <span class="small fw-semibold">Syllabus</span>
+        </a>
+      </div>
+
+      <!-- Current Lesson -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% if current_lesson %}{% url 'core:lesson' current_lesson.id %}{% elif course %}{% url 'core:course_dashboard' course.slug %}{% else %}{% url 'core:courses' %}{% endif %}"
+           class="p-3 rounded border text-center d-flex flex-column align-items-center gap-2 text-decoration-none text-dark h-100 hover-shadow transition"
+           style="background: var(--study-bg);">
+          <i class="bi bi-play-circle fs-4 text-success"></i>
+          <span class="small fw-semibold">Study Room</span>
+        </a>
+      </div>
+
+      <!-- Assessments -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'core:student_assessments' %}"
+           class="p-3 rounded border text-center d-flex flex-column align-items-center gap-2 text-decoration-none text-dark h-100 hover-shadow transition"
+           style="background: var(--study-bg);">
+          <i class="bi bi-patch-check fs-4 text-primary"></i>
+          <span class="small fw-semibold">Assessments</span>
+        </a>
+      </div>
+
+      <!-- Doubts -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'core:student_doubts' %}"
+           class="p-3 rounded border text-center d-flex flex-column align-items-center gap-2 text-decoration-none text-dark h-100 hover-shadow transition"
+           style="background: var(--study-bg);">
+          <i class="bi bi-chat-dots fs-4 text-danger"></i>
+          <span class="small fw-semibold">Doubts</span>
+        </a>
+      </div>
+
+      <!-- Materials -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% if course %}{% url 'core:course_dashboard' course.slug %}#curriculum{% else %}{% url 'core:courses' %}{% endif %}"
+           class="p-3 rounded border text-center d-flex flex-column align-items-center gap-2 text-decoration-none text-dark h-100 hover-shadow transition"
+           style="background: var(--study-bg);">
+          <i class="bi bi-folder2-open fs-4 text-info"></i>
+          <span class="small fw-semibold">Materials</span>
+        </a>
+      </div>
+
+      <!-- Payments -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% if course %}{% url 'core:payment' course.slug %}{% else %}#{% endif %}"
+           class="p-3 rounded border text-center d-flex flex-column align-items-center gap-2 text-decoration-none text-dark h-100 hover-shadow transition"
+           style="background: var(--study-bg);">
+          <i class="bi bi-wallet2 fs-4 text-secondary"></i>
+          <span class="small fw-semibold">Billing</span>
+        </a>
+      </div>
+    </div>
+  </div>
 
 </div>
 

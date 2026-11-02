@@ -369,3 +369,25 @@ def initialize_learning_progress(enrollment):
             "lesson__pk",
         )
     )
+
+
+def get_student_active_or_pending_enrollment(student, exclude_course=None):
+    """
+    Return the student's active or pending enrollment in another course if any.
+    Students are restricted to a single course enrollment at a time.
+    """
+    if not student or not student.is_authenticated:
+        return None
+
+    qs = (
+        Enrollment.objects
+        .filter(student=student)
+        .exclude(approval_status=Enrollment.ApprovalStatus.REJECTED)
+        .exclude(payment_status=Enrollment.PaymentStatus.FAILED)
+        .exclude(payment_status=Enrollment.PaymentStatus.REFUNDED)
+        .select_related("course", "course__instructor", "course__center")
+    )
+    if exclude_course:
+        qs = qs.exclude(course=exclude_course)
+
+    return qs.first()

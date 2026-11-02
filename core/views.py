@@ -1,3 +1,6 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import json
 from django.http import JsonResponse
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -999,6 +1002,7 @@ def course_detail(request, slug):
     )
 
     enrollment = None
+    other_enrolled_course = None
 
     if request.user.is_authenticated:
         enrollment = (
@@ -1009,6 +1013,10 @@ def course_detail(request, slug):
             )
             .first()
         )
+        if request.user.role == User.Role.STUDENT:
+            other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+            if other_enr:
+                other_enrolled_course = other_enr.course
 
     return render(
         request,
@@ -1017,6 +1025,7 @@ def course_detail(request, slug):
             "course": course,
             "related_courses": related_courses,
             "enrollment": enrollment,
+            "other_enrolled_course": other_enrolled_course,
         },
     )
 
@@ -1044,6 +1053,15 @@ def test_payment(request, slug):
         ),
         slug=slug,
     )
+
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.error(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time.",
+        )
+        return redirect("core:dashboard")
 
     try:
         order, payment_transaction, enrollment = (
@@ -1089,7 +1107,6 @@ def test_payment(request, slug):
 @login_required
 @require_POST
 def offline_payment_request(request, slug):
-
     if request.user.role != User.Role.STUDENT:
         messages.error(
             request,
@@ -1104,39 +1121,50 @@ def offline_payment_request(request, slug):
         slug=slug,
     )
 
-    try:
-        order, payment_transaction, enrollment = (
-            create_offline_payment_request(
-                student=request.user,
-                course=course,
-            )
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.error(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time.",
         )
+        return redirect("core:dashboard")
 
+    payment_mode = request.POST.get("payment_mode", "UPI").strip()
+    transaction_reference = request.POST.get("transaction_reference", "").strip()
+    payment_date = request.POST.get("payment_date", "").strip()
+    notes = request.POST.get("notes", "").strip()
+
+    try:
+        order, payment_transaction, enrollment = create_offline_payment_request(
+            student=request.user,
+            course=course,
+            payment_mode=payment_mode,
+            transaction_reference=transaction_reference,
+            payment_date=payment_date or None,
+            notes=notes,
+        )
     except ValueError as exc:
         messages.error(
             request,
             str(exc),
         )
         return redirect(
-            "core:course_detail",
+            "core:payment",
             slug=course.slug,
         )
 
-    messages.warning(
+    ref_str = f" (Ref: {transaction_reference})" if transaction_reference else ""
+    messages.success(
         request,
-        "Offline payment request submitted. "
-        "Course access will remain locked until admin approval.",
+        f"Your offline payment request for '{course.title}'{ref_str} has been submitted! "
+        "Our team will verify your transaction details and activate course access shortly.",
     )
-
-    return redirect(
-        "core:course_detail",
-        slug=course.slug,
-    )
+    return redirect("core:dashboard")
 
 
 @login_required
 def payment(request, slug):
-
     if request.user.role != User.Role.STUDENT:
         messages.error(
             request,
@@ -1151,6 +1179,16 @@ def payment(request, slug):
         slug=slug,
     )
 
+    # Restriction: Student cannot enroll in another course if already enrolled in one
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.warning(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Edvanto permits enrollment in only one course at a time. Please complete your current course first.",
+        )
+        return redirect("core:dashboard")
+
     enrollment = (
         Enrollment.objects
         .filter(
@@ -1161,19 +1199,162 @@ def payment(request, slug):
     )
 
     if enrollment is not None:
-        messages.info(
-            request,
-            "You already have an enrollment for this course."
-        )
-        return redirect("core:dashboard")
+        if enrollment.payment_status == Enrollment.PaymentStatus.PAID:
+            messages.info(
+                request,
+                "You are already enrolled in this course."
+            )
+            return redirect("core:course_dashboard", slug=course.slug)
+        elif enrollment.approval_status == Enrollment.ApprovalStatus.PENDING:
+            messages.warning(
+                request,
+                "Your enrollment for this course is pending administrative approval."
+            )
+            return redirect("core:dashboard")
+
+    # Calculate effective price
+    price = course.discounted_price if (course.discounted_price and course.discounted_price > 0) else course.price
+    price_paise = int(price * 100) if price else 0
+
+    razorpay_key_id = getattr(settings, "RAZORPAY_KEY_ID", "")
+    razorpay_order_id = ""
+    razorpay_available = False
+
+    if razorpay_key_id and getattr(settings, "RAZORPAY_KEY_SECRET", ""):
+        try:
+            _, _, rp_order = create_razorpay_order(student=request.user, course=course)
+            razorpay_order_id = rp_order.get("id", "")
+            razorpay_available = True
+        except Exception as exc:
+            # If Razorpay client failed (e.g. invalid test keys or offline dev), keep graceful
+            razorpay_available = False
 
     return render(
         request,
         "payment.html",
         {
             "course": course,
+            "price": price,
+            "price_paise": price_paise,
+            "razorpay_available": razorpay_available,
+            "razorpay_key_id": razorpay_key_id,
+            "razorpay_order_id": razorpay_order_id,
+            "today_date": timezone.now().strftime("%Y-%m-%d"),
         },
     )
+
+
+@login_required
+@require_POST
+def razorpay_verify(request, slug):
+    if request.user.role != User.Role.STUDENT:
+        messages.error(
+            request,
+            "Only students can purchase courses."
+        )
+        return redirect("core:courses")
+
+    course = get_object_or_404(
+        Course.objects.filter(
+            status=Course.Status.PUBLISHED
+        ),
+        slug=slug,
+    )
+
+    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
+    if other_enr:
+        messages.error(
+            request,
+            f"You are already enrolled in '{other_enr.course.title}'. "
+            "Multiple course enrollments are restricted.",
+        )
+        return redirect("core:dashboard")
+
+    razorpay_order_id = request.POST.get("razorpay_order_id", "").strip()
+    razorpay_payment_id = request.POST.get("razorpay_payment_id", "").strip()
+    razorpay_signature = request.POST.get("razorpay_signature", "").strip()
+
+    if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
+        messages.error(
+            request,
+            "Incomplete payment verification payload received. Please try again."
+        )
+        return redirect("core:payment", slug=course.slug)
+
+    try:
+        order, payment_transaction, enrollment = verify_and_complete_razorpay_payment(
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+            razorpay_signature=razorpay_signature,
+            student=request.user,
+        )
+    except ValueError as exc:
+        messages.error(
+            request,
+            str(exc)
+        )
+        return redirect("core:payment", slug=course.slug)
+
+    if enrollment.approval_status == Enrollment.ApprovalStatus.ACCEPTED:
+        messages.success(
+            request,
+            f"Payment successful! You are now enrolled in '{course.title}'. Enjoy learning!"
+        )
+        return redirect("core:course_dashboard", slug=course.slug)
+
+    messages.success(
+        request,
+        f"Payment received! Your enrollment for '{course.title}' is awaiting instructor approval."
+    )
+    return redirect("core:dashboard")
+
+
+@csrf_exempt
+@require_POST
+def razorpay_webhook(request):
+    from django.http import HttpResponse, HttpResponseBadRequest
+    webhook_secret = getattr(settings, "RAZORPAY_WEBHOOK_SECRET", "")
+    webhook_signature = request.headers.get("X-Razorpay-Signature", "")
+
+    client = get_razorpay_client()
+    if webhook_secret and client:
+        try:
+            client.utility.verify_webhook_signature(
+                request.body.decode("utf-8"),
+                webhook_signature,
+                webhook_secret,
+            )
+        except Exception:
+            return HttpResponseBadRequest("Invalid webhook signature")
+
+    try:
+        event_payload = json.loads(request.body.decode("utf-8"))
+        event_type = event_payload.get("event")
+        payload_data = event_payload.get("payload", {})
+
+        if event_type in ("payment.captured", "order.paid"):
+            payment_entity = payload_data.get("payment", {}).get("entity", {})
+            order_entity = payload_data.get("order", {}).get("entity", {})
+
+            razorpay_order_id = payment_entity.get("order_id") or order_entity.get("id")
+            razorpay_payment_id = payment_entity.get("id")
+
+            if razorpay_order_id and razorpay_payment_id:
+                try:
+                    verify_and_complete_razorpay_payment(
+                        razorpay_order_id=razorpay_order_id,
+                        razorpay_payment_id=razorpay_payment_id,
+                        razorpay_signature="",
+                        is_webhook=True,
+                    )
+                except Exception:
+                    pass
+
+        return HttpResponse(status=200)
+    except Exception:
+        return HttpResponseBadRequest("Invalid webhook payload")
+
+
 @login_required
 def dashboard(request):
 
@@ -1286,6 +1467,87 @@ def dashboard(request):
         return redirect("core:courses")
     
 
+    # DEDICATED OFFLINE STUDENT DASHBOARD
+    if active_enrollment.course.mode == Course.Mode.OFFLINE:
+        center = active_enrollment.course.center
+        batch = (
+            Batch.objects
+            .filter(course=active_enrollment.course)
+            .select_related("instructor", "center")
+            .first()
+        )
+        sessions = []
+        if batch:
+            sessions = list(
+                batch.sessions
+                .select_related("instructor")
+                .order_by("date", "start_time")
+            )
+
+        attendance_records = list(
+            Attendance.objects
+            .filter(student=user, session__batch__course=active_enrollment.course)
+            .select_related("session", "marked_by")
+            .order_by("-session__date", "-session__start_time")
+        )
+        total_sessions_held = len(attendance_records)
+        present_count = sum(1 for a in attendance_records if a.status == Attendance.Status.PRESENT)
+        absent_count = sum(1 for a in attendance_records if a.status == Attendance.Status.ABSENT)
+        late_count = sum(1 for a in attendance_records if a.status == Attendance.Status.LATE)
+        excused_count = sum(1 for a in attendance_records if a.status == Attendance.Status.EXCUSED)
+        attendance_rate = int((present_count / total_sessions_held * 100)) if total_sessions_held > 0 else 100
+
+        modules = list(
+            active_enrollment.course.modules
+            .prefetch_related("lessons", "lessons__materials", "lessons__resources")
+            .order_by("order")
+        )
+
+        assessments = list(
+            Assessment.objects
+            .filter(module__course=active_enrollment.course, is_published=True)
+            .select_related("module")
+            .order_by("module__order", "unlock_order")
+        )
+
+        doubt_threads = list(
+            DoubtThread.objects
+            .filter(student=user, enrollment=active_enrollment)
+            .order_by("-updated_at")[:5]
+        )
+
+        return render(
+            request,
+            "dashboard/student/offline_dashboard.html",
+            {
+                "enrollments": enrollments,
+                "active_enrollment": active_enrollment,
+                "course": active_enrollment.course,
+                "center": center,
+                "batch": batch,
+                "sessions": sessions,
+                "attendance_records": attendance_records,
+                "total_sessions_held": total_sessions_held,
+                "present_count": present_count,
+                "absent_count": absent_count,
+                "late_count": late_count,
+                "excused_count": excused_count,
+                "attendance_rate": attendance_rate,
+                "modules": modules,
+                "assessments": assessments,
+                "doubt_threads": doubt_threads,
+                "dash_section": "dashboard",
+                "is_student": True,
+                "is_offline_student": True,
+                "student_name": user.get_full_name() or user.username,
+                "student_initials": (
+                    (user.first_name[:1] if user.first_name else "") +
+                    (user.last_name[:1] if user.last_name else "")
+                ).upper() or "S",
+                "dashboard_welcome": True,
+            },
+        )
+
     return render(
         request,
         "dashboard/student/dashboard.html",
@@ -1294,6 +1556,7 @@ def dashboard(request):
             "active_enrollment": active_enrollment,
             "current_lesson": current_lesson,
             "learning_progress": learning_progress,
+            "dash_section": "dashboard",
             "is_student": True,
             "student_name": user.get_full_name() or user.username,
             "student_initials": (
@@ -1409,7 +1672,14 @@ def lesson_view(request, lesson_id):
 
             # Doubts & Assessments for this lesson:
             "lesson_doubts": DoubtThread.objects.filter(student=request.user, lesson=lesson).prefetch_related("messages").order_by("-created_at"),
-            "module_assessments": Assessment.objects.filter(module=lesson.module, is_published=True).order_by("unlock_order"),
+            "lesson_assessments": [
+                (setattr(a, "passed", assessment_is_passed(a, request.user)) or a)
+                for a in Assessment.objects.filter(lesson=lesson, is_published=True).order_by("unlock_order", "pk")
+            ],
+            "module_assessments": [
+                (setattr(a, "passed", assessment_is_passed(a, request.user)) or a)
+                for a in Assessment.objects.filter(module=lesson.module, is_published=True).order_by("unlock_order", "pk")
+            ],
             # Sidebar / header bits the base template reads:
             "current_lesson": lesson,
             "dash_section": "lesson",
@@ -1728,6 +1998,7 @@ def course_dashboard(request, slug):
             "learning_progress": learning_progress,
             "progress_by_lesson": progress_by_lesson,
             "modules": modules_list,
+            "dash_section": "course_curriculum",
             "is_student": True,
             "student_name": (
                 request.user.get_full_name()
@@ -1832,12 +2103,14 @@ def student_doubts(request):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "threads": threads,
         "selected_status": status_filter,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "doubts",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -1920,12 +2193,14 @@ def doubt_detail(request, thread_id):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "thread": thread,
         "messages_list": messages_list,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "doubts",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -2003,6 +2278,8 @@ def student_assessments(request):
         .order_by("module__course__title", "module__order", "unlock_order", "pk")
     )
 
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
+
     assessments_list = []
     for a in assessments:
         subs = list(
@@ -2019,6 +2296,7 @@ def student_assessments(request):
         "assessments": assessments_list,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "assessment",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -2069,7 +2347,7 @@ def take_assessment(request, assessment_id):
             if q.question_type == Question.QuestionType.MCQ:
                 ans = request.POST.get(field_name, "").strip()
                 answers[str(q.pk)] = ans
-                if ans and ans == q.correct_answer:
+                if q.check_answer(ans):
                     total_mcq_obtained += Decimal(str(q.marks))
             elif q.question_type == Question.QuestionType.TEXT:
                 has_manual_questions = True
@@ -2099,6 +2377,18 @@ def take_assessment(request, assessment_id):
             graded_at=timezone.now() if status == Submission.Status.GRADED else None,
         )
 
+        LearningEvent.objects.create(
+            student=user,
+            enrollment=enrollment,
+            event_type=LearningEvent.EventType.ASSESSMENT_COMPLETED,
+            progress=final_score,
+        )
+
+        total_possible = assessment.total_marks or sum(q.marks for q in questions) or 1
+        percentage = (final_score / Decimal(str(total_possible))) * Decimal("100")
+        if percentage >= Decimal(str(assessment.pass_percentage)):
+            update_enrollment_progress(enrollment)
+
         messages.success(request, f"Assessment '{assessment.title}' submitted successfully!")
         return redirect("core:assessment_result", submission_id=submission.pk)
 
@@ -2109,6 +2399,7 @@ def take_assessment(request, assessment_id):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "assessment": assessment,
@@ -2116,6 +2407,7 @@ def take_assessment(request, assessment_id):
         "attempts_left": max(0, assessment.attempts_allowed - subs_count) if assessment.attempts_allowed > 0 else "Unlimited",
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "assessment",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,
@@ -2149,11 +2441,13 @@ def assessment_result(request, submission_id):
     reviewed_questions = []
     for q in questions:
         student_ans = submission.answers.get(str(q.pk), "")
-        is_correct = (q.question_type == Question.QuestionType.MCQ and student_ans == q.correct_answer)
+        is_correct = (q.question_type == Question.QuestionType.MCQ and q.check_answer(student_ans))
         reviewed_questions.append({
             "question": q,
             "student_answer": student_ans,
             "is_correct": is_correct,
+            "marks_awarded": q.marks if is_correct else 0,
+            "correct_display": q.get_correct_answer_display(),
         })
 
     enrollments = list(
@@ -2163,6 +2457,7 @@ def assessment_result(request, submission_id):
         .order_by("-enrolled_at")
     )
     active_enrollment = next((e for e in enrollments if enrollment_has_access(e)), None)
+    current_lesson = get_current_unlocked_lesson(active_enrollment) if active_enrollment else None
 
     context = {
         "submission": submission,
@@ -2174,6 +2469,7 @@ def assessment_result(request, submission_id):
         "reviewed_questions": reviewed_questions,
         "enrollments": enrollments,
         "active_enrollment": active_enrollment,
+        "current_lesson": current_lesson,
         "dash_section": "assessment",
         "is_student": True,
         "student_name": user.get_full_name() or user.username,

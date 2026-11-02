@@ -270,6 +270,7 @@ class Syllabus(models.Model):
 
     order = models.PositiveIntegerField(default=0)
 
+
     class Meta:
         ordering = ["order"]
 
@@ -300,6 +301,7 @@ class SyllabusTopic(models.Model):
     title = models.CharField(max_length=200)
 
     order = models.PositiveIntegerField(default=0)
+
 
     class Meta:
         ordering = ["order"]
@@ -989,6 +991,15 @@ class Assessment(models.Model):
         related_name="assessments",
     )
 
+    lesson = models.ForeignKey(
+        "Lesson",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessments",
+        help_text="Optional topic/lesson this assessment belongs to.",
+    )
+
     title = models.CharField(max_length=200)
 
     description = models.TextField(blank=True)
@@ -1053,6 +1064,74 @@ class Question(models.Model):
     explanation = models.TextField(blank=True)
 
     order = models.PositiveIntegerField(default=0)
+
+    def get_choices(self):
+        """
+        Normalize options list to uniform objects with text, value, and is_correct.
+        Handles both string lists and dict lists.
+        """
+        if not self.options:
+            return []
+        choices = []
+        for idx, opt in enumerate(self.options):
+            if isinstance(opt, dict):
+                text = str(opt.get("text", ""))
+                val = str(opt.get("value", text))
+                is_correct = bool(
+                    opt.get("is_correct")
+                    or (self.correct_answer and val.strip().lower() == str(self.correct_answer).strip().lower())
+                )
+                choices.append({
+                    "text": text,
+                    "value": val,
+                    "is_correct": is_correct,
+                    "index": idx + 1,
+                })
+            else:
+                text = str(opt)
+                is_correct = bool(
+                    self.correct_answer
+                    and text.strip().lower() == str(self.correct_answer).strip().lower()
+                )
+                choices.append({
+                    "text": text,
+                    "value": text,
+                    "is_correct": is_correct,
+                    "index": idx + 1,
+                })
+        return choices
+
+    def check_answer(self, submitted_answer):
+        """
+        Check if the submitted answer is correct (case-insensitive and whitespace-stripped).
+        """
+        if submitted_answer is None:
+            return False
+        sub = str(submitted_answer).strip().lower()
+        if not sub:
+            return False
+        if self.correct_answer and sub == str(self.correct_answer).strip().lower():
+            return True
+        if isinstance(self.options, list):
+            for opt in self.options:
+                if isinstance(opt, dict) and opt.get("is_correct"):
+                    opt_text = str(opt.get("text", "")).strip().lower()
+                    opt_val = str(opt.get("value", "")).strip().lower()
+                    if sub == opt_text or sub == opt_val:
+                        return True
+        return False
+
+    def get_correct_answer_display(self):
+        """
+        Return the human-readable text of the correct answer.
+        """
+        if self.correct_answer:
+            return self.correct_answer
+        if isinstance(self.options, list):
+            for opt in self.options:
+                if isinstance(opt, dict) and opt.get("is_correct"):
+                    return str(opt.get("text") or opt.get("value") or "")
+        return ""
 
     class Meta:
         ordering = ["order"]
