@@ -135,7 +135,8 @@ urlpatterns = [
     path("doubts/<int:thread_id>/status/", views.doubt_status_admin, name="doubt_status_admin"),
 
     # NOTIFICATIONS
-    path("notifications/", views.notification_list, name="notification_list"),
+    path("notification/", views.notification_list, name="notification_list"),
+    path("notification/api/", views.notification_api_list, name="notification_api_list"),
 
     # CONSULTATIONS
     path("consultations/", views.consultation_list, name="consultation_list"),

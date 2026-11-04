@@ -617,6 +617,39 @@ def verify_otp_view(request):
 
     request.session.modified = True
 
+    # ---------------------------------------------------------
+    # CREATE REGISTRATION NOTIFICATION
+    # ---------------------------------------------------------
+    try:
+        User = get_user_model()
+        # Retrieve the user object if already created, or get/create by email
+        user, _ = User.objects.get_or_create(
+            email=result["email"],
+            defaults={
+                "full_name": result["full_name"],
+            }
+        )
+
+        # Create the Notification
+        notification = Notification.objects.create(
+            recipient=user,
+            title="Welcome to Edvanto!",
+            message="Your registration has been initiated successfully. Please enter your OTP to verify your account.",
+            notification_type=Notification.NotificationType.SYSTEM,
+            is_read=False,
+        )
+
+        # Create the Notification Delivery record (In-App)
+        NotificationDelivery.objects.create(
+            notification=notification,
+            channel=NotificationDelivery.Channel.IN_APP,
+            status=NotificationDelivery.Status.SENT,
+            sent_at=timezone.now(),
+        )
+        print("[EDVANTO REGISTER] Notification and Delivery created successfully")
+    except Exception as exc:
+        print(f"[EDVANTO REGISTER] Warning: Failed to create notification: {exc}")
+
     # --------------------------------------------------------
     # Registration completed
     # --------------------------------------------------------
