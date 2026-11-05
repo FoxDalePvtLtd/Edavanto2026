@@ -511,17 +511,20 @@ def complete_lesson(enrollment, lesson):
         None,
     )
 
-    if video_asset is not None:
+    has_video = bool(
+        video_asset
+        and (
+            video_asset.original_file
+            or video_asset.hls_manifest
+        )
+    )
 
-        if (
-            progress.watched_percent
-            < VIDEO_COMPLETION_THRESHOLD
-        ):
+    if has_video:
+        if progress.watched_percent < VIDEO_COMPLETION_THRESHOLD:
             raise ValueError(
                 "Please complete the required portion "
                 "of the lesson video first."
             )
-
     # --------------------------------------------------------
     # ASSESSMENT REQUIREMENT
     # --------------------------------------------------------
@@ -544,11 +547,11 @@ def complete_lesson(enrollment, lesson):
     )
 
     progress.watched_percent = max(
-        progress.watched_percent,
-        VIDEO_COMPLETION_THRESHOLD
-        if video_asset is not None
-        else progress.watched_percent,
-    )
+    progress.watched_percent,
+    VIDEO_COMPLETION_THRESHOLD
+    if has_video
+    else progress.watched_percent,
+)
 
     progress.completed_at = timezone.now()
 

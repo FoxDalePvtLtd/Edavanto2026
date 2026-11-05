@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from core.models import (
     User,
     Course,
@@ -94,10 +95,14 @@ class StudyWorkflowTests(TestCase):
         # Attach video asset to lesson 1
         cls.video1 = VideoAsset.objects.create(
             lesson=cls.lesson1,
+            original_file=SimpleUploadedFile(
+                "test_video.mp4",
+                b"fake video content for testing",
+                content_type="video/mp4",
+            ),
             duration_seconds=300,
             processing_status=VideoAsset.ProcessingStatus.READY,
         )
-
     def setUp(self):
         # Create active, paid enrollment
         self.enrollment = Enrollment.objects.create(
@@ -214,6 +219,28 @@ class StudyWorkflowTests(TestCase):
         response = self.client.get(reverse("core:course_dashboard", kwargs={"slug": self.course.slug}))
         self.assertEqual(response.status_code, 200)
 
+        # Verify that the view passes the correct progress records.
+        progress_by_lesson = response.context["progress_by_lesson"]
+        self.assertEqual(
+            progress_by_lesson[self.lesson1.pk].status,
+            LearningProgress.Status.COMPLETED,
+        )
+        self.assertEqual(
+            progress_by_lesson[self.lesson2.pk].status,
+            LearningProgress.Status.UNLOCKED,
+        )
+        self.assertEqual(
+            progress_by_lesson[self.lesson3.pk].status,
+            LearningProgress.Status.LOCKED,
+        )
+
+        # Inspect the attached lesson objects
+        modules = response.context["modules"]
+        self.assertEqual(
+            modules[0].published_lessons[0].progress.status,
+            LearningProgress.Status.COMPLETED,
+        )
+
         content = response.content.decode("utf-8")
         # Lesson 1 shows completed
         self.assertIn("Completed", content)
@@ -239,3 +266,44 @@ class StudyWorkflowTests(TestCase):
         self.assertIn("edvanto-footer-inner", content)
         self.assertIn("&bull;", content)
         self.assertNotIn("\ufffd", content)
+
+
+    def test_lesson_without_video_can_be_completed(self):
+        """A lesson without a VideoAsset must not require video watch percentage."""
+
+        # Lesson 2 has no VideoAsset.
+        self.assertFalse(
+            VideoAsset.objects.filter(lesson=self.lesson2).exists()
+        )
+
+        progress = LearningProgress.objects.get(
+            enrollment=self.enrollment,
+            lesson=self.lesson2,
+        )
+
+        self.assertEqual(
+            progress.status,
+            LearningProgress.Status.LOCKED,
+        )
+
+        # Complete Lesson 1 first so Lesson 2 becomes accessible.
+        first_progress = LearningProgress.objects.get(
+            enrollment=self.enrollment,
+            lesson=self.lesson1,
+        )
+        first_progress.watched_percent = Decimal("95.00")
+        first_progress.save()
+
+        complete_lesson(self.enrollment, self.lesson1)
+
+        # Lesson 2 has no video, so it can be completed directly.
+        progress, next_lesson = complete_lesson(
+            self.enrollment,
+            self.lesson2,
+        )
+
+        self.assertEqual(
+            progress.status,
+            LearningProgress.Status.COMPLETED,
+        )
+        self.assertEqual(next_lesson, self.lesson3)
