@@ -1616,6 +1616,7 @@ def lesson_view(request, lesson_id):
             m.note_html = None
     materials = materials_list
     video_asset = getattr(lesson, "video_asset", None)
+    video_state = get_lesson_video_state(lesson)
     resources = lesson.resources.order_by("title", "pk")
 
     # All published lessons of this course, in curriculum order
@@ -1667,6 +1668,7 @@ def lesson_view(request, lesson_id):
 
             "materials": materials,
             "video_asset": video_asset,
+            "video_state": video_state,
             "resources": resources,
             "sidebar_rows": sidebar_rows,
 
@@ -1745,11 +1747,17 @@ def lesson_progress_api(request, lesson_id):
             "0",
         )
 
+        duration_seconds = request.POST.get(
+            "duration_seconds",
+            None,
+        )
+
         progress = update_video_progress(
             enrollment=enrollment,
             lesson=lesson,
             watched_percent=watched_percent,
             position_seconds=position_seconds,
+            duration_seconds=duration_seconds,
         )
 
     except PermissionError as exc:
