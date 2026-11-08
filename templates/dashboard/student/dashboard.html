@@ -22,6 +22,39 @@
 
 <div class="container-fluid px-0">
 
+  {% if pending_enrollment %}
+    <div class="card border-0 mb-4 p-4" style="border-radius: 14px; background: #FFFDF0; border: 1px solid #E6D7A8 !important; border-left: 5px solid #D4A62A !important;">
+      <div class="d-flex align-items-start gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(212, 166, 42, 0.15); color: #B8891F;">
+          <i class="bi bi-hourglass-split fs-5"></i>
+        </div>
+        <div>
+          <h5 class="h6 fw-bold text-dark mb-1">Enrollment Verification Pending</h5>
+          <p class="small text-muted mb-2">
+            Your enrollment for <strong>{{ pending_enrollment.course.title }}</strong> is currently awaiting administrative approval and payment confirmation.
+            Once verified by our team, all lessons, study materials, and assessments will be fully unlocked.
+          </p>
+          <span class="badge bg-warning-subtle text-warning">Status: {{ pending_enrollment.get_approval_status_display }} ({{ pending_enrollment.get_payment_status_display }})</span>
+        </div>
+      </div>
+    </div>
+  {% elif rejected_enrollment %}
+    <div class="card border-0 mb-4 p-4" style="border-radius: 14px; background: #FEF2F2; border: 1px solid #FECACA !important; border-left: 5px solid #EF4444 !important;">
+      <div class="d-flex align-items-start gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.12); color: #EF4444;">
+          <i class="bi bi-x-circle fs-5"></i>
+        </div>
+        <div>
+          <h5 class="h6 fw-bold text-dark mb-1">Enrollment Request Declined</h5>
+          <p class="small text-muted mb-2">
+            Your enrollment request for <strong>{{ rejected_enrollment.course.title }}</strong> was not approved. Please contact our support team or explore available courses.
+          </p>
+          <a href="{% url 'core:courses' %}" class="btn btn-sm btn-outline-danger">Browse Courses</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <!-- ========================================================
      1. MINIMALIST HERO STUDY BANNER
      ======================================================== -->
@@ -38,8 +71,12 @@
               <span class="badge bg-success-subtle text-success px-3 py-1"><i class="bi bi-check-circle-fill me-1"></i> Active Enrollment</span>
             {% elif active_enrollment.access_paused %}
               <span class="badge bg-danger-subtle text-danger px-3 py-1"><i class="bi bi-pause-circle-fill me-1"></i> Access Paused</span>
-            {% else %}
+            {% elif active_enrollment %}
               <span class="badge bg-warning-subtle text-warning px-3 py-1">{{ active_enrollment.get_payment_status_display }}</span>
+            {% elif pending_enrollment %}
+              <span class="badge bg-warning-subtle text-warning px-3 py-1"><i class="bi bi-hourglass-split me-1"></i> Verification Pending</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary px-3 py-1"><i class="bi bi-info-circle me-1"></i> New Student</span>
             {% endif %}
           </div>
 
@@ -71,6 +108,10 @@
             {% elif course %}
               <a href="{% url 'core:course_dashboard' course.slug %}" class="btn btn-primary px-4 py-2">
                 <i class="bi bi-play-circle-fill me-2"></i> Start Course
+              </a>
+            {% else %}
+              <a href="{% url 'core:courses' %}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-compass me-2"></i> Explore Courses
               </a>
             {% endif %}
 

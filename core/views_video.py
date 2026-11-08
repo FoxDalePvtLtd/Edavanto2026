@@ -19,7 +19,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404
 from django.utils.cache import patch_cache_control
 
-from core.models import Lesson, VideoAsset, Enrollment
+from core.models import Lesson, VideoAsset, Enrollment, Course
 from core.services.learning import get_lesson_video_state, VideoState
 
 
@@ -52,6 +52,9 @@ def _has_video_access(user, lesson: Lesson) -> bool:
     course = lesson.module.course
     if course.instructor == user:
         return True
+
+    if course.mode == Course.Mode.OFFLINE:
+        return False
 
     enrollment = Enrollment.objects.filter(
         student=user,

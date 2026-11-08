@@ -691,6 +691,7 @@ def complete_lesson(enrollment, lesson):
     if video_error:
         raise ValueError(video_error)
 
+    video_asset = getattr(lesson, "video_asset", None)
     has_video = bool(
         video_asset
         and (
