@@ -37,9 +37,8 @@ ALLOWED_HOSTS = env.list(
     default=[
         "127.0.0.1",
         "localhost",
-        "192.168.1.1",
-        "192.168.1.1:6000",
-        "192.168.1.1",
+        "192.168.1.26:8000",
+        "192.168.1.26"
     ],
 )
 
@@ -229,7 +228,10 @@ def _default_material_key() -> str:
     return secrets.token_hex(32)
 
 
-LESSON_MATERIAL_ENCRYPTION_KEY = os.environ.get("LESSON_MATERIAL_ENCRYPTION_KEY")
+LESSON_MATERIAL_ENCRYPTION_KEY = env(
+    "LESSON_MATERIAL_ENCRYPTION_KEY",
+    default="",
+)
 
 if not LESSON_MATERIAL_ENCRYPTION_KEY:
     raise RuntimeError(

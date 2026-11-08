@@ -691,16 +691,20 @@ def complete_lesson(enrollment, lesson):
     if video_error:
         raise ValueError(video_error)
 
-    if requires_video:
-        if (
-            progress.watched_percent
-            < VIDEO_COMPLETION_THRESHOLD
-        ):
+    has_video = bool(
+        video_asset
+        and (
+            video_asset.original_file
+            or video_asset.hls_manifest
+        )
+    )
+
+    if has_video:
+        if progress.watched_percent < VIDEO_COMPLETION_THRESHOLD:
             raise ValueError(
                 "Please complete the required portion "
                 "of the lesson video first."
             )
-
     # --------------------------------------------------------
     # ASSESSMENT REQUIREMENT
     # --------------------------------------------------------
@@ -722,24 +726,12 @@ def complete_lesson(enrollment, lesson):
         LearningProgress.Status.COMPLETED
     )
 
-    if requires_video:
-        progress.watched_percent = max(
-            progress.watched_percent,
-            VIDEO_COMPLETION_THRESHOLD,
-        )
-        has_video_completed_event = LearningEvent.objects.filter(
-            enrollment=enrollment,
-            lesson=lesson,
-            event_type=LearningEvent.EventType.VIDEO_COMPLETED,
-        ).exists()
-        if not has_video_completed_event:
-            LearningEvent.objects.create(
-                student=enrollment.student,
-                enrollment=enrollment,
-                lesson=lesson,
-                event_type=LearningEvent.EventType.VIDEO_COMPLETED,
-                progress=progress.watched_percent,
-            )
+    progress.watched_percent = max(
+    progress.watched_percent,
+    VIDEO_COMPLETION_THRESHOLD
+    if has_video
+    else progress.watched_percent,
+)
 
     progress.completed_at = timezone.now()
 
