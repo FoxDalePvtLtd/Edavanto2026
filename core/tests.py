@@ -15,6 +15,7 @@ from core.services.learning import (
     lesson_is_accessible,
     complete_lesson,
     update_enrollment_progress,
+    initialize_learning_progress,
 )
 
 
@@ -270,6 +271,7 @@ class StudyWorkflowTests(TestCase):
 
     def test_lesson_without_video_can_be_completed(self):
         """A lesson without a VideoAsset must not require video watch percentage."""
+        initialize_learning_progress(self.enrollment)
 
         # Lesson 2 has no VideoAsset.
         self.assertFalse(
