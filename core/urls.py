@@ -67,3 +67,8 @@ urlpatterns = [
     path("dashboard/assessment/<int:assessment_id>/take/", views.take_assessment, name="take_assessment"),
     path("dashboard/assessment/submission/<int:submission_id>/result/", views.assessment_result, name="assessment_result"),
 ]
+
+
+
+
+

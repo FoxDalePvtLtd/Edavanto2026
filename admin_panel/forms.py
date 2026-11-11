@@ -3,7 +3,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from core.models import *
-
+from PIL import Image
 
 class CourseAdminForm(forms.ModelForm):
     class Meta:
@@ -46,6 +46,39 @@ class CourseAdminForm(forms.ModelForm):
         if not slug:
             raise forms.ValidationError("Course slug is required.")
         return slug
+
+
+    def clean_thumbnail(self):
+        thumbnail = self.cleaned_data.get("thumbnail")
+
+        if thumbnail:
+            if hasattr(thumbnail, "file"):
+                try:
+                    img = Image.open(thumbnail)
+                    width, height = img.size
+
+                    REQUIRED_WIDTH = 800
+                    REQUIRED_HEIGHT = 600
+
+                    if width != REQUIRED_WIDTH or height != REQUIRED_HEIGHT:
+                        raise forms.ValidationError(
+                            f"Incorrect image size! Uploaded image dimensions are {width}x {height}px. "
+
+                        )
+
+                    thumbnail.seek(0)
+
+                except Exception as e:
+                    if isinstance(e, forms.ValidationError):
+                        raise e
+                    raise forms.ValidationError(
+                        "Invalid image file. Please upload a proper image."
+                    )
+
+                return thumbnail
+
+    
+
 
     def clean(self):
         cleaned_data = super().clean()
