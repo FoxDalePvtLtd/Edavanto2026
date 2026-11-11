@@ -1155,6 +1155,14 @@
       color: var(--edvanto-gray);
       margin-top: 0.4rem;
     }
+     #notificationBellBtn,
+    #notificationBellBtn:focus,
+    #notificationBellBtn:active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        color: var(--edvanto-gold) !important;
+        background: rgba(212, 166, 42, 0.12) !important;
+    }
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -1179,194 +1187,7 @@
         </a>
       </div>
 
-            <!-- Navigation -->
-            {% comment %} <nav class="edvanto-sidebar-nav">
-
-        <div class="edvanto-nav-section">Overview</div>
-        <ul class="edvanto-nav">
-          <li>
-            <a href="{% url 'admin_panel:dashboard' %}"
-              class="edvanto-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-              title="Dashboard"
-              {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>
-              <i class="bi bi-grid-1x2-fill"></i>
-              <span>Dashboard</span>
-            </a>
-          </li>
-        </ul>
-
-        <div class="edvanto-nav-section">Manage</div>
-        <ul class="edvanto-nav">
-
-          {% with url_name=request.resolver_match.url_name %}
-          {% with user_names="user_list,user_form,user_edit,user_toggle_active".split(",") %}
-          <li>
-            <a href="{% url 'admin_panel:user_list' %}"
-               class="edvanto-nav-link {% if url_name in user_names %}active{% endif %}"
-               title="Users"
-               {% if url_name in user_names %}aria-current="page"{% endif %}>
-              <i class="bi bi-people-fill"></i>
-              <span>Users</span>
-            </a>
-          </li>
-          {% endwith %}
-
-          {% with course_names="course_dashboard,course_create,course_form".split(",") %}
-          <li>
-            <a href="{% url 'admin_panel:course_dashboard' %}"
-              class="edvanto-nav-link {% if url_name in course_names %}active{% endif %}"
-              title="Courses"
-              {% if url_name in course_names %}aria-current="page"{% endif %}>
-              <i class="bi bi-journal-bookmark-fill"></i>
-              <span>Courses</span>
-            </a>
-          </li>
-          {% endwith %}
-
-          <li>
-            <a href="{% url 'admin_panel:syllabus_course_list' %}"
-              class="edvanto-nav-link {% if url_name == 'syllabus_course_list' %}active{% endif %}"
-              title="Syllabus"
-              {% if url_name == 'syllabus_course_list' %}aria-current="page"{% endif %}>
-              <i class="bi bi-list-nested"></i>
-              <span>Syllabus</span>
-            </a>
-          </li>
-
-          {% with learning_names="syllabus_curriculum,module_create,module_edit,module_delete,lesson_create,lesson_edit,lesson_delete,syllabus_media_lesson".split(",") %}
-          <li>
-            <a href="{% url 'admin_panel:syllabus_course_list' %}"
-              class="edvanto-nav-link {% if url_name in learning_names %}active{% endif %}"
-              title="Learning"
-              {% if url_name in learning_names %}aria-current="page"{% endif %}>
-              <i class="bi bi-mortarboard-fill"></i>
-              <span>Learning</span>
-            </a>
-          </li>
-          {% endwith %}
-
-          <li>
-            <a href="{% url 'admin_panel:enrollment_list' %}"
-               class="edvanto-nav-link {% if url_name == 'enrollment_list' %}active{% endif %}"
-               title="Enrollments"
-               {% if url_name == 'enrollment_list' %}aria-current="page"{% endif %}>
-              <i class="bi bi-person-plus-fill"></i>
-              <span>Enrollments</span>
-              <span class="edvanto-nav-badge">{{ enrollment_count|default:"0" }}</span>
-            </a>
-          </li>
-
-          {% with payment_names="payment_list,payment_installments".split(",") %}
-          <li>
-            <a href="{% url 'admin_panel:payment_list' %}"
-               class="edvanto-nav-link {% if url_name in payment_names %}active{% endif %}"
-               title="Payments"
-               {% if url_name in payment_names %}aria-current="page"{% endif %}>
-              <i class="bi bi-credit-card-2-front-fill"></i>
-              <span>Payments</span>
-            </a>
-          </li>
-          {% endwith %}
-
-          {% with batch_names="batch_list,batch_sessions,batch_attendance".split(",") %}
-          <li>
-            <a href="{% url 'admin_panel:batch_list' %}"
-               class="edvanto-nav-link {% if url_name in batch_names %}active{% endif %}"
-               title="Batches"
-               {% if url_name in batch_names %}aria-current="page"{% endif %}>
-              <i class="bi bi-calendar2-week-fill"></i>
-              <span>Batches</span>
-            </a>
-          </li>
-          {% endwith %}
-
-          {% with assessment_names="assessment_list,assessment_questions,assessment_submissions".split(",") %}
-          <li>
-            <a href="{% url 'admin_panel:assessment_list' %}"
-               class="edvanto-nav-link {% if url_name in assessment_names %}active{% endif %}"
-               title="Assessments"
-               {% if url_name in assessment_names %}aria-current="page"{% endif %}>
-              <i class="bi bi-clipboard2-check-fill"></i>
-              <span>Assessments</span>
-            </a>
-          </li>
-          {% endwith %}
-          {% endwith %}
-        </ul>
-
-        <div class="edvanto-nav-section">Engage</div>
-        <ul class="edvanto-nav">
-          {% with url_name=request.resolver_match.url_name %}
-          <li>
-            <a href="{% url 'admin_panel:doubt_list' %}"
-               class="edvanto-nav-link {% if url_name == 'doubt_list' %}active{% endif %}"
-               title="Doubts"
-               {% if url_name == 'doubt_list' %}aria-current="page"{% endif %}>
-              <i class="bi bi-question-circle-fill"></i>
-              <span>Doubts</span>
-              <span class="edvanto-nav-badge">{{ open_doubts_count|default:"0" }}</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'admin_panel:notification_list' %}"
-               class="edvanto-nav-link {% if url_name == 'notification_list' %}active{% endif %}"
-               title="Notifications"
-               {% if url_name == 'notification_list' %}aria-current="page"{% endif %}>
-              <i class="bi bi-bell-fill"></i>
-              <span>Notifications</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'admin_panel:consultation_list' %}"
-               class="edvanto-nav-link {% if url_name == 'consultation_list' %}active{% endif %}"
-               title="Consultations"
-               {% if url_name == 'consultation_list' %}aria-current="page"{% endif %}>
-              <i class="bi bi-chat-dots-fill"></i>
-              <span>Consultations</span>
-              <span class="edvanto-nav-badge">{{ consultation_count|default:"0" }}</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'admin_panel:certificate_list' %}"
-               class="edvanto-nav-link {% if url_name == 'certificate_list' %}active{% endif %}"
-               title="Certificates"
-               {% if url_name == 'certificate_list' %}aria-current="page"{% endif %}>
-              <i class="bi bi-award-fill"></i>
-              <span>Certificates</span>
-            </a>
-          </li>
-          {% endwith %}
-        </ul>
-
-        <div class="edvanto-nav-section">System</div>
-        <ul class="edvanto-nav">
-          {% with url_name=request.resolver_match.url_name %}
-          <li>
-            <a href="{% url 'admin_panel:report_dashboard' %}"
-               class="edvanto-nav-link {% if url_name == 'report_dashboard' %}active{% endif %}"
-               title="Reports"
-               {% if url_name == 'report_dashboard' %}aria-current="page"{% endif %}>
-              <i class="bi bi-bar-chart-line-fill"></i>
-              <span>Reports</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'admin_panel:security_dashboard' %}"
-               class="edvanto-nav-link {% if url_name == 'security_dashboard' %}active{% endif %}"
-               title="Security &amp; Audit"
-               {% if url_name == 'security_dashboard' %}aria-current="page"{% endif %}>
-              <i class="bi bi-shield-lock-fill"></i>
-              <span>Security &amp; Audit</span>
-            </a>
-          </li>
-          {% endwith %}
-        </ul>
-
-      </nav> {% endcomment %}
+          
             {% load nav_extras %}
       <nav class="edvanto-sidebar-nav">
 
@@ -1582,9 +1403,15 @@
 
         <!-- Actions -->
         <div class="edvanto-header-actions">
-          <a href="{% url 'admin_panel:notification_list' %}" class="edvanto-icon-btn" title="Notifications">
+          {% comment %} <a href="{% url 'admin_panel:notification_list' %}" class="edvanto-icon-btn" title="Notifications">
             <i class="bi bi-bell"></i>
             <span class="edvanto-dot"></span>
+          </a> {% endcomment %}
+
+
+          <a href="#" class="edvanto-icon-btn position-relative" title="Notifications" data-bs-toggle="modal" data-bs-target="#notificationModal" id="notificationBellBtn">
+              <i class="bi bi-bell"></i>
+              <span class="edvanto-dot position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="display: {% if admin_unread_count > 0 %}block{% else %}none{% endif %};"></span>
           </a>
           <a href="{% url 'admin_panel:doubt_list' %}" class="edvanto-icon-btn" title="Open doubts">
             <i class="bi bi-question-circle"></i>
@@ -1609,6 +1436,35 @@
           </div>
         </div>
       </header>
+
+
+
+      <!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow" style="background-color: var(--edvanto-cream); border-radius: var(--edvanto-radius-card);">
+      <div class="modal-header border-bottom" style="border-color: var(--edvanto-border-light) !important;">
+        <h5 class="modal-title text-edvanto-dark fw-bold" id="notificationModalLabel">
+          <i class="bi bi-bell me-2 text-edvanto-gold"></i>Notifications
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <!-- Body where notifications will be injected -->
+      <div class="modal-body p-0" id="notificationModalBody">
+        <div class="text-center py-5">
+          <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top justify-content-between" style="border-color: var(--edvanto-border-light) !important;">
+        <span class="text-muted small" id="notificationUnreadCountText">Unread: 0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
       <!-- ---------- CONTENT ---------- -->
       <main class="edvanto-content" id="edvantoContent">
@@ -1770,7 +1626,181 @@
 
     })();
   </script>
+  {% comment %} <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationModal = document.getElementById('notificationModal');
+        if (!notificationModal) return;
 
+        notificationModal.addEventListener('show.bs.modal', function () {
+            const modalBody = document.getElementById('notificationModalBody');
+            const unreadCountText = document.getElementById('notificationUnreadCountText');
+            const dotBadge = document.querySelector('.edvanto-icon-btn [data-bs-target="#notificationModal"] .edvanto-dot, .edvanto-icon-btn[data-bs-target="#notificationModal"] .edvanto-dot');
+
+            // Fetch data from your API endpoint
+            fetch("{% url 'admin_panel:notification_api_list' %}")
+                .then(response => response.json())
+                .then(data => {
+                    unreadCountText.textContent = `Unread: ${data.unread_count}`;
+                    
+                    // Hide or show the red dot indicator based on unread items
+                    if (dotBadge) {
+                        dotBadge.style.display = data.unread_count > 0 ? 'inline-block' : 'none';
+                    }
+
+                    if (data.notifications.length === 0) {
+                        modalBody.innerHTML = `
+                            <div class="text-center py-5">
+                                <i class="bi bi-bell-slash text-muted display-6 mb-2"></i>
+                                <p class="text-muted mb-0">No notifications found.</p>
+                            </div>`;
+                        return;
+                    }
+
+                    let html = '<div class="list-group list-group-flush">';
+                    data.notifications.forEach(n => {
+                        const bgClass = !n.is_read ? 'bg-light' : '';
+                        html += `
+                            <div class="list-group-item p-3 ${bgClass}">
+                                <div class="fw-bold d-flex justify-content-between align-items-center mb-1">
+                                    <span>${n.title}</span>
+                                    <span class="badge bg-secondary rounded-pill" style="font-size: 0.7rem;">
+                                        ${n.type}
+                                    </span>
+                                </div>
+                                <p class="mb-1 text-muted small">${n.message}</p>
+                                <small class="text-secondary" style="font-size: 0.75rem;">
+                                    ${n.created_at}
+                                </small>
+                            </div>`;
+                    });
+                    html += '</div>';
+                    modalBody.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                    modalBody.innerHTML = `
+                        <div class="text-center py-5 text-danger">
+                            <p class="mb-0">Failed to load notifications.</p>
+                        </div>`;
+                });
+        });
+    });
+  </script> {% endcomment %}
+
+
+<!-- Notification Handling Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const notificationApiUrl = "{% url 'admin_panel:notification_api_list' %}";
+    const markAllReadUrl = "{% url 'admin_panel:notification_mark_all_read_api' %}";
+    const modalBody = document.getElementById("notificationModalBody");
+    const unreadCountText = document.getElementById("notificationUnreadCountText");
+    const dotBadge = document.querySelector(".edvanto-dot");
+    const notificationBellBtn = document.getElementById("notificationBellBtn");
+
+    if (notificationBellBtn) {
+        notificationBellBtn.addEventListener("click", function() {
+            this.blur();
+        });
+    }
+
+    function fetchNotifications() {
+        fetch(notificationApiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (unreadCountText) {
+                    unreadCountText.textContent = `Unread: ${data.unread_count}`;
+                }
+
+                if (dotBadge) {
+                    dotBadge.style.display = data.unread_count > 0 ? "inline-block" : "none";
+                }
+
+                if (!data.notifications || data.notifications.length === 0) {
+                    modalBody.innerHTML = `<p class="text-muted text-center py-4 mb-0">No notifications found.</p>`;
+                    return;
+                }
+
+                let htmlList = `<div class="list-group list-group-flush">`;
+                data.notifications.forEach(n => {
+                    // Edvanto styling: Gold accent for unread, clean white/cream for read. No blue borders.
+                    const itemStyle = n.is_read 
+                        ? "background-color: #ffffff; color: var(--edvanto-gray);" 
+                        : "background-color: var(--edvanto-cream-2); border-left: 4px solid var(--edvanto-gold) !important; font-weight: 600;";
+                    
+                    htmlList += `
+                        <div class="list-group-item p-3 border-bottom" style="${itemStyle} border-color: var(--edvanto-border-light) !important;">
+                            <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 text-edvanto-dark" style="font-size: 0.9rem;">${n.title}</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">${n.created_at}</small>
+                            </div>
+                            <p class="mb-0 small text-secondary">${n.message}</p>
+                        </div>
+                    `;
+                });
+                htmlList += `</div>`;
+                modalBody.innerHTML = htmlList;
+            })
+            .catch(error => {
+                console.error("Error fetching notifications:", error);
+                modalBody.innerHTML = `<p class="text-danger text-center py-4 mb-0">Failed to load notifications.</p>`;
+            });
+    }
+
+    // When the modal opens, load notifications AND mark all as read automatically to hide the red dot
+    const notificationModal = document.getElementById('notificationModal');
+    if (notificationModal) {
+        notificationModal.addEventListener('show.bs.modal', function () {
+            fetchNotifications();
+
+            fetch(markAllReadUrl, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(resData => {
+                if (resData.success) {
+                    if (dotBadge) dotBadge.style.display = "none";
+                    if (unreadCountText) unreadCountText.textContent = "Unread: 0";
+                }
+            })
+            .catch(err => console.error("Error marking notifications read:", err));
+        });
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const notificationDot = document.querySelector("#notificationBellBtn .edvanto-dot");
+
+    function checkUnreadNotifications() {
+        fetch("{% url 'admin_panel:notification_api_list' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.unread_count > 0) {
+                    if (notificationDot) notificationDot.style.display = "block";
+                } else {
+                    if (notificationDot) notificationDot.style.display = "none";
+                }
+            })
+            .catch(err => console.error("Error fetching notifications:", err));
+    }
+
+    // Check immediately on load and poll every 30 seconds
+    checkUnreadNotifications();
+    setInterval(checkUnreadNotifications, 30000);
+});
+</script>
+
+
+
+  <!-- Include the notification modal popup -->
+    {% include 'notifications/list.html' %}
+    
   {% block extra_js %}{% endblock %}
 </body>
 </html>

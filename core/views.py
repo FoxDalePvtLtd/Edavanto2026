@@ -39,15 +39,13 @@ from .registration_services import (
     validate_student_registration,
 )
 
+from core.services.notification import create_admin_notification
+
 
 User = get_user_model()
 
 
-# ============================================================
-# PUBLIC PAGES
-# ============================================================
 
-# views.py
 
 def home(request):
     selected_category = request.GET.get("category", "").strip()
@@ -72,6 +70,11 @@ def home(request):
             "selected_category": selected_category,
         },
     )
+
+
+
+
+# Courses 
 def courses(request):
     courses_queryset = (
         Course.objects
@@ -388,6 +391,7 @@ def student_register(request):
         "A verification code has been sent to your email."
     )
 
+
     return redirect("core:verify_otp")
 
 
@@ -617,6 +621,37 @@ def verify_otp_view(request):
 
     request.session.modified = True
 
+    # ---------------------------------------------------------
+    # CREATE REGISTRATION NOTIFICATIONS FOR ADMIN USERS
+    # ---------------------------------------------------------
+    try:
+        User = get_user_model()
+        
+        # Fetch all admin / staff users so they receive the notification in their panel
+        admin_users = User.objects.filter(is_staff=True)
+
+        for admin in admin_users:
+            # Create the Notification record for the admin
+            notification = Notification.objects.create(
+                recipient=admin,
+                title="New Student Registration",
+                message=f"Student {pending_registration['full_name']} ({pending_registration['email']}) has successfully verified their account.",
+                notification_type=Notification.NotificationType.SYSTEM,
+                is_read=False,
+            )
+
+            # Create the Notification Delivery record (In-App)
+            NotificationDelivery.objects.create(
+                notification=notification,
+                channel=NotificationDelivery.Channel.IN_APP,
+                status=NotificationDelivery.Status.SENT,
+                sent_at=timezone.now(),
+            )
+            
+        print("[EDVANTO REGISTER] Admin notifications created successfully")
+    except Exception as exc:
+        print(f"[EDVANTO REGISTER] Warning: Failed to create admin notifications: {exc}")
+
     # --------------------------------------------------------
     # Registration completed
     # --------------------------------------------------------
@@ -628,7 +663,6 @@ def verify_otp_view(request):
     )
 
     return redirect("core:login")
-
 
 # ============================================================
 # LOGIN
@@ -1107,6 +1141,9 @@ def test_payment(request, slug):
 @login_required
 @require_POST
 def offline_payment_request(request, slug):
+
+    User = get_user_model()
+
     if request.user.role != User.Role.STUDENT:
         messages.error(
             request,
@@ -1121,50 +1158,50 @@ def offline_payment_request(request, slug):
         slug=slug,
     )
 
-    other_enr = get_student_active_or_pending_enrollment(request.user, exclude_course=course)
-    if other_enr:
-        messages.error(
+    if request.method == "POST":
+        payment_mode = request.POST.get("payment_mode")
+        payment_date = request.POST.get("payment_date")
+        transaction_reference = request.POST.get("transaction_reference")
+        notes = request.POST.get("notes", "")
+
+        # Get or create a pending enrollment 
+        enrollment, created = Enrollment.objects.get_or_create(
+            student=request.user,
+            course=course,
+            defaults={
+                "approval_status": Enrollment.ApprovalStatus.PENDING,
+                "payment_status": Enrollment.PaymentStatus.PENDING,
+            }
+        )
+
+        # If already existed, set back to pending review if needed 
+        if not created:
+            enrollment.approval_status = Enrollment.ApprovalStatus.PENDING
+            enrollment.save()
+
+        # Notify all admin/staff users 
+        admin_users = User.objects.filter(is_staff=True)
+        for admin in admin_users:
+            create_admin_notification(
+                recipient=admin,
+                title="New Offline Payment Request",
+                message=f"{request.user.get_full_name() or request.user.username} submitted an offline payment for '{course.title}'",
+                n_type = Notification.NotificationType.PAYMENT
+            )
+
+        messages.warning(
             request,
-            f"You are already enrolled in '{other_enr.course.title}'. "
-            "Edvanto permits enrollment in only one course at a time.",
+            "Your offline payment request has been submitted and is pending administrative approval."
         )
         return redirect("core:dashboard")
 
-    payment_mode = request.POST.get("payment_mode", "UPI").strip()
-    transaction_reference = request.POST.get("transaction_reference", "").strip()
-    payment_date = request.POST.get("payment_date", "").strip()
-    notes = request.POST.get("notes", "").strip()
-
-    try:
-        order, payment_transaction, enrollment = create_offline_payment_request(
-            student=request.user,
-            course=course,
-            payment_mode=payment_mode,
-            transaction_reference=transaction_reference,
-            payment_date=payment_date or None,
-            notes=notes,
-        )
-    except ValueError as exc:
-        messages.error(
-            request,
-            str(exc),
-        )
-        return redirect(
-            "core:payment",
-            slug=course.slug,
-        )
-
-    ref_str = f" (Ref: {transaction_reference})" if transaction_reference else ""
-    messages.success(
-        request,
-        f"Your offline payment request for '{course.title}'{ref_str} has been submitted! "
-        "Our team will verify your transaction details and activate course access shortly.",
-    )
-    return redirect("core:dashboard")
+    return redirect("core:payment", slug=course.slug)
 
 
 @login_required
 def payment(request, slug):
+    User = get_user_model()
+
     if request.user.role != User.Role.STUDENT:
         messages.error(
             request,
@@ -1206,11 +1243,41 @@ def payment(request, slug):
             )
             return redirect("core:course_dashboard", slug=course.slug)
         elif enrollment.approval_status == Enrollment.ApprovalStatus.PENDING:
-            messages.warning(
-                request,
-                "Your enrollment for this course is pending administrative approval."
-            )
-            return redirect("core:dashboard")
+             # ---------------------------------------------------------
+                # CREATE REGISTRATION NOTIFICATIONS FOR ADMIN USERS
+                # ---------------------------------------------------------
+                
+                
+                try:
+                    
+                    # Fetch all admin / staff users so they receive the notification in their panel
+                    admin_users = User.objects.filter(is_staff=True)
+            
+                    for admin in admin_users:
+                        # Create the Notification record for the admin
+                        notification = Notification.objects.create(
+                            recipient=admin,
+                            title="New Payment Request",
+                            message=f"Enrollment request.",
+                            notification_type=Notification.NotificationType.SYSTEM,
+                            is_read=False,
+                        )
+            
+                        # Create the Notification Delivery record (In-App)
+                        NotificationDelivery.objects.create(
+                            notification=notification,
+                            channel=NotificationDelivery.Channel.IN_APP,
+                            status=NotificationDelivery.Status.SENT,
+                            sent_at=timezone.now(),
+                        )
+                    messages.warning(
+                        request,
+                        "Your enrollment for this course is pending administrative approval."
+                    )
+                    return redirect("core:dashboard")
+                except Exception as exc:
+                    pass
+
 
     # Calculate effective price
     price = course.discounted_price if (course.discounted_price and course.discounted_price > 0) else course.price
@@ -2060,6 +2127,17 @@ def career_consultation_request(request):
         status=ConsultationBooking.Status.NEW,
     )
 
+    # Notify all admins and staff members in-app 
+    admin_users = User.objects.filter(is_staff=True)
+    for admin_user in admin_users:
+        Notification.objects.create(
+            recipient=admin_user,
+            title="Career Consultation Request",
+            message=f"{student_name} submitted career consultation request.",
+            notification_type = Notification.NotificationType.SYSTEM,
+            is_read=False
+        )
+
     success_msg = f"Thank you, {student_name}! Your career consultation request has been registered (Ref #{booking.pk}). Our mentorship team will contact you shortly."
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({
@@ -2168,6 +2246,30 @@ def create_doubt(request, lesson_id):
         message=message_text,
         attachment=attachment,
     )
+
+
+    recipients = User.objects.filter(
+        Q(is_staff=True) | Q(role__in=[User.Role.INSTRUCTOR, User.Role.ADMIN]),
+        is_active=True
+    ).distinct()
+
+    for recipient in recipients:
+        notification = Notification.objects.create(
+            recipient=recipient,
+            title="New Student Doubt",
+            message=f"{user.get_full_name()} asked a doubt.",
+            notification_type = Notification.NotificationType.DOUBT,
+            is_read = False,
+        )
+
+        NotificationDelivery.objects.create(
+            notification=notification,
+            channel=NotificationDelivery.Channel.IN_APP,
+            status=NotificationDelivery.Status.SENT,
+            sent_at=timezone.now(),
+        )
+ 
+
 
     messages.success(request, f"Your doubt regarding '{lesson.title}' has been submitted. Our instructor will reply soon!")
     return redirect("core:doubt_detail", thread_id=thread.pk)
@@ -2479,3 +2581,15 @@ def assessment_result(request, submission_id):
         ).upper() or "S",
     }
     return render(request, "dashboard/student/assessment_result.html", context)
+
+
+
+@login_required
+def notification(request):
+    """Render notification list for the logged-in user."""
+    notifications = Notification.objects.filter(recipient=request.user).order_by("-created_at")
+    return render(
+        request,
+        "notifications/list.html",
+        {"notifications": notifications},
+    )

@@ -17,6 +17,7 @@ from django.views.decorators.http import require_GET, require_POST, require_http
 
 from .permissions import admin_required
 from core.services.video_probe import probe_video
+from django.contrib.auth.decorators import login_required
 
 def _dbg(msg):
     """Single-line debug helper — visible in runserver console."""
@@ -1243,13 +1244,6 @@ def doubt_status_admin(request, thread_id):
     return redirect("admin_panel:doubt_detail_admin", thread_id=thread.pk)
 
 
-# NOTIFICATIONS
-@admin_required
-@require_GET
-def notification_list(request):
-    return render(request, "notifications/list.html")
-
-
 # CONSULTATIONS
 @admin_required
 @require_GET
@@ -1607,3 +1601,56 @@ def lesson_resource_delete(request, course_id, module_id, lesson_id, resource_id
         "admin_panel:syllabus_media_lesson",
         course_id=course.pk, module_id=module.pk, lesson_id=lesson.pk,
     )
+
+
+# NOTIFICATION 
+
+@login_required
+@require_GET
+
+def notification_api_list(request):
+    """API endpoint returning the admin user's latest notifications and unread count."""
+    notifications = Notification.objects.filter(recipient=request.user).order_by("-created_at")[:10]
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+
+    data = {
+        "unread_count": unread_count,
+        "notifications": [
+            {
+                "id": n.pk,
+                "title": n.title,
+                "message":n.message,
+                "type": n.get_notification_type_display(),
+                "is_read": n.is_read,
+                "created_at": timezone.localtime(n.created_at).strftime("%b %d, %Y, %H:%M"),
+            }
+            for n in notifications
+        ]
+    }
+    return JsonResponse(data)
+
+
+
+@login_required
+@require_GET
+def notification_list(request):
+    """Render notification list for the logged-in user."""
+    notifications = Notification.objects.filter(recipient=request.user).order_by("-created_at")
+    return render(request, "notifications/list.html", {"notifications": notifications})
+
+
+@login_required
+@require_POST
+def notification_mark_read_api(request, notification_id):
+    """Mark a specific notification as read."""
+    notification = get_object_or_404(Notification, pk=notification_id, recipient=request.user)
+    notification.is_read = True
+    notification.save(update_fields=["is_read"])
+    return JsonResponse({"success":True})
+
+@login_required
+@require_POST
+def notification_mark_all_read_api(request):
+    """Mark all notifications for the current user as read when opening the modal."""
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({"success": True})
