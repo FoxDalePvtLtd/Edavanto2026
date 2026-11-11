@@ -147,14 +147,14 @@
         <span class="text-muted small">Sequential progression: complete each lesson to unlock subsequent units</span>
       </div>
       <span class="badge bg-light text-muted border">
-        {{ course.modules.all|length }} Module{{ course.modules.all|length|pluralize }}
+       {{ modules|length }} Module{{ modules|length|pluralize }}
       </span>
     </div>
 
     <div class="card-body p-4">
-      {% if course.modules.all %}
+      {% if modules %}
         <div class="accordion" id="curriculumAccordion">
-          {% for module in modules|default:course.modules.all %}
+          {% for module in modules %}
             <div class="accordion-item mb-3 border rounded-3 overflow-hidden shadow-none" style="border-color: var(--study-border) !important;">
 
               <h2 class="accordion-header" id="headingMod{{ module.id }}">
@@ -170,7 +170,7 @@
                   </span>
                   <span class="flex-grow-1">{{ module.title }}</span>
                   <span class="badge bg-white text-muted border ms-2 small fw-normal">
-                    {{ module.lessons.all|length }} Lesson{{ module.lessons.all|length|pluralize }}
+                    {{ module.published_lessons|length }} Lesson{{ module.published_lessons|length|pluralize }}
                   </span>
                 </button>
               </h2>

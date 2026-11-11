@@ -34,9 +34,6 @@
     <a href="{% url 'admin_panel:user_form' %}" class="btn btn-gold"><i class="bi bi-person-plus me-1"></i> Add User</a>
   </div>
 
-  {% if messages %}
-    {% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}
-  {% endif %}
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-sm-4"><div class="user-stat"><div class="user-stat-label">Managed accounts</div><div class="user-stat-value">{{ total_users_count }}</div></div></div>

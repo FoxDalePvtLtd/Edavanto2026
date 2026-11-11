@@ -18,17 +18,6 @@
           </p>
         </div>
 
-        {% if messages %}
-        <div class="mb-4">
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
-              <i class="tji-info-circle fs-5"></i>
-              <span>{{ message }}</span>
-              <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endfor %}
-        </div>
-        {% endif %}
 
         <div class="row g-4 align-items-start">
           <!-- Course Order Summary Sidebar -->

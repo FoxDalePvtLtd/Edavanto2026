@@ -656,13 +656,15 @@ def verify_otp_view(request):
     # Registration completed
     # --------------------------------------------------------
 
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
     messages.success(
         request,
-        "Your account has been created successfully. "
-        "You can now log in."
+        "Welcome to Edvanto! Your account has been verified successfully.",
+        extra_tags="Registration Successful!",
     )
 
-    return redirect("core:login")
+    return redirect("core:dashboard")
 
 # ============================================================
 # LOGIN
@@ -686,6 +688,7 @@ def login_view(request):
     password = request.POST.get("password", "")
 
     if not email:
+        messages.error(request, "Email address is required.")
         return render(
             request,
             "login.html",
@@ -698,6 +701,7 @@ def login_view(request):
         )
 
     if not password:
+        messages.error(request, "Password is required.")
         return render(
             request,
             "login.html",
@@ -716,6 +720,7 @@ def login_view(request):
     )
 
     if user is None:
+        messages.error(request, "Invalid email or password.")
         return render(
             request,
             "login.html",
@@ -730,6 +735,7 @@ def login_view(request):
         )
 
     if not user.is_active:
+        messages.error(request, "Your account is inactive. Please contact support.")
         return render(
             request,
             "login.html",
@@ -747,6 +753,10 @@ def login_view(request):
     # superuser-only. Do not silently grant admin-panel access to a user
     # merely because their custom role field says "admin".
     if user.role == User.Role.ADMIN and not user.is_superuser:
+        messages.error(
+            request,
+            "This admin account is not authorized for the admin panel. Contact the system administrator."
+        )
         return render(
             request,
             "login.html",
@@ -765,61 +775,33 @@ def login_view(request):
 
     login(request, user)
 
-    # Send authorized administrators directly to the protected admin panel.
-    # Student enrollment-aware routing below remains unchanged.
+    # Route according to role with appropriate confirmation messages
     if user.is_superuser:
+        messages.success(
+            request,
+            "Welcome to the Edvanto administration panel.",
+            extra_tags="Admin Access Granted",
+        )
         return redirect("admin_panel:dashboard")
 
     if user.role == User.Role.STUDENT:
-
-        active_enrollment = (
-            Enrollment.objects
-            .select_related("course")
-            .filter(
-                student=user,
-                approval_status=Enrollment.ApprovalStatus.ACCEPTED,
-                payment_status__in=[
-                    Enrollment.PaymentStatus.PAID,
-                    Enrollment.PaymentStatus.PARTIALLY_PAID,
-                ],
-                access_paused=False,
-            )
-            .order_by("-enrolled_at")
-            .first()
+        messages.success(
+            request,
+            "You have successfully logged in to Edvanto.",
+            extra_tags="Welcome Back!",
         )
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+        ):
+            return redirect(next_url)
+        return redirect("core:dashboard")
 
-        if active_enrollment is not None:
-            if next_url and url_has_allowed_host_and_scheme(
-                next_url,
-                allowed_hosts={request.get_host()},
-            ):
-                return redirect(next_url)
-            return redirect("core:dashboard")
-
-        pending_enrollment = (
-            Enrollment.objects
-            .select_related("course")
-            .filter(
-                student=user,
-                approval_status=Enrollment.ApprovalStatus.PENDING,
-            )
-            .order_by("-enrolled_at")
-            .first()
-        )
-
-        if pending_enrollment:
-            messages.warning(
-                request,
-                f"Your enrollment for "
-                f"“{pending_enrollment.course.title}” is awaiting approval.",
-            )
-            return redirect(
-                "core:course_detail",
-                slug=pending_enrollment.course.slug,
-            )
-
-        return redirect("core:courses")
-
+    messages.success(
+        request,
+        "You have successfully logged in to Edvanto.",
+        extra_tags="Welcome Back!",
+    )
     if next_url and url_has_allowed_host_and_scheme(
         next_url,
         allowed_hosts={request.get_host()},
@@ -830,12 +812,12 @@ def login_view(request):
 
 
 
-@require_POST
 def logout_view(request):
     logout(request)
     messages.success(
         request,
-        "You have been logged out successfully.",
+        "You have been logged out successfully. See you again!",
+        extra_tags="Logged Out Successfully",
     )
     return redirect("core:home")
 
@@ -1480,62 +1462,18 @@ def dashboard(request):
 
         break
 
-    # Never render the dashboard for a student who has no accepted,
-    # paid/partially-paid and unpaused enrollment.
-    if active_enrollment is None:
-
-        pending_enrollment = next(
-            (
-                enrollment
-                for enrollment in enrollments
-                if enrollment.approval_status
-                == Enrollment.ApprovalStatus.PENDING
-            ),
-            None,
-        )
-
-        if pending_enrollment is not None:
-            messages.warning(
-                request,
-                f"Your enrollment for "
-                f"“{pending_enrollment.course.title}” "
-                f"is awaiting approval.",
-            )
-            return redirect(
-                "core:course_detail",
-                slug=pending_enrollment.course.slug,
-            )
-
-        rejected_enrollment = next(
-            (
-                enrollment
-                for enrollment in enrollments
-                if enrollment.approval_status
-                == Enrollment.ApprovalStatus.REJECTED
-            ),
-            None,
-        )
-
-        if rejected_enrollment is not None:
-            messages.error(
-                request,
-                f"Your enrollment for "
-                f"“{rejected_enrollment.course.title}” "
-                f"is not currently approved.",
-            )
-            return redirect(
-                "core:course_detail",
-                slug=rejected_enrollment.course.slug,
-            )
-        
-
-        # ADDED MESSAGE:
-        messages.warning(request, "Please select a course to access your student dashboard.")
-        return redirect("core:courses")
+    pending_enrollment = next(
+        (e for e in enrollments if e.approval_status == Enrollment.ApprovalStatus.PENDING),
+        None,
+    )
+    rejected_enrollment = next(
+        (e for e in enrollments if e.approval_status == Enrollment.ApprovalStatus.REJECTED),
+        None,
+    )
     
 
     # DEDICATED OFFLINE STUDENT DASHBOARD
-    if active_enrollment.course.mode == Course.Mode.OFFLINE:
+    if active_enrollment and active_enrollment.course.mode == Course.Mode.OFFLINE:
         center = active_enrollment.course.center
         batch = (
             Batch.objects
@@ -1621,6 +1559,8 @@ def dashboard(request):
         {
             "enrollments": enrollments,
             "active_enrollment": active_enrollment,
+            "pending_enrollment": pending_enrollment,
+            "rejected_enrollment": rejected_enrollment,
             "current_lesson": current_lesson,
             "learning_progress": learning_progress,
             "dash_section": "dashboard",
@@ -1651,7 +1591,7 @@ def lesson_view(request, lesson_id):
 
     if enrollment is None:
         messages.error(request, "You are not enrolled in this course.")
-        return redirect("core:courses")
+        return redirect("core:dashboard")
 
     if not enrollment_has_access(enrollment):
         messages.warning(request, "You do not currently have access to this course.")
@@ -1683,6 +1623,7 @@ def lesson_view(request, lesson_id):
             m.note_html = None
     materials = materials_list
     video_asset = getattr(lesson, "video_asset", None)
+    video_state = get_lesson_video_state(lesson)
     resources = lesson.resources.order_by("title", "pk")
 
     # All published lessons of this course, in curriculum order
@@ -1734,6 +1675,7 @@ def lesson_view(request, lesson_id):
 
             "materials": materials,
             "video_asset": video_asset,
+            "video_state": video_state,
             "resources": resources,
             "sidebar_rows": sidebar_rows,
 
@@ -1812,11 +1754,17 @@ def lesson_progress_api(request, lesson_id):
             "0",
         )
 
+        duration_seconds = request.POST.get(
+            "duration_seconds",
+            None,
+        )
+
         progress = update_video_progress(
             enrollment=enrollment,
             lesson=lesson,
             watched_percent=watched_percent,
             position_seconds=position_seconds,
+            duration_seconds=duration_seconds,
         )
 
     except PermissionError as exc:
@@ -2223,7 +2171,7 @@ def create_doubt(request, lesson_id):
     ).first()
     if not enrollment or not enrollment_has_access(enrollment):
         messages.error(request, "You must be actively enrolled in this course to ask doubts.")
-        return redirect("core:lesson", lesson_id=lesson.pk)
+        return redirect("core:student_doubts")
 
     subject = request.POST.get("subject", "").strip()
     message_text = request.POST.get("message", "").strip()
@@ -2426,7 +2374,7 @@ def take_assessment(request, assessment_id):
     ).first()
     if not enrollment or not enrollment_has_access(enrollment):
         messages.error(request, "You must be enrolled in this course to take this assessment.")
-        return redirect("core:courses")
+        return redirect("core:student_assessments")
 
     subs_count = Submission.objects.filter(assessment=assessment, student=user).count()
     if assessment.attempts_allowed > 0 and subs_count >= assessment.attempts_allowed:
@@ -2532,6 +2480,14 @@ def assessment_result(request, submission_id):
         pk=submission_id,
         student=user
     )
+    course = submission.assessment.module.course
+    enrollment = Enrollment.objects.filter(
+        student=user,
+        course=course,
+    ).first()
+    if not enrollment or not enrollment_has_access(enrollment):
+        messages.error(request, "You do not currently have access to this assessment result.")
+        return redirect("core:student_assessments")
     assessment = submission.assessment
     questions = list(assessment.questions.all().order_by("order", "pk"))
 

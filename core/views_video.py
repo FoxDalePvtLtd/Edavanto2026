@@ -19,7 +19,8 @@ from django.http import (
 from django.shortcuts import get_object_or_404
 from django.utils.cache import patch_cache_control
 
-from core.models import Lesson, VideoAsset, Enrollment
+from core.models import Lesson, VideoAsset, Enrollment, Course
+from core.services.learning import get_lesson_video_state, VideoState
 
 
 def _is_request_from_site(request) -> bool:
@@ -51,6 +52,9 @@ def _has_video_access(user, lesson: Lesson) -> bool:
     course = lesson.module.course
     if course.instructor == user:
         return True
+
+    if course.mode == Course.Mode.OFFLINE:
+        return False
 
     enrollment = Enrollment.objects.filter(
         student=user,
@@ -122,13 +126,18 @@ def stream_lesson_video(request, lesson_id: int):
     if not _has_video_access(request.user, lesson):
         return HttpResponseForbidden("You do not have access to stream this video.")
 
-    try:
-        video_asset = lesson.video_asset
-    except VideoAsset.DoesNotExist:
-        raise Http404("No video asset associated with this lesson.")
+    video_state = get_lesson_video_state(lesson)
+    if video_state != VideoState.READY:
+        if video_state == VideoState.PROCESSING:
+            return HttpResponseForbidden("Video is currently processing.")
+        elif video_state == VideoState.FAILED:
+            return HttpResponseForbidden("Video processing failed.")
+        elif video_state == VideoState.EMPTY:
+            raise Http404("Video file is missing or not yet uploaded.")
+        else:
+            raise Http404("No video asset associated with this lesson.")
 
-    if not video_asset.original_file:
-        raise Http404("Video file is missing or not yet uploaded.")
+    video_asset = lesson.video_asset
 
     try:
         file_handle = video_asset.original_file.open("rb")

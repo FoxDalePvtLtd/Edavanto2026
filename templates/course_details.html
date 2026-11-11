@@ -1562,32 +1562,6 @@
 </main>
 
 
-{% if messages %}
-<div class="modal fade" id="edvantoStatusModal" tabindex="-1" aria-labelledby="edvantoStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border:0;border-radius:16px;overflow:hidden;">
-            <div class="modal-body text-center p-4">
-                <div style="font-size:32px;line-height:1;margin-bottom:12px;"><i class="tji-info"></i></div>
-                {% for message in messages %}
-                <p class="mb-0">{{ message }}</p>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const modal = document.getElementById("edvantoStatusModal");
-        if (!modal || typeof bootstrap === "undefined") return;
-        const instance = new bootstrap.Modal(modal);
-        instance.show();
-        window.setTimeout(function () { instance.hide(); }, 3500);
-    });
-</script>
 {% endblock %}

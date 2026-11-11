@@ -1004,21 +1004,7 @@
       <main id="primary" class="site-main">
       
 
-        {% comment %} <!-- Django Messages Alert Area -->
-        {% if messages %}
-          <div class="container mt-4">
-            <div class="row">
-              <div class="col-12">
-                {% for message in messages %}
-                  <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-        {% endif %} {% endcomment %}
+
 
       
         {% block content %}
@@ -1285,6 +1271,9 @@
     </div>
 
   </div>
+
+  <!-- Single Message Toast Renderer (Placed outside #smooth-wrapper so GSAP ScrollSmoother transform does not trap fixed elements) -->
+  {% include "includes/messages.html" %}
 
   <!-- Global Modals & Floating Overlays (Placed outside #smooth-wrapper so GSAP ScrollSmoother transform does not trap fixed elements or backdrops) -->
   {% block modals %}{% endblock %}
