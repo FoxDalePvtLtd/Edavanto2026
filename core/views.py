@@ -2204,7 +2204,7 @@ def create_doubt(request, lesson_id):
     for recipient in recipients:
         notification = Notification.objects.create(
             recipient=recipient,
-            title="New Student Doubt",
+            title="Doubt Raised by Student",
             message=f"{user.get_full_name()} asked a doubt.",
             notification_type = Notification.NotificationType.DOUBT,
             is_read = False,

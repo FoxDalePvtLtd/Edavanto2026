@@ -139,6 +139,7 @@ urlpatterns = [
     path("notification/api/", views.notification_api_list, name="notification_api_list"),
     path("notifications/api/<int:notification_id>/read/",views.notification_mark_read_api, name="notification_mark_read_api"),
     path("notifications/api/mark-all-read/", views.notification_mark_all_read_api, name="notification_mark_all_read_api"),
+    path("notifications/mark-read",views.mark_notifications_read, name="mark_notifications_read"),
 
     # CONSULTATIONS
     path("consultations/", views.consultation_list, name="consultation_list"),

@@ -1654,3 +1654,9 @@ def notification_mark_all_read_api(request):
     """Mark all notifications for the current user as read when opening the modal."""
     Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     return JsonResponse({"success": True})
+
+@admin_required
+@require_POST
+def mark_notifications_read(request):
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({"status": "success"})
