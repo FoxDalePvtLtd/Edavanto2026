@@ -163,8 +163,11 @@
       </div>
 
 
+
+
     </div>
 
+    {% comment %} <div class="table-responsive">
     {% comment %} <div class="table-responsive">
       <table class="edvanto-table cv-lessons-table mb-0">
         <thead>
@@ -199,7 +202,28 @@
           </tr>
         </tbody>
       </table>
+    </div> {% endcomment %}
+
+    <div class="table-responsive overflow-hidden" style="width: 100%; max-width: 100%;">
+      <table class="table edvanto-table cv-lessons-table mb-0" style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th style="width: 45px;">#</th>
+            <th style="width: 35%;">Lesson</th>
+            <th style="width: 90px;">Status</th>
+            <th style="width: 90px;">Duration</th>
+            <th class="text-end" style="width: 140px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="cvLessonBody">
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">Select a module to see its lessons.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+
+    
 
     
   </section>
@@ -293,8 +317,11 @@
             '<div class="d-inline-flex gap-1">' +
               '<a class="btn btn-sm btn-edvanto-outline d-inline-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px;" title="Media" href="' + l.media_url + '"><i class="bi bi-camera-video fs-5"></i></a>' +
               '<a class="btn btn-sm btn-edvanto-outline d-inline-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px;" title="Edit" href="' + l.edit_url + '"><i class="bi bi-pencil-square fs-5"></i></a>' +
+              '<a class="btn btn-sm btn-edvanto-outline d-inline-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px;" title="Media" href="' + l.media_url + '"><i class="bi bi-camera-video fs-5"></i></a>' +
+              '<a class="btn btn-sm btn-edvanto-outline d-inline-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px;" title="Edit" href="' + l.edit_url + '"><i class="bi bi-pencil-square fs-5"></i></a>' +
               '<form method="post" action="' + l.delete_url + '" class="d-inline" onsubmit="return confirm(\'Delete this lesson?\');">' +
                 '<input type="hidden" name="csrfmiddlewaretoken" value="' + csrfToken() + '">' +
+                '<button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px;" title="Delete"><i class="bi bi-trash fs-5"></i></button>' +
                 '<button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px;" title="Delete"><i class="bi bi-trash fs-5"></i></button>' +
               '</form>' +
             '</div>' +
