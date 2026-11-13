@@ -370,8 +370,9 @@
           href="{% url 'admin_panel:course_form' course_id=course.pk %}"
           title="Edit course"
           aria-label="Edit {{ course.title }}"
+          style="border: none;"
         >
-          <i class="bi bi-pencil-square"></i>
+          <i class="bi bi-pencil-square" style="font-size: 1.2rem;"></i>
         </a>
 
         {% if course.status == 'published' %}
@@ -382,8 +383,9 @@
             rel="noopener"
             title="View public course"
             aria-label="View public course {{ course.title }}"
+            style="border:none;"
           >
-            <i class="bi bi-box-arrow-up-right"></i>
+            <i class="bi bi-box-arrow-up-right" style="font-size: 1.2rem;"></i>
           </a>
         {% endif %}
       </td>
