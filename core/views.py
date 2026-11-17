@@ -1123,61 +1123,7 @@ def test_payment(request, slug):
 @login_required
 @require_POST
 def offline_payment_request(request, slug):
-
-    User = get_user_model()
-
-    if request.user.role != User.Role.STUDENT:
-        messages.error(
-            request,
-            "Only students can request course enrollment.",
-        )
-        return redirect("core:courses")
-
-    course = get_object_or_404(
-        Course.objects.filter(
-            status=Course.Status.PUBLISHED
-        ),
-        slug=slug,
-    )
-
-    if request.method == "POST":
-        payment_mode = request.POST.get("payment_mode")
-        payment_date = request.POST.get("payment_date")
-        transaction_reference = request.POST.get("transaction_reference")
-        notes = request.POST.get("notes", "")
-
-        # Get or create a pending enrollment 
-        enrollment, created = Enrollment.objects.get_or_create(
-            student=request.user,
-            course=course,
-            defaults={
-                "approval_status": Enrollment.ApprovalStatus.PENDING,
-                "payment_status": Enrollment.PaymentStatus.PENDING,
-            }
-        )
-
-        # If already existed, set back to pending review if needed 
-        if not created:
-            enrollment.approval_status = Enrollment.ApprovalStatus.PENDING
-            enrollment.save()
-
-        # Notify all admin/staff users 
-        admin_users = User.objects.filter(is_staff=True)
-        for admin in admin_users:
-            create_admin_notification(
-                recipient=admin,
-                title="New Offline Payment Request",
-                message=f"{request.user.get_full_name() or request.user.username} submitted an offline payment for '{course.title}'",
-                n_type = Notification.NotificationType.PAYMENT
-            )
-
-        messages.warning(
-            request,
-            "Your offline payment request has been submitted and is pending administrative approval."
-        )
-        return redirect("core:dashboard")
-
-    return redirect("core:payment", slug=course.slug)
+    return payment(request, slug)
 
 
 @login_required
@@ -1224,59 +1170,105 @@ def payment(request, slug):
                 "You are already enrolled in this course."
             )
             return redirect("core:course_dashboard", slug=course.slug)
-        elif enrollment.approval_status == Enrollment.ApprovalStatus.PENDING:
-             # ---------------------------------------------------------
-                # CREATE REGISTRATION NOTIFICATIONS FOR ADMIN USERS
-                # ---------------------------------------------------------
-                
-                
-                try:
-                    
-                    # Fetch all admin / staff users so they receive the notification in their panel
-                    admin_users = User.objects.filter(is_staff=True)
-            
-                    for admin in admin_users:
-                        # Create the Notification record for the admin
-                        notification = Notification.objects.create(
-                            recipient=admin,
-                            title="New Payment Request",
-                            message=f"Enrollment request.",
-                            notification_type=Notification.NotificationType.SYSTEM,
-                            is_read=False,
-                        )
-            
-                        # Create the Notification Delivery record (In-App)
-                        NotificationDelivery.objects.create(
-                            notification=notification,
-                            channel=NotificationDelivery.Channel.IN_APP,
-                            status=NotificationDelivery.Status.SENT,
-                            sent_at=timezone.now(),
-                        )
-                    messages.warning(
-                        request,
-                        "Your enrollment for this course is pending administrative approval."
-                    )
-                    return redirect("core:dashboard")
-                except Exception as exc:
-                    pass
+        elif enrollment.approval_status == Enrollment.ApprovalStatus.PENDING and request.method == "GET":
+            messages.warning(
+                request,
+                "Your enrollment for this course is pending administrative approval."
+            )
+            return redirect("core:dashboard")
 
+    if request.method == "POST":
+        user = request.user
+        full_name = (
+            request.POST.get("full_name", "").strip()
+            or request.POST.get("name", "").strip()
+            or user.get_full_name()
+            or user.username
+        )
+        email = request.POST.get("email", "").strip() or user.email
+        phone = request.POST.get("phone", "").strip() or user.phone
+        address = request.POST.get("address", "").strip() or getattr(user, "bio", "")
+        notes = request.POST.get("notes", "").strip()
 
-    # Calculate effective price
-    price = course.discounted_price if (course.discounted_price and course.discounted_price > 0) else course.price
-    price_paise = int(price * 100) if price else 0
+        # Update student user profile details if provided
+        update_fields = []
+        if full_name:
+            parts = full_name.split(" ", 1)
+            user.first_name = parts[0]
+            user.last_name = parts[1] if len(parts) > 1 else ""
+            update_fields.extend(["first_name", "last_name"])
+        if phone:
+            user.phone = phone
+            update_fields.append("phone")
+        if address:
+            user.bio = address
+            update_fields.append("bio")
+        if update_fields:
+            user.save(update_fields=list(set(update_fields)))
 
-    razorpay_key_id = getattr(settings, "RAZORPAY_KEY_ID", "")
-    razorpay_order_id = ""
-    razorpay_available = False
-
-    if razorpay_key_id and getattr(settings, "RAZORPAY_KEY_SECRET", ""):
+        # Create or update offline enrollment request
         try:
-            _, _, rp_order = create_razorpay_order(student=request.user, course=course)
-            razorpay_order_id = rp_order.get("id", "")
-            razorpay_available = True
-        except Exception as exc:
-            # If Razorpay client failed (e.g. invalid test keys or offline dev), keep graceful
-            razorpay_available = False
+            order, txn, enr = create_offline_payment_request(
+                student=user,
+                course=course,
+                payment_mode=request.POST.get("payment_mode", "Direct Offline"),
+                transaction_reference=request.POST.get("transaction_reference", "DIRECT-OFFLINE"),
+                notes=notes,
+            )
+            if txn:
+                txn.metadata.update({
+                    "direct_enrollment": True,
+                    "student_name": full_name,
+                    "student_email": email,
+                    "student_phone": phone,
+                    "student_address": address,
+                    "notes": notes,
+                })
+                txn.save(update_fields=["metadata"])
+        except ValueError as exc:
+            # If already pending, update metadata on existing order/txn
+            existing_order = (
+                Order.objects
+                .filter(student=user, course=course, payment_method=Order.PaymentMethod.OFFLINE)
+                .exclude(status=Order.Status.PAID)
+                .order_by("-created_at")
+                .first()
+            )
+            if existing_order:
+                txn = existing_order.transactions.order_by("-created_at").first()
+                if txn:
+                    txn.metadata.update({
+                        "direct_enrollment": True,
+                        "student_name": full_name,
+                        "student_email": email,
+                        "student_phone": phone,
+                        "student_address": address,
+                        "notes": notes,
+                    })
+                    txn.save(update_fields=["metadata"])
+            if enrollment:
+                enrollment.approval_status = Enrollment.ApprovalStatus.PENDING
+                enrollment.payment_status = Enrollment.PaymentStatus.PENDING
+                enrollment.save(update_fields=["approval_status", "payment_status"])
+
+        # Notify admin users
+        admin_users = User.objects.filter(is_staff=True)
+        for admin in admin_users:
+            create_admin_notification(
+                recipient=admin,
+                title="New Offline Payment Request",
+                message=f"{full_name} submitted an offline payment for '{course.title}'",
+                n_type=Notification.NotificationType.PAYMENT,
+            )
+
+        messages.warning(
+            request,
+            f"Your offline payment request for '{course.title}' has been submitted and is pending administrative approval."
+        )
+        return redirect("core:dashboard")
+
+    # GET request: Calculate effective price
+    price = course.discounted_price if (course.discounted_price and course.discounted_price > 0) else course.price
 
     return render(
         request,
@@ -1284,10 +1276,6 @@ def payment(request, slug):
         {
             "course": course,
             "price": price,
-            "price_paise": price_paise,
-            "razorpay_available": razorpay_available,
-            "razorpay_key_id": razorpay_key_id,
-            "razorpay_order_id": razorpay_order_id,
             "today_date": timezone.now().strftime("%Y-%m-%d"),
         },
     )

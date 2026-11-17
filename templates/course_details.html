@@ -7,6 +7,10 @@
 {% block extra_css %}
 
   <style>
+    /* Curriculum modules accordion default collapsed state */
+    .tj-course-curriculum .tj-course-accordion-content {
+      display: none;
+    }
     .tj-course-details-img {
       width: 100% !important;
       aspect-ratio: 16 / 9 !important;
@@ -24,6 +28,233 @@
       object-fit: cover !important;
       object-position: center !important;
       display: block !important;
+    }
+
+    /* Mobile Quick Enroll Card */
+    .tj-mobile-enroll-card {
+      background: #ffffff;
+      border: 1px solid var(--tj-color-border-1, #E6E0D2);
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 18px rgba(17, 17, 17, 0.06);
+    }
+    .mobile-course-price {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .mobile-course-price .price-current {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--tj-color-heading-primary, #171717);
+    }
+    .mobile-course-price .price-old {
+      font-size: 15px;
+      color: #8c8c8c;
+    }
+    .mobile-offer-badge {
+      background: rgba(212, 166, 42, 0.15);
+      color: #a87e12;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .mobile-mode-badge {
+      font-size: 12px;
+      color: #5f6670;
+      margin-top: 3px;
+    }
+    .mobile-guarantee-text {
+      font-size: 11.5px;
+      color: #7a828d;
+    }
+
+    /* Floating Sticky Enroll Bar for Mobile */
+    .mobile-sticky-enroll-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(230, 224, 210, 0.85);
+      padding: 10px 16px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    }
+    .mobile-sticky-price .price-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: #171717;
+      line-height: 1.1;
+    }
+    .mobile-sticky-price .price-del {
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+    .mobile-sticky-btn-wrap .tj-btn-primary {
+      padding: 9px 20px !important;
+      font-size: 13.5px !important;
+      border-radius: 50px !important;
+      line-height: 1.2 !important;
+    }
+
+    /* Related Courses Section & Clean Grid */
+    .tj-course-section {
+      position: relative;
+      width: 100%;
+      clear: both;
+      padding-top: 40px;
+      padding-bottom: 70px;
+    }
+    .tj-course-item {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: #ffffff !important;
+      border-radius: 18px !important;
+      border: 1px solid var(--tj-color-border-1, #E6E0D2) !important;
+      overflow: hidden !important;
+      box-shadow: 0 4px 20px rgba(17, 17, 17, 0.05) !important;
+      transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    }
+    .tj-course-item:hover {
+      transform: translateY(-5px) !important;
+      box-shadow: 0 12px 30px rgba(17, 17, 17, 0.1) !important;
+    }
+    .tj-course-thumb {
+      width: 100% !important;
+      height: 200px !important;
+      aspect-ratio: 16 / 9 !important;
+      overflow: hidden !important;
+      position: relative !important;
+      background: #F7F3E8 !important;
+    }
+    .tj-course-thumb img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
+      transition: transform 0.5s ease !important;
+    }
+    .tj-course-item:hover .tj-course-thumb img {
+      transform: scale(1.05) !important;
+    }
+    .tj-course-content {
+      padding: 22px 20px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      justify-content: space-between !important;
+    }
+    .tj-course-content .title {
+      font-size: 18px !important;
+      line-height: 1.35 !important;
+      margin-top: 6px !important;
+      margin-bottom: 12px !important;
+    }
+    .tj-course-content .course-meta {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      font-size: 13px !important;
+      color: #5f6670 !important;
+      margin-bottom: 14px !important;
+    }
+    .tj-course-content .tj-course-price-wrap {
+      margin-top: auto !important;
+      margin-bottom: 14px !important;
+    }
+    .tj-course-content .tj-btn-primary {
+      width: 100% !important;
+      text-align: center !important;
+      display: inline-flex !important;
+      justify-content: center !important;
+    }
+
+    /* Responsive Phone View Optimizations */
+    @media (max-width: 991.98px) {
+      .space-for-header {
+        padding-top: 60px !important;
+      }
+      .tj-page-header.tj-page-header-2 {
+        padding-top: 15px !important;
+        padding-bottom: 24px !important;
+        min-height: auto !important;
+      }
+      /* Remove excessive 200px white gradient fade washing out top of screen */
+      .tj-page-header::after {
+        height: 35px !important;
+        opacity: 0.6 !important;
+      }
+      .tj-page-header-2 .tj-page-link {
+        margin-bottom: 8px !important;
+        font-size: 13px !important;
+      }
+      .tj-page-header-2 .tj-categories {
+        margin-bottom: 4px !important;
+      }
+      .tj-page-header-2 .tj-page-title {
+        font-size: clamp(22px, 5.5vw, 32px) !important;
+        line-height: 1.22 !important;
+        margin-top: 4px !important;
+        margin-bottom: 8px !important;
+      }
+      .tj-page-header-2 .tj-page-desc {
+        font-size: 13.5px !important;
+        line-height: 1.45 !important;
+        margin-bottom: 12px !important;
+        max-width: 100% !important;
+      }
+      .tj-page-header-2 .course-meta {
+        gap: 6px !important;
+        margin-bottom: 12px !important;
+      }
+      .tj-page-header-2 .course-meta > span {
+        font-size: 11.5px !important;
+        padding: 2px 9px !important;
+      }
+      .tj-page-header-bottom {
+        margin-top: 8px !important;
+        gap: 10px !important;
+      }
+      .tj-page-header-2 .author-wrap .author-avatar {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      .tj-page-header-2 .author-wrap .author-info .name {
+        font-size: 14px !important;
+      }
+      .tj-page-header-2 .author-wrap .author-info .designation {
+        font-size: 11px !important;
+        margin-bottom: 2px !important;
+      }
+      .tj-page-header-2 .tj-share-btn {
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+      }
+      .tj-course-details {
+        padding-top: 10px !important;
+      }
+      .tj-course-details-img {
+        margin-bottom: 16px !important;
+        border-radius: 14px !important;
+      }
+      .tj-course-tab-wrap {
+        margin-bottom: 20px !important;
+      }
+      /* Prevent redundant desktop price card on mobile */
+      .tj-course-details .col-lg-4 .tj-course-widget-price {
+        display: none !important;
+      }
+      body {
+        padding-bottom: 60px; /* Space for sticky bottom bar */
+      }
     }
   </style>
 
@@ -221,6 +452,84 @@
                             {% endif %}
 
                         </div>
+
+                        <!-- Mobile-Only Quick Enroll Card: Visible at the top for phones -->
+                        <div class="tj-mobile-enroll-card d-lg-none mb-4">
+                            <div class="mobile-enroll-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="mobile-course-price">
+                                        {% if course.discounted_price %}
+                                        <span class="price-current">₹{{ course.discounted_price|floatformat:"0" }}</span>
+                                        <del class="price-old">₹{{ course.price|floatformat:"0" }}</del>
+                                        <span class="mobile-offer-badge">Offer</span>
+                                        {% else %}
+                                        <span class="price-current">₹{{ course.price|floatformat:"0" }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mobile-mode-badge">
+                                        <i class="tji-{% if course.mode == 'offline' %}location{% else %}wifi{% endif %} me-1"></i>
+                                        {{ course.get_mode_display }} learning
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-quick text-end">
+                                    <span class="badge bg-light text-dark border px-2 py-1"><i class="tji-book me-1"></i>{{ course.modules.all|length }} Modules</span>
+                                </div>
+                            </div>
+
+                            <div class="mobile-enroll-cta mt-3">
+                                {% if enrollment %}
+                                    {% if enrollment.approval_status == 'accepted' and enrollment.payment_status == 'paid' or enrollment.approval_status == 'accepted' and enrollment.payment_status == 'partially_paid' %}
+                                        {% if not enrollment.access_paused %}
+                                        <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:dashboard' %}">
+                                            <span class="btn-text">Continue learning</span>
+                                            <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                                        </a>
+                                        {% else %}
+                                        <div class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md tj-btn-full">Course access paused</div>
+                                        {% endif %}
+                                    {% elif enrollment.approval_status == 'pending' %}
+                                        <div class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md tj-btn-full">Approval pending</div>
+                                    {% elif enrollment.approval_status == 'rejected' %}
+                                        <div class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md tj-btn-full">Enrollment not approved</div>
+                                    {% else %}
+                                        <div class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md tj-btn-full">Enrollment recorded</div>
+                                    {% endif %}
+                                {% else %}
+                                    {% if request.user.is_authenticated %}
+                                        {% if request.user.role == 'student' %}
+                                            {% if other_enrolled_course %}
+                                            <div class="alert alert-warning p-2 rounded-3 mb-2 small" style="background: #FFFDF7; border: 1px solid #D4A62A; color: #171717;">
+                                                Enrolled in <strong>{{ other_enrolled_course.title }}</strong>. Single active course allowed.
+                                            </div>
+                                            <a class="tj-btn-primary tj-btn-primary-light tj-btn-primary-md tj-btn-full" href="{% url 'core:dashboard' %}">
+                                                <span class="btn-text">Go to Enrolled Course</span>
+                                            </a>
+                                            {% else %}
+                                            <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:payment' course.slug %}">
+                                                <span class="btn-text">Enroll now</span>
+                                                <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                                            </a>
+                                            {% endif %}
+                                        {% else %}
+                                        <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:courses' %}">
+                                            <span class="btn-text">Browse courses</span>
+                                        </a>
+                                        {% endif %}
+                                    {% else %}
+                                    <a class="tj-btn-primary tj-btn-primary-md tj-btn-full flip-text-wrap" href="{% url 'core:login' %}?next={% url 'core:payment' course.slug %}">
+                                        <span class="btn-text">Log in to enroll</span>
+                                        <span class="btn-icon"><i class="tji-arrow-right-2"></i></span>
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <div class="mobile-guarantee-text mt-2 text-center">
+                                <i class="tji-guarantee me-1"></i>
+                                Access is activated upon administrative approval.
+                            </div>
+                        </div>
+
                         <div class="tj-course-tab-wrap tj-sticky-item-2">
                             <div class="tj-course-tab">
                                 <a class="tab-nav tj-scroll-btn active" href="#overview">Overview</a>
@@ -616,8 +925,8 @@
                                 <div class="curriculum-title-meta">{{ course.modules.all|length }} modules</div>
                             </div>
                             <div class="tj-course-curriculum-inner">
-                                {% for module in course.modules.all %}
                                 <div class="tj-course-accordion">
+                                {% for module in course.modules.all %}
                                     <div class="tj-course-accordion-item">
                                         <h4 class="tj-course-accordion-header tutor-accordion-item-header">
                                             <span class="sl-no">{{ forloop.counter|stringformat:"02d" }}</span>
@@ -626,7 +935,7 @@
                                                 <span class="tj-course-accordion-meta">{{ module.lessons.all|length }} lessons</span>
                                             </span>
                                         </h4>
-                                        <div class="tj-course-accordion-content">
+                                        <div class="tj-course-accordion-content" style="display: none;">
                                             <ul class="course-content-lists">
                                                 {% for lesson in module.lessons.all %}
                                                 {% if lesson.is_published %}
@@ -654,12 +963,12 @@
                                             </ul>
                                         </div>
                                     </div>
-                                </div>
                                 {% empty %}
                                 <div class="tj-course-details-box">
                                     <p>Course curriculum has not been published yet.</p>
                                 </div>
                                 {% endfor %}
+                                </div>
                             </div>
                         </div>
 
@@ -1297,7 +1606,7 @@
 
                                 <div class="guarantee-text">
                                     <i class="tji-guarantee"></i>
-                                    {% if course.requires_instructor_approval %}Instructor/admin approval is required before access.{% else %}Access is activated only after the required payment checks are completed.{% endif %}
+                                    Access is activated upon administrative approval.
                                 </div>
                             </div>
 
@@ -1313,7 +1622,10 @@
                         </div>
                     </div>
                 </div>
-                <!-- end: Course Details Section -->
+            </div>
+        </div>
+    </section>
+    <!-- end: Course Details Section -->
 
                 {% comment %}
                 <!-- Legacy static related-course section preserved without deletion. -->
@@ -1556,12 +1868,47 @@
                     </div>
                 </section>
                 <!-- end: Updated backend-connected related courses -->
+    <div class="mobile-sticky-enroll-bar d-lg-none">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="mobile-sticky-price">
+                {% if course.discounted_price %}
+                <div class="price-val">₹{{ course.discounted_price|floatformat:"0" }}</div>
+                <del class="price-del">₹{{ course.price|floatformat:"0" }}</del>
+                {% else %}
+                <div class="price-val">₹{{ course.price|floatformat:"0" }}</div>
+                {% endif %}
+            </div>
+            <div class="mobile-sticky-btn-wrap">
+                {% if enrollment and enrollment.approval_status == 'accepted' and not enrollment.access_paused %}
+                <a href="{% url 'core:dashboard' %}" class="tj-btn-primary tj-btn-primary-sm">
+                    <span>Continue</span>
+                </a>
+                {% elif not enrollment and not other_enrolled_course %}
+                    {% if request.user.is_authenticated and request.user.role == 'student' %}
+                    <a href="{% url 'core:payment' course.slug %}" class="tj-btn-primary tj-btn-primary-sm">
+                        <span>Enroll now</span>
+                    </a>
+                    {% elif not request.user.is_authenticated %}
+                    <a href="{% url 'core:login' %}?next={% url 'core:payment' course.slug %}" class="tj-btn-primary tj-btn-primary-sm">
+                        <span>Enroll now</span>
+                    </a>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
-    </section>
+    </div>
 </main>
 
 
 
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+    $(".tj-course-curriculum .tj-course-accordion-header").removeClass("is-active");
+    $(".tj-course-curriculum .tj-course-accordion-content").hide();
+  });
+</script>
 {% endblock %}
