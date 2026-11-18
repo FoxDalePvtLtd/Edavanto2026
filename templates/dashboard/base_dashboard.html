@@ -408,7 +408,8 @@
     <p class="edvanto-dash-nav-section mt-4">Resources</p>
     <ul class="edvanto-dash-nav">
       <li>
-        <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}#curriculum{% else %}{% url 'core:courses' %}{% endif %}"
+        {% comment %} <a href="{% if active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}#curriculum{% else %}{% url 'core:courses' %}{% endif %}" {% endcomment %}
+         <a href="{% if active_enrollment and active_enrollment.course and active_enrollment.course.mode == 'offline' %}{% url 'core:dashboard' %}#handouts{% elif active_enrollment and active_enrollment.course %}{% url 'core:course_dashboard' active_enrollment.course.slug %}#curriculum{% else %}{% url 'core:courses' %}{% endif %}"
            class="edvanto-dash-nav-link {% if dash_section == 'materials' %}is-active{% endif %}">
           <i class="bi bi-folder2-open"></i><span>Study Materials</span>
         </a>
