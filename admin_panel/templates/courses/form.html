@@ -68,7 +68,7 @@
 </div>
 
 
-<form method="post" enctype="multipart/form-data" novalidate>
+<form method="post" enctype="multipart/form-data" novalidate data-object-id="{% if course %}{{ course.pk }}{% endif %}">
   {% csrf_token %}
 
   {% if form.non_field_errors %}

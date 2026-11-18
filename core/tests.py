@@ -9,6 +9,7 @@ from core.models import (
     Lesson,
     VideoAsset,
     Enrollment,
+    Order,
     LearningProgress,
 )
 from core.services.learning import (
@@ -309,3 +310,80 @@ class StudyWorkflowTests(TestCase):
             LearningProgress.Status.COMPLETED,
         )
         self.assertEqual(next_lesson, self.lesson3)
+
+
+    def test_direct_offline_enrollment_and_admin_approval(self):
+        """Student submits direct offline enrollment form; admin verifies and approves access."""
+        new_course = Course.objects.create(
+            title="FastAPI Mastery",
+            slug="fastapi-mastery",
+            description="Build APIs with FastAPI",
+            price=Decimal("299.00"),
+            instructor=self.instructor,
+            status=Course.Status.PUBLISHED,
+        )
+        applicant = User.objects.create_user(
+            username="applicant@edvanto.test",
+            email="applicant@edvanto.test",
+            password="Strong-pass-123!",
+            role=User.Role.STUDENT,
+        )
+
+        self.client.force_login(applicant)
+
+        # GET payment/enrollment page: should render direct enrollment form, no online payment buttons
+        url = reverse("core:payment", kwargs={"slug": new_course.slug})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode("utf-8")
+        self.assertIn("Course Enrollment Application", content)
+        self.assertIn("studentFullName", content)
+        self.assertIn("studentPhone", content)
+        self.assertIn("studentAddress", content)
+        self.assertNotIn("rzp-button", content)
+        self.assertNotIn("Pay Online with Razorpay", content)
+
+        # POST enrollment form with student details
+        post_data = {
+            "full_name": "Alice Wonder",
+            "email": "applicant@edvanto.test",
+            "phone": "+919876543210",
+            "address": "42 Tech City, Bangalore",
+            "notes": "Offline direct payment request",
+        }
+        post_resp = self.client.post(url, post_data)
+        self.assertRedirects(post_resp, reverse("core:dashboard"))
+
+        # Verify enrollment and order state
+        enrollment = Enrollment.objects.get(student=applicant, course=new_course)
+        self.assertEqual(enrollment.approval_status, Enrollment.ApprovalStatus.PENDING)
+        self.assertEqual(enrollment.payment_status, Enrollment.PaymentStatus.PENDING)
+
+        order = Order.objects.get(student=applicant, course=new_course)
+        self.assertEqual(order.payment_method, Order.PaymentMethod.OFFLINE)
+        txn = order.transactions.first()
+        self.assertEqual(txn.metadata.get("student_phone"), "+919876543210")
+        self.assertEqual(txn.metadata.get("student_address"), "42 Tech City, Bangalore")
+
+        # Admin logs in and views enrollments list
+        admin = User.objects.create_superuser(
+            username="enrolladmin",
+            email="enrolladmin@edvanto.test",
+            password="Strong-admin-pass-123!",
+        )
+        self.client.force_login(admin)
+        list_resp = self.client.get(reverse("admin_panel:enrollment_list"))
+        self.assertEqual(list_resp.status_code, 200)
+        list_content = list_resp.content.decode("utf-8")
+        self.assertIn("Alice Wonder", list_content)
+        self.assertIn("+919876543210", list_content)
+        self.assertIn("42 Tech City, Bangalore", list_content)
+
+        # Admin approves the enrollment
+        approve_url = reverse("admin_panel:enrollment_approve", kwargs={"enrollment_id": enrollment.pk})
+        app_resp = self.client.post(approve_url)
+        self.assertRedirects(app_resp, reverse("admin_panel:enrollment_list"))
+
+        enrollment.refresh_from_db()
+        self.assertEqual(enrollment.approval_status, Enrollment.ApprovalStatus.ACCEPTED)
+        self.assertEqual(enrollment.payment_status, Enrollment.PaymentStatus.PAID)

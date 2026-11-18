@@ -762,16 +762,27 @@ Privacy TOC JS
   	Course accordion
   --------------------------------------------------------- */
 	$(".tj-course-accordion-content").hide();
-	$(".tj-course-accordion-item:first-child .tj-course-accordion-header")
-		.addClass("is-active")
-		.next(".tj-course-accordion-content")
-		.slideDown();
+	$(".tj-course-accordion-header").removeClass("is-active");
 	$(".tj-course-accordion-header").on("click", function () {
-		$(this)
-			.toggleClass("is-active")
-			.next(".tj-course-accordion-content")
-			.stop(true, true)
-			.slideToggle();
+		var $this = $(this);
+		var $content = $this.next(".tj-course-accordion-content");
+		var isActive = $this.hasClass("is-active");
+
+		if (isActive) {
+			$this.removeClass("is-active");
+			$content.stop(true, true).slideUp();
+		} else {
+			var $container = $this.closest(".tj-course-curriculum, .tj-course-accordion");
+			if ($container.length) {
+				$container.find(".tj-course-accordion-header").removeClass("is-active");
+				$container.find(".tj-course-accordion-content").stop(true, true).slideUp();
+			} else {
+				$(".tj-course-accordion-header").removeClass("is-active");
+				$(".tj-course-accordion-content").stop(true, true).slideUp();
+			}
+			$this.addClass("is-active");
+			$content.stop(true, true).slideDown();
+		}
 	});
 
 	if ($(".tj-quick-product-details").length > 0) {
