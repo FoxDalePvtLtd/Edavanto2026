@@ -2,10 +2,57 @@ from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
+from django.utils.text import slugify
 from core.models import *
 from PIL import Image
 
-class CourseAdminForm(forms.ModelForm):
+
+class AutoSlugFormMixin:
+    """
+    Universal mixin for admin ModelForms that have a slug field.
+    Auto-generates slug from title and instance ID if slug is left blank.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "slug" in self.fields:
+            self.fields["slug"].required = False
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get("slug", "").strip().lower()
+        if not slug:
+            title = self.cleaned_data.get("title", "")
+            if title:
+                base = slugify(title)
+                if self.instance and self.instance.pk:
+                    suffix = str(self.instance.pk)
+                    if not base.endswith(f"-{suffix}"):
+                        slug = f"{base}-{suffix}" if base else suffix
+                    else:
+                        slug = base
+                else:
+                    slug = base
+
+                model_class = getattr(self._meta, "model", None)
+                if model_class:
+                    qs = model_class.objects.filter(slug=slug)
+                    if self.instance and self.instance.pk:
+                        qs = qs.exclude(pk=self.instance.pk)
+                    if qs.exists():
+                        counter = 1
+                        candidate = f"{slug}-{counter}"
+                        while model_class.objects.filter(slug=candidate).exclude(
+                            pk=self.instance.pk if self.instance else None
+                        ).exists():
+                            counter += 1
+                            candidate = f"{slug}-{counter}"
+                        slug = candidate
+
+        if not slug:
+            raise forms.ValidationError("Course slug is required.")
+        return slug
+
+
+class CourseAdminForm(AutoSlugFormMixin, forms.ModelForm):
     class Meta:
         model = Course
         fields = [
@@ -40,13 +87,6 @@ class CourseAdminForm(forms.ModelForm):
         self.fields["instructor"].required = False
         self.fields["center"].required = False
         self.fields["thumbnail"].required = False
-
-    def clean_slug(self):
-        slug = self.cleaned_data["slug"].strip().lower()
-        if not slug:
-            raise forms.ValidationError("Course slug is required.")
-        return slug
-
 
     def clean_thumbnail(self):
         thumbnail = self.cleaned_data.get("thumbnail")

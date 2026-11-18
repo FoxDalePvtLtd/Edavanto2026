@@ -126,7 +126,63 @@
     .tj-login-form .form-input input:focus {
       border-color: var(--tj-color-theme-primary) !important;
     }
-  </style>
+  .hamburger-auth-box {
+  margin: 18px 0 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(23, 23, 23, 0.08);
+}
+.hamburger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  line-height: 1.2;
+}
+.hamburger-btn-primary {
+  background: var(--tj-color-theme-primary, #D4A62A);
+  color: #171717 !important;
+  border: 1px solid var(--tj-color-theme-primary, #D4A62A);
+}
+.hamburger-btn-primary:hover {
+  background: #b88f22;
+  color: #ffffff !important;
+}
+.hamburger-btn-outline {
+  background: transparent;
+  color: #171717 !important;
+  border: 1px solid rgba(23, 23, 23, 0.3);
+}
+.hamburger-btn-outline:hover {
+  background: #171717;
+  color: #ffffff !important;
+  border-color: #171717;
+}
+.hamburger-btn-outline-danger {
+  background: transparent;
+  color: #c92a2a !important;
+  border: 1px solid #ffc9c9;
+}
+.hamburger-btn-outline-danger:hover {
+  background: #c92a2a;
+  color: #ffffff !important;
+  border-color: #c92a2a;
+}
+.mobile-menu-logout-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #c92a2a !important;
+  font-weight: 600 !important;
+  padding: 8px 0 !important;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+</style>
 </head>
 
 <body>
@@ -293,6 +349,32 @@
             </button>
           </div>
 
+        </div>
+
+        <!-- Hamburger Auth Section -->
+        <div class="hamburger-auth-box">
+          {% if user.is_authenticated %}
+            <div class="d-flex align-items-center gap-2">
+              <a href="{% if user.role == 'student' %}{% url 'core:dashboard' %}{% elif user.role == 'admin' %}{% url 'admin_panel:dashboard' %}{% else %}#{% endif %}" class="hamburger-btn hamburger-btn-primary flex-fill text-center">
+                <i class="tji-dashboard me-1"></i> Dashboard
+              </a>
+              <form method="post" action="{% url 'core:logout' %}" class="m-0 flex-fill">
+                {% csrf_token %}
+                <button type="submit" class="hamburger-btn hamburger-btn-outline-danger w-100 text-center">
+                  <i class="tji-logout me-1"></i> Logout
+                </button>
+              </form>
+            </div>
+          {% else %}
+            <div class="d-flex align-items-center gap-2">
+              <a href="{% url 'core:login' %}" class="hamburger-btn hamburger-btn-outline flex-fill text-center">
+                Log in
+              </a>
+              <a href="{% url 'core:sign_in' %}" class="hamburger-btn hamburger-btn-primary flex-fill text-center">
+                Sign in
+              </a>
+            </div>
+          {% endif %}
         </div>
 
 
@@ -582,38 +664,34 @@
 
                     
 
-                    {% comment %} {% if user.is_authenticated %}
+                    {% if user.is_authenticated %}
 
-                  <!-- Logged-in: only Logout remains in the menu -->
-                  <li  style="background-color: transparent !important; border: none !important; cursor: pointer !important;" class="mainmenu">
-
-                    <form method="post" action="{% url 'core:logout' %}">
+                  <!-- Logged-in: Logout in mobile menu -->
+                  <li class="mobile-logout-item">
+                    <form method="post" action="{% url 'core:logout' %}" class="m-0">
                       {% csrf_token %}
-
-                      <button type="submit"  style = "color: #f80202 !important;  ">
-                        Logout
+                      <button type="submit" class="mobile-menu-logout-btn">
+                        <!-- <i class="tji-logout me-2"></i>Logout -->
                       </button>
-
                     </form>
-
                   </li>
 
                 {% else %}
 
                   <!-- Logged-out authentication links -->
-                  <li class="mobile-login-item">
-                    <a href="{% url 'core:login' %}">
-                      Login
+                  <!-- <li class="mobile-login-item"> -->
+                    <!-- <a href="{% url 'core:login' %}"> -->
+                      <!-- <i class="tji-user-duo me-2"></i>Login -->
                     </a>
                   </li>
 
-                  <li class="mobile-signin-item">
-                    <a href="{% url 'core:sign_in' %}">
-                      Sign in
+                  <!-- <li class="mobile-signin-item"> -->
+                    <!-- <a href="{% url 'core:sign_in' %}"> -->
+                      <!-- <i class="tji-edit me-2"></i>Sign in -->
                     </a>
                   </li>
 
-                {% endif %} {% endcomment %}
+                {% endif %}
 
                   </ul>
 
@@ -1298,7 +1376,7 @@
   <script src="{% static 'js/meanmenu.js' %}"></script>
   <script src="{% static 'js/imagesloaded-pkgd.js' %}"></script>
   <script src="{% static 'js/isotope.pkgd.min.js' %}"></script>
-  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/main.js' %}?v=1.2"></script>
 
   {% block extra_js %}{% endblock %}
 

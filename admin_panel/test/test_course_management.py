@@ -75,3 +75,34 @@ class CourseManagementTests(TestCase):
         course = Course.objects.get(slug="django-fundamentals")
         self.assertRedirects(response, reverse("admin_panel:course_form", kwargs={"course_id": course.pk}))
         self.assertEqual(course.status, Course.Status.DRAFT)
+
+    def test_auto_generate_slug_on_create_when_slug_empty(self):
+        payload = self.payload(title="AI & Machine Learning BootCamp", slug="")
+        response = self.client.post(reverse("admin_panel:course_create"), payload, follow=True)
+        self.assertRedirects(response, reverse("admin_panel:course_dashboard"))
+        course = Course.objects.get(title="AI & Machine Learning BootCamp")
+        self.assertEqual(course.slug, "ai-machine-learning-bootcamp")
+
+    def test_auto_generate_slug_handles_collision_on_create(self):
+        Course.objects.create(
+            title="Duplicate Title", slug="duplicate-title",
+            description="First", mode=Course.Mode.ONLINE, price=Decimal("100")
+        )
+        payload = self.payload(title="Duplicate Title", slug="")
+        response = self.client.post(reverse("admin_panel:course_create"), payload, follow=True)
+        self.assertRedirects(response, reverse("admin_panel:course_dashboard"))
+        second = Course.objects.filter(title="Duplicate Title").exclude(slug="duplicate-title").first()
+        self.assertIsNotNone(second)
+        self.assertEqual(second.slug, "duplicate-title-1")
+
+    def test_auto_generate_slug_on_edit_uses_title_and_id(self):
+        course = Course.objects.create(
+            title="Old Title", slug="old-title",
+            description="Details", mode=Course.Mode.ONLINE, price=Decimal("100")
+        )
+        payload = self.payload(title="Updated Course Title", slug="")
+        response = self.client.post(reverse("admin_panel:course_form", kwargs={"course_id": course.pk}), payload, follow=True)
+        self.assertRedirects(response, reverse("admin_panel:course_dashboard"))
+        course.refresh_from_db()
+        self.assertEqual(course.slug, f"updated-course-title-{course.pk}")
+

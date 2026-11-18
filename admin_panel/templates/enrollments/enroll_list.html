@@ -100,7 +100,7 @@
           <th>Student</th>
           <th>Course</th>
           <th>Mode</th>
-          <th>Payment & Offline Ref</th>
+          <th>Enrollment & Fee</th>
           <th>Approval</th>
           <th>Progress</th>
           <th>Enrolled</th>
@@ -112,7 +112,15 @@
         <tr>
           <td>
             <div class="fw-semibold">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</div>
-            <div class="small text-muted">{{ enrollment.student.email }}</div>
+            <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ enrollment.student.email }}</div>
+            {% if enrollment.order.latest_txn.metadata.student_phone or enrollment.student.phone %}
+              <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ enrollment.order.latest_txn.metadata.student_phone|default:enrollment.student.phone }}</div>
+            {% endif %}
+            {% if enrollment.order.latest_txn.metadata.student_address or enrollment.student.bio %}
+              <div class="small text-muted text-truncate" style="max-width: 220px;" title="{{ enrollment.order.latest_txn.metadata.student_address|default:enrollment.student.bio }}">
+                <i class="bi bi-geo-alt me-1 text-danger"></i>{{ enrollment.order.latest_txn.metadata.student_address|default:enrollment.student.bio }}
+              </div>
+            {% endif %}
           </td>
           <td>
             <div class="fw-semibold">{{ enrollment.course.title }}</div>
@@ -121,23 +129,21 @@
           <td>{{ enrollment.course.get_mode_display }}</td>
           <td>
             <span class="edvanto-badge badge-soft-dark">{{ enrollment.get_payment_status_display }}</span>
-            {% if enrollment.order and enrollment.order.latest_txn %}
-              <div class="mt-1 small" style="font-size: 0.75rem; line-height: 1.25;">
-                <span class="badge bg-light text-dark border">
-                  {{ enrollment.order.latest_txn.metadata.payment_mode|default:enrollment.order.get_payment_method_display }}
+            <div class="mt-1 small" style="font-size: 0.75rem; line-height: 1.25;">
+              <span class="badge bg-light text-dark border">
+                Direct Offline
+              </span>
+              {% if enrollment.order and enrollment.order.total_amount %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border ms-1">
+                  ₹{{ enrollment.order.total_amount|floatformat:"0" }}
                 </span>
-                {% if enrollment.order.latest_txn.metadata.transaction_reference %}
-                  <div class="text-secondary mt-0.5" title="Reference / UTR">
-                    <strong>Ref:</strong> {{ enrollment.order.latest_txn.metadata.transaction_reference }}
-                  </div>
-                {% endif %}
-                {% if enrollment.order.latest_txn.metadata.notes %}
-                  <div class="text-muted fst-italic" style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ enrollment.order.latest_txn.metadata.notes }}">
-                    "{{ enrollment.order.latest_txn.metadata.notes }}"
-                  </div>
-                {% endif %}
-              </div>
-            {% endif %}
+              {% endif %}
+              {% if enrollment.order.latest_txn.metadata.notes %}
+                <div class="text-muted fst-italic mt-1" style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ enrollment.order.latest_txn.metadata.notes }}">
+                  "{{ enrollment.order.latest_txn.metadata.notes }}"
+                </div>
+              {% endif %}
+            </div>
           </td>
           <td>
             {% if enrollment.approval_status == 'accepted' %}
@@ -153,7 +159,7 @@
           <td>
             {% if enrollment.approval_status == 'pending' or enrollment.payment_status == 'pending' %}
               <div class="d-flex align-items-center gap-1">
-                <form method="post" action="{% url 'admin_panel:enrollment_approve' enrollment.pk %}" class="d-inline m-0" onsubmit="return confirm('Approve offline payment and activate course access for {{ enrollment.student.get_full_name|default:enrollment.student.username }}?');">
+                <form method="post" action="{% url 'admin_panel:enrollment_approve' enrollment.pk %}" class="d-inline m-0" onsubmit="return confirm('Approve offline enrollment and activate course access for {{ enrollment.student.get_full_name|default:enrollment.student.username }}?');">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-success py-1 px-2 fw-semibold" style="font-size: 0.78rem;" title="Approve Payment & Access">
                     <i class="bi bi-check-lg"></i> Approve
