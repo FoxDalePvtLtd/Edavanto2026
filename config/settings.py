@@ -77,6 +77,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://edavanto2026.onrender.com",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
 
 # URLs
 ROOT_URLCONF = "config.urls"
