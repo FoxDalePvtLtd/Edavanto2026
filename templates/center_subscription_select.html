@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Center Subscription Plans | Edvanto{% endblock %}
+
+{% block extra_css %}
+<style>
+  .pricing-card {
+    background: #11141a;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 12px;
+    padding: 40px 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .pricing-card:hover, .pricing-card.featured {
+    border-color: #d4af37;
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+    transform: translateY(-5px);
+  }
+  .pricing-badge {
+    background: #d4af37;
+    color: #0b0d11;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 15px;
+  }
+  .pricing-price {
+    font-size: 38px;
+    font-weight: 800;
+    color: #fff;
+    margin: 20px 0;
+  }
+  .pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 25px 0;
+    text-align: left;
+  }
+  .pricing-features li {
+    padding: 8px 0;
+    color: #a0aec0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .pricing-features li i {
+    color: #d4af37;
+    margin-right: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-for-header"></div>
+
+<section class="tj-page-header">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="tj-page-header-content">
+          <div class="tj-page-link">
+            <span><i class="tji-home"></i></span>
+            <span><a href="{% url 'core:home' %}">Home</a></span>
+            <span><i class="tji-arrow-right-4"></i></span>
+            <span><span>Center Subscription</span></span>
+          </div>
+          <div class="shape">
+            <img src="{% static 'images/shapes/stars.png' %}" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-gap-bottom">
+  <div class="container">
+    <div class="row justify-content-center text-center mb-5">
+      <div class="col-lg-8">
+        <h2 class="text-white fw-bold">Select Your Center Plan</h2>
+        <p class="text-muted">
+          Activate your Center Management Dashboard to create courses, manage instructors, enroll students, and schedule batches.
+        </p>
+        {% if center %}
+          <div class="alert alert-info py-2 d-inline-block">
+            Subscribing for: <strong>{{ center.name }}</strong> (Owner: {{ request.user.email }})
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      {% for plan in plans %}
+        <div class="col-md-6 col-lg-5">
+          <div class="pricing-card {% if plan.duration_months == 12 %}featured{% endif %}">
+            <div>
+              {% if plan.duration_months == 12 %}
+                <span class="pricing-badge">Best Value — Save More</span>
+              {% else %}
+                <span class="pricing-badge">Standard Access</span>
+              {% endif %}
+
+              <h3 class="text-white h4 mt-2">{{ plan.name }}</h3>
+              <p class="text-muted small">{{ plan.description }}</p>
+
+              <div class="pricing-price">
+                <span class="text-warning">₹{{ plan.price|floatformat:0 }}</span>
+                <span class="fs-6 text-muted font-monospace fw-normal">/ {{ plan.duration_months }} Months</span>
+              </div>
+
+              <ul class="pricing-features">
+                <li><i class="bi bi-check-circle-fill"></i> Unlimited Course Creation</li>
+                <li><i class="bi bi-check-circle-fill"></i> Add &amp; Manage Instructors</li>
+                <li><i class="bi bi-check-circle-fill"></i> Batch Scheduling &amp; Attendance</li>
+                <li><i class="bi bi-check-circle-fill"></i> Student Doubts Monitoring</li>
+                <li><i class="bi bi-check-circle-fill"></i> Verified Student Enrollment Tracking</li>
+                <li><i class="bi bi-check-circle-fill"></i> {{ plan.duration_months }} Calendar Months Full Dashboard Access</li>
+              </ul>
+            </div>
+
+            <div class="mt-4">
+              <a href="{% url 'core:center_subscription_checkout' plan_id=plan.id %}" class="tj-primary-btn btn w-100">
+                <span class="btn-text">Choose {{ plan.name }}</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center text-muted">
+          <p>No active subscription plans available. Please contact Edvanto support.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Create Batch | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'center_panel:batch_list' %}" class="text-decoration-none">Batches</a>
+  <span class="mx-2">/</span> Create Batch
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Create Center Batch</h1>
+    <p class="text-secondary mb-0">Schedule a new training batch for {{ center.name }}.</p>
+  </div>
+  <a href="{% url 'center_panel:batch_list' %}" class="btn btn-outline-light">
+    <i class="bi bi-arrow-left me-1"></i> Back to Batches
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-panel p-4">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger mb-4">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label text-light">Batch Name <span class="text-danger">*</span></label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Course <span class="text-danger">*</span></label>
+            {{ form.course }}
+            {% if form.course.errors %}<div class="text-danger small mt-1">{{ form.course.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Instructor <span class="text-danger">*</span></label>
+            {{ form.instructor }}
+            {% if form.instructor.errors %}<div class="text-danger small mt-1">{{ form.instructor.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label text-light">Start Date <span class="text-danger">*</span></label>
+            {{ form.start_date }}
+            {% if form.start_date.errors %}<div class="text-danger small mt-1">{{ form.start_date.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label text-light">End Date</label>
+            {{ form.end_date }}
+            {% if form.end_date.errors %}<div class="text-danger small mt-1">{{ form.end_date.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label text-light">Capacity (Seats) <span class="text-danger">*</span></label>
+            {{ form.capacity }}
+            {% if form.capacity.errors %}<div class="text-danger small mt-1">{{ form.capacity.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Initial Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary">
+          <a href="{% url 'center_panel:batch_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-gold">
+            <i class="bi bi-check-lg me-1"></i> Save Batch
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -31,6 +31,7 @@ class User(AbstractUser):
         INSTRUCTOR = "instructor", "Instructor"
         ADMIN = "admin", "Admin"
         STAFF = "staff", "Staff"
+        CENTER = "center", "Center"
 
     role = models.CharField(
         max_length=20,
@@ -68,6 +69,7 @@ class OTPVerification(models.Model):
         PASSWORD_RESET = "password_reset", "Password Reset"
         EMAIL_CHANGE = "email_change", "Email Change"
         PHONE_VERIFICATION = "phone_verification", "Phone Verification"
+        CENTER_REGISTRATION = "center_registration", "Center Registration"
 
     email = models.EmailField()
 
@@ -127,6 +129,14 @@ class Center(models.Model):
 
     name = models.CharField(max_length=150)
 
+    owner = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="managed_center",
+    )
+
     address = models.TextField(blank=True)
 
     city = models.CharField(max_length=100, blank=True)
@@ -139,7 +149,13 @@ class Center(models.Model):
 
     email = models.EmailField(blank=True)
 
+    website = models.URLField(blank=True)
+
+    description = models.TextField(blank=True)
+
     is_active = models.BooleanField(default=True)
+
+    is_suspended = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -147,6 +163,20 @@ class Center(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_active_subscription(self):
+        now = timezone.now()
+        return self.subscriptions.filter(
+            status="active",
+            start_date__lte=now,
+            end_date__gte=now,
+        ).order_by("-end_date").first()
+
+    @property
+    def has_active_subscription(self):
+        if self.is_suspended or not self.is_active:
+            return False
+        return self.get_active_subscription() is not None
 
 
 # =========================================================
@@ -163,6 +193,13 @@ class Course(models.Model):
         DRAFT = "draft", "Draft"
         PUBLISHED = "published", "Published"
         ARCHIVED = "archived", "Archived"
+
+    class ApprovalStatus(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PENDING = "pending", "Pending Admin Approval"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        CHANGES_REQUESTED = "changes_requested", "Changes Requested"
 
     class Category(models.TextChoices):
         DESIGN ="design", "Design"
@@ -243,6 +280,24 @@ class Course(models.Model):
     )
 
     requires_instructor_approval = models.BooleanField(default=False)
+
+    approval_status = models.CharField(
+        max_length=30,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.APPROVED,
+    )
+
+    approval_feedback = models.TextField(blank=True)
+
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_courses",
+    )
+
+    approved_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -1438,6 +1493,8 @@ class Notification(models.Model):
         BATCH = "batch", "Batch"
         CERTIFICATE = "certificate", "Certificate"
         SYSTEM = "system", "System"
+        CENTER = "center", "Center"
+        SUBSCRIPTION = "subscription", "Subscription"
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1727,3 +1784,336 @@ class Invoice(models.Model):
 
     def __str__(self):
         return self.invoice_number
+
+
+# =========================================================
+# COURSE APPROVAL HISTORY
+# =========================================================
+
+class CourseApprovalHistory(models.Model):
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="approval_history",
+    )
+
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="course_reviews",
+    )
+
+    decision = models.CharField(max_length=30)
+
+    feedback = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.course.title} - {self.decision} ({self.created_at:%Y-%m-%d})"
+
+
+# =========================================================
+# CENTER INSTRUCTOR MEMBERSHIP
+# =========================================================
+
+class CenterInstructor(models.Model):
+
+    center = models.ForeignKey(
+        Center,
+        on_delete=models.CASCADE,
+        related_name="instructors",
+    )
+
+    instructor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="center_memberships",
+        limit_choices_to={"role": User.Role.INSTRUCTOR},
+    )
+
+    specialization = models.CharField(max_length=200, blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["center", "instructor"],
+                name="unique_center_instructor",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.center.name} - {self.instructor.get_full_name() or self.instructor.username}"
+
+
+# =========================================================
+# CENTER APPLICATION
+# =========================================================
+
+class CenterApplication(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        UNDER_REVIEW = "under_review", "Under Review"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        SUSPENDED = "suspended", "Suspended"
+
+    center_name = models.CharField(max_length=150)
+
+    official_email = models.EmailField()
+
+    contact_number = models.CharField(max_length=20)
+
+    address = models.TextField()
+
+    city = models.CharField(max_length=100)
+
+    state = models.CharField(max_length=100)
+
+    postal_code = models.CharField(max_length=20)
+
+    website = models.URLField(blank=True)
+
+    description = models.TextField(blank=True)
+
+    # Owner details
+    owner_name = models.CharField(max_length=150)
+
+    owner_email = models.EmailField()
+
+    owner_phone = models.CharField(max_length=20)
+
+    owner_password_hash = models.CharField(max_length=255)
+
+    # Verification documents
+    business_registration_doc = models.FileField(
+        upload_to="center_applications/business_docs/",
+        blank=True,
+        null=True,
+        max_length=255,
+    )
+
+    identity_doc = models.FileField(
+        upload_to="center_applications/id_docs/",
+        blank=True,
+        null=True,
+        max_length=255,
+    )
+
+    supporting_doc = models.FileField(
+        upload_to="center_applications/supporting_docs/",
+        blank=True,
+        null=True,
+        max_length=255,
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    admin_notes = models.TextField(blank=True)
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_center_applications",
+    )
+
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    center = models.OneToOneField(
+        Center,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="application",
+    )
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="center_application",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.center_name} ({self.get_status_display()})"
+
+
+# =========================================================
+# CENTER SUBSCRIPTION PLAN
+# =========================================================
+
+class CenterSubscriptionPlan(models.Model):
+
+    name = models.CharField(max_length=100)
+
+    duration_months = models.PositiveIntegerField(
+        default=6,
+        help_text="Duration in months (e.g. 6 or 12).",
+    )
+
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+
+    description = models.TextField(blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["duration_months", "price"]
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price} ({self.duration_months} mo)"
+
+
+# =========================================================
+# CENTER SUBSCRIPTION
+# =========================================================
+
+class CenterSubscription(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING_PAYMENT = "pending_payment", "Pending Payment"
+        ACTIVE = "active", "Active"
+        EXPIRED = "expired", "Expired"
+        CANCELLED = "cancelled", "Cancelled"
+        SUSPENDED = "suspended", "Suspended"
+        FAILED = "failed", "Payment Failed"
+
+    center = models.ForeignKey(
+        Center,
+        on_delete=models.CASCADE,
+        related_name="subscriptions",
+    )
+
+    plan = models.ForeignKey(
+        CenterSubscriptionPlan,
+        on_delete=models.PROTECT,
+        related_name="subscriptions",
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.PENDING_PAYMENT,
+    )
+
+    start_date = models.DateTimeField(null=True, blank=True)
+
+    end_date = models.DateTimeField(null=True, blank=True)
+
+    auto_renew = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.center.name} - {self.plan.name} ({self.get_status_display()})"
+
+    @property
+    def is_valid(self):
+        if self.status != self.Status.ACTIVE:
+            return False
+        if not self.end_date:
+            return False
+        return self.end_date >= timezone.now() and not self.center.is_suspended
+
+    @property
+    def days_remaining(self):
+        if not self.is_valid or not self.end_date:
+            return 0
+        delta = self.end_date - timezone.now()
+        return max(0, delta.days)
+
+
+# =========================================================
+# CENTER SUBSCRIPTION PAYMENT
+# =========================================================
+
+class CenterSubscriptionPayment(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        SUCCESS = "success", "Success"
+        FAILED = "failed", "Failed"
+        REFUNDED = "refunded", "Refunded"
+
+    subscription = models.ForeignKey(
+        CenterSubscription,
+        on_delete=models.PROTECT,
+        related_name="payments",
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+
+    payment_method = models.CharField(
+        max_length=30,
+        default="razorpay",
+    )
+
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
+
+    razorpay_signature = models.CharField(max_length=255, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    error_message = models.TextField(blank=True)
+
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    metadata = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Payment ₹{self.amount} - {self.subscription.center.name} ({self.get_status_display()})"

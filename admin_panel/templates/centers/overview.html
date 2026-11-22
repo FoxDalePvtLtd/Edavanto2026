@@ -1,0 +1,310 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Centers Overview | EDVANTO Admin{% endblock %}
+
+{% block content %}
+<style>
+  .centers-page .stat-card, .centers-page .content-panel {
+    background: var(--edvanto-white);
+    border: var(--edvanto-border-light);
+    border-radius: var(--edvanto-radius-card);
+    box-shadow: var(--edvanto-shadow-card);
+  }
+  .centers-page .stat-card {
+    padding: 1.15rem 1.25rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .centers-page .stat-label {
+    color: var(--edvanto-gray-600);
+    font-size: .8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  .centers-page .stat-value {
+    color: var(--edvanto-navy);
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-top: .25rem;
+  }
+  .centers-page .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+  .centers-page .content-panel { overflow: hidden; }
+  .centers-page .panel-head {
+    padding: 1rem 1.25rem;
+    border-bottom: var(--edvanto-border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn-gold {
+    background: #D4A62A;
+    border-color: #D4A62A;
+    color: #171717;
+    font-weight: 700;
+  }
+  .btn-gold:hover {
+    background: #c3981e;
+    border-color: #c3981e;
+    color: #000;
+  }
+  .status-badge {
+    display: inline-flex;
+    padding: .25rem .55rem;
+    border-radius: 99px;
+    font-size: .72rem;
+    font-weight: 700;
+  }
+  .badge-pending { background: #fff8e1; color: #b78103; }
+  .badge-approved { background: #e8f6ee; color: #17663b; }
+  .badge-rejected { background: #fee2e2; color: #991b1b; }
+  .badge-suspended { background: #f1f2f4; color: #4b5563; }
+</style>
+
+<div class="centers-page">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+      <div class="small mb-2">
+        <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+        <span class="mx-2">/</span> Centers
+      </div>
+      <h1 class="h3 mb-1">Center Management Overview</h1>
+      <p class="text-secondary mb-0">Oversee training centers, review registration applications, subscriptions, and course approvals.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'admin_panel:center_applications' %}" class="btn btn-outline-dark">
+        <i class="bi bi-inbox me-1"></i> Applications {% if pending_applications %}<span class="badge bg-warning text-dark ms-1">{{ pending_applications }}</span>{% endif %}
+      </a>
+      <a href="{% url 'admin_panel:center_course_approvals' %}" class="btn btn-outline-dark">
+        <i class="bi bi-journal-check me-1"></i> Course Approvals {% if pending_course_approvals %}<span class="badge bg-warning text-dark ms-1">{{ pending_course_approvals }}</span>{% endif %}
+      </a>
+      <a href="{% url 'admin_panel:center_create' %}" class="btn btn-gold">
+        <i class="bi bi-plus-lg me-1"></i> Add Center
+      </a>
+    </div>
+  </div>
+
+  <!-- STATS TILES -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Total Centers</div>
+          <div class="stat-value">{{ total_centers }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(212,166,42,.15); color: #8b6800;">
+          <i class="bi bi-building"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Active Centers</div>
+          <div class="stat-value text-success">{{ approved_centers }}</div>
+        </div>
+        <div class="stat-icon" style="background: #e8f6ee; color: #17663b;">
+          <i class="bi bi-check-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Pending Applications</div>
+          <div class="stat-value text-warning">{{ pending_applications }}</div>
+        </div>
+        <div class="stat-icon" style="background: #fff8e1; color: #b78103;">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Active Subscriptions</div>
+          <div class="stat-value text-primary">{{ active_subscriptions }}</div>
+        </div>
+        <div class="stat-icon" style="background: #eff6ff; color: #1d4ed8;">
+          <i class="bi bi-credit-card-2-front"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECONDARY ROW -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Suspended Centers</div>
+          <div class="stat-value text-danger">{{ suspended_centers }}</div>
+        </div>
+        <div class="stat-icon" style="background: #fee2e2; color: #991b1b;">
+          <i class="bi bi-shield-slash"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-4">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Expired Subscriptions</div>
+          <div class="stat-value text-secondary">{{ expired_subscriptions }}</div>
+        </div>
+        <div class="stat-icon" style="background: #f1f2f4; color: #4b5563;">
+          <i class="bi bi-clock-history"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-4">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Pending Course Reviews</div>
+          <div class="stat-value text-warning">{{ pending_course_approvals }}</div>
+        </div>
+        <div class="stat-icon" style="background: #fff8e1; color: #b78103;">
+          <i class="bi bi-journal-text"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO COLUMNS: RECENT APPLICATIONS & RECENT CENTERS -->
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="content-panel">
+        <div class="panel-head">
+          <h2 class="h6 mb-0"><i class="bi bi-inbox me-2"></i> Recent Applications</h2>
+          <a href="{% url 'admin_panel:center_applications' %}" class="small text-decoration-none">View All &rarr;</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Center</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in recent_applications %}
+                <tr>
+                  <td>
+                    <div class="fw-bold">{{ app.center_name }}</div>
+                    <small class="text-muted">{{ app.city }}, {{ app.state }}</small>
+                  </td>
+                  <td>
+                    <div>{{ app.owner_name }}</div>
+                    <small class="text-muted">{{ app.owner_email }}</small>
+                  </td>
+                  <td>
+                    {% if app.status == 'pending' %}
+                      <span class="status-badge badge-pending">Pending</span>
+                    {% elif app.status == 'approved' %}
+                      <span class="status-badge badge-approved">Approved</span>
+                    {% elif app.status == 'rejected' %}
+                      <span class="status-badge badge-rejected">Rejected</span>
+                    {% else %}
+                      <span class="status-badge badge-suspended">{{ app.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td><small class="text-muted">{{ app.created_at|date:"d M Y" }}</small></td>
+                  <td>
+                    <a href="{% url 'admin_panel:center_application_detail' app_id=app.id %}" class="btn btn-sm btn-outline-secondary">Review</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">No center applications recorded yet.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="content-panel">
+        <div class="panel-head">
+          <h2 class="h6 mb-0"><i class="bi bi-building me-2"></i> Registered Centers</h2>
+          <div class="d-flex gap-2">
+            <a href="{% url 'admin_panel:center_subscription_plans' %}" class="small text-decoration-none me-2">Plans</a>
+            <a href="{% url 'admin_panel:center_list' %}" class="small text-decoration-none">All Centers &rarr;</a>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Center Name</th>
+                <th>Owner Account</th>
+                <th>Subscription</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for center in recent_centers %}
+                <tr>
+                  <td>
+                    <div class="fw-bold">{{ center.name }}</div>
+                    <small class="text-muted">{{ center.email }}</small>
+                  </td>
+                  <td>
+                    {% if center.owner %}
+                      <div>{{ center.owner.get_full_name|default:center.owner.username }}</div>
+                      <small class="text-muted">{{ center.owner.email }}</small>
+                    {% else %}
+                      <span class="text-muted fst-italic">None assigned</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if center.has_active_subscription %}
+                      <span class="badge bg-success-subtle text-success">Active</span>
+                    {% else %}
+                      <span class="badge bg-secondary-subtle text-secondary">Inactive / Expired</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if center.is_suspended %}
+                      <span class="status-badge badge-suspended">Suspended</span>
+                    {% else %}
+                      <span class="status-badge badge-approved">Active</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{% url 'admin_panel:center_detail' center_id=center.id %}" class="btn btn-sm btn-outline-dark">Manage</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">No registered centers found.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

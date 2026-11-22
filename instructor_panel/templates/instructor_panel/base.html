@@ -1,0 +1,394 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title|default:"Instructor Dashboard" }} | Edvanto{% endblock %}</title>
+
+  <!-- Google Fonts & Bootstrap 5 & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    :root {
+      --edvanto-gold: #D4A62A;
+      --edvanto-gold-hover: #c3981e;
+      --edvanto-gold-light: rgba(212, 166, 42, 0.12);
+      --edvanto-bg-dark: #0e1117;
+      --edvanto-sidebar-bg: #131722;
+      --edvanto-card-bg: #171d2b;
+      --edvanto-border: rgba(255, 255, 255, 0.08);
+      --edvanto-text: #e2e8f0;
+      --edvanto-text-muted: #94a3b8;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--edvanto-bg-dark);
+      color: var(--edvanto-text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* SIDEBAR */
+    #instructor-sidebar {
+      width: 260px;
+      background-color: var(--edvanto-sidebar-bg);
+      border-right: 1px solid var(--edvanto-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--edvanto-border);
+    }
+    .sidebar-brand .brand-logo {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-brand .brand-logo span {
+      color: var(--edvanto-gold);
+    }
+    .role-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 1rem 0.75rem;
+      margin: 0;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    .nav-section-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      font-weight: 700;
+      padding: 0.75rem 0.65rem 0.35rem;
+    }
+    .nav-link-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.65rem 0.85rem;
+      color: var(--edvanto-text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      margin-bottom: 2px;
+    }
+    .nav-link-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+    }
+    .nav-link-item.active {
+      background: var(--edvanto-gold-light);
+      color: var(--edvanto-gold);
+      font-weight: 600;
+    }
+    .nav-link-item i {
+      font-size: 1.15rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* MAIN CONTENT */
+    #main-wrapper {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .top-header {
+      height: 68px;
+      background-color: var(--edvanto-sidebar-bg);
+      border-bottom: 1px solid var(--edvanto-border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 990;
+    }
+
+    .page-body {
+      padding: 2rem;
+      flex-grow: 1;
+    }
+
+    /* CARDS */
+    .dashboard-card {
+      background: var(--edvanto-card-bg);
+      border: 1px solid var(--edvanto-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    /* TABLE */
+    .table-dark-custom {
+      --bs-table-bg: transparent;
+      --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
+      --bs-table-hover-bg: rgba(255, 255, 255, 0.04);
+      --bs-table-border-color: var(--edvanto-border);
+      color: var(--edvanto-text);
+    }
+    .table-dark-custom th {
+      color: #94a3b8;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--edvanto-border);
+      padding: 0.75rem 1rem;
+    }
+    .table-dark-custom td {
+      padding: 0.95rem 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--edvanto-border);
+      font-size: 0.88rem;
+    }
+
+    /* FORMS & BUTTONS */
+    .form-control, .form-select {
+      background-color: #111520;
+      border: 1px solid var(--edvanto-border);
+      color: #fff;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      background-color: #111520;
+      border-color: var(--edvanto-gold);
+      color: #fff;
+      box-shadow: 0 0 0 0.25rem rgba(212, 166, 42, 0.25);
+    }
+    .btn-gold {
+      background-color: var(--edvanto-gold);
+      border-color: var(--edvanto-gold);
+      color: #0b0f19;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0.5rem 1.25rem;
+    }
+    .btn-gold:hover {
+      background-color: var(--edvanto-gold-hover);
+      border-color: var(--edvanto-gold-hover);
+      color: #000;
+    }
+    .btn-outline-gold {
+      border: 1px solid var(--edvanto-gold);
+      color: var(--edvanto-gold);
+      background: transparent;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+    .btn-outline-gold:hover {
+      background: var(--edvanto-gold-light);
+      color: var(--edvanto-gold);
+    }
+
+    .badge-soft-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .badge-soft-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-soft-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .badge-soft-info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-soft-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+    @media (max-width: 991px) {
+      #instructor-sidebar {
+        position: fixed;
+        left: -260px;
+        transition: left 0.3s ease;
+      }
+      #instructor-sidebar.show {
+        left: 0;
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside id="instructor-sidebar">
+    <div class="sidebar-brand">
+      <a href="{% url 'instructor_panel:dashboard' %}" class="brand-logo">
+        <i class="bi bi-mortarboard-fill text-warning"></i>
+        <span>EDVANTO</span>
+      </a>
+      <div class="role-badge">
+        <i class="bi bi-person-badge-fill me-1"></i> INSTRUCTOR PORTAL
+      </div>
+      {% if request.center %}
+        <div class="small text-muted mt-1 text-truncate" title="{{ request.center.name }}">
+          <i class="bi bi-building me-1"></i> {{ request.center.name }}
+        </div>
+      {% endif %}
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="nav-section-label">General</li>
+      <li>
+        <a href="{% url 'instructor_panel:dashboard' %}" class="nav-link-item {% if active_nav == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+
+      <li class="nav-section-label">Academics</li>
+      <li>
+        <a href="{% url 'instructor_panel:course_list' %}" class="nav-link-item {% if active_nav == 'courses' %}active{% endif %}">
+          <i class="bi bi-journal-bookmark-fill"></i>
+          <span>My Courses</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'instructor_panel:doubt_list' %}" class="nav-link-item {% if active_nav == 'doubts' %}active{% endif %}">
+          <i class="bi bi-question-circle-fill"></i>
+          <span>Student Doubts</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'instructor_panel:assessment_list' %}" class="nav-link-item {% if active_nav == 'assessments' %}active{% endif %}">
+          <i class="bi bi-check2-square"></i>
+          <span>Assessments</span>
+        </a>
+      </li>
+
+      <li class="nav-section-label">Operations</li>
+      <li>
+        <a href="{% url 'instructor_panel:batch_list' %}" class="nav-link-item {% if active_nav == 'batches' %}active{% endif %}">
+          <i class="bi bi-people-fill"></i>
+          <span>Batches & Attendance</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'instructor_panel:student_progress' %}" class="nav-link-item {% if active_nav == 'students' %}active{% endif %}">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>Student Progress</span>
+        </a>
+      </li>
+
+      <li class="nav-section-label">Account</li>
+      <li>
+        <a href="{% url 'instructor_panel:notifications' %}" class="nav-link-item {% if active_nav == 'notifications' %}active{% endif %}">
+          <i class="bi bi-bell-fill"></i>
+          <span>Notifications</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'instructor_panel:profile' %}" class="nav-link-item {% if active_nav == 'profile' %}active{% endif %}">
+          <i class="bi bi-person-fill"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'core:logout' %}" class="nav-link-item text-danger">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Sign Out</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div id="main-wrapper">
+    <header class="top-header">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" id="sidebarToggle">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <h5 class="mb-0 fw-bold text-white">{% block header_title %}Instructor Workspace{% endblock %}</h5>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'instructor_panel:notifications' %}" class="btn btn-sm btn-outline-secondary position-relative">
+          <i class="bi bi-bell"></i>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+          {% if request.user.profile_photo %}
+            <img src="{{ request.user.profile_photo.url }}" alt="Profile" class="rounded-circle" width="36" height="36" style="object-fit:cover;">
+          {% else %}
+            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px;">
+              {{ request.user.first_name|default:request.user.username|make_list|first|upper }}
+            </div>
+          {% endif %}
+          <div class="d-none d-md-block text-start">
+            <div class="fw-semibold text-white small leading-tight">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="text-muted" style="font-size:0.75rem;">{{ request.user.email }}</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <!-- Flash Messages -->
+      {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show border-0" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('instructor-sidebar');
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('show');
+      });
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

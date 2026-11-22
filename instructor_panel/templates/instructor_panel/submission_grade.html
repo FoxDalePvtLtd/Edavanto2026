@@ -1,0 +1,93 @@
+{% extends "instructor_panel/base.html" %}
+
+{% block title %}Grade Submission #{{ submission.id }} | Edvanto Instructor{% endblock %}
+{% block header_title %}Grade Assessment Submission{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <a href="{% url 'instructor_panel:assessment_submissions' assessment.id %}" class="btn btn-sm btn-outline-secondary mb-2">
+      <i class="bi bi-arrow-left me-1"></i>Back to Submissions
+    </a>
+    <h4 class="fw-bold text-white mb-0">Submission Review: {{ student_name|default:submission.student.get_full_name|default:submission.student.username }}</h4>
+    <div class="text-muted small">Assessment: {{ assessment.title }} (Max Marks: {{ max_marks }})</div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="dashboard-card mb-4">
+      <h6 class="fw-bold text-white mb-3"><i class="bi bi-file-earmark-text text-warning me-2"></i>Submission Content</h6>
+      
+      {% if submission.answers %}
+        <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 text-white mb-3" style="white-space: pre-wrap;">{{ submission.answers }}</div>
+      {% endif %}
+
+      {% if submission.uploaded_file %}
+        <div class="p-3 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+          <div>
+            <i class="bi bi-file-earmark-arrow-down fs-4 text-warning me-2"></i>
+            <span class="text-white fw-semibold">Uploaded Assignment File</span>
+          </div>
+          <a href="{{ submission.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-gold">
+            <i class="bi bi-download me-1"></i>Download File
+          </a>
+        </div>
+      {% endif %}
+
+      {% if not submission.answers and not submission.uploaded_file %}
+        <p class="text-muted small mb-0">No text or attachment provided in this submission.</p>
+      {% endif %}
+    </div>
+
+    <!-- Grade Form -->
+    <div class="dashboard-card">
+      <h6 class="fw-bold text-white mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>Evaluation & Scoring</h6>
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label text-white">Score Awarded (out of {{ max_marks }}) *</label>
+            {{ form.score }}
+            {% if form.score.errors %}
+              <div class="text-danger small mt-1">{{ form.score.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-white">Submission Status *</label>
+            {{ form.status }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-gold">
+          <i class="bi bi-save me-1"></i>Save Grade & Notify Student
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="dashboard-card mb-4">
+      <h6 class="fw-bold text-white mb-3"><i class="bi bi-person-circle text-info me-2"></i>Student Information</h6>
+      <div class="mb-2">
+        <div class="text-muted small">Student Name</div>
+        <div class="text-white fw-semibold">{{ submission.student.get_full_name|default:submission.student.username }}</div>
+      </div>
+      <div class="mb-2">
+        <div class="text-muted small">Email Address</div>
+        <div class="text-white">{{ submission.student.email }}</div>
+      </div>
+      <div class="mb-2">
+        <div class="text-muted small">Submitted At</div>
+        <div class="text-white">{{ submission.submitted_at|date:"M d, Y H:i:s" }}</div>
+      </div>
+      {% if submission.graded_at %}
+        <div class="mb-2">
+          <div class="text-muted small">Last Graded At</div>
+          <div class="text-white">{{ submission.graded_at|date:"M d, Y H:i:s" }}</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

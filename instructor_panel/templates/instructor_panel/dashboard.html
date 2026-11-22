@@ -1,0 +1,166 @@
+{% extends "instructor_panel/base.html" %}
+
+{% block title %}Dashboard | Edvanto Instructor{% endblock %}
+{% block header_title %}Instructor Overview{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <!-- Assigned Courses Stat -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="dashboard-card stat-card">
+      <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+        <i class="bi bi-journal-bookmark-fill"></i>
+      </div>
+      <div>
+        <div class="text-muted small fw-medium">Assigned Courses</div>
+        <h3 class="fw-bold mb-0 text-white">{{ courses_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Students Stat -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="dashboard-card stat-card">
+      <div class="stat-icon bg-info bg-opacity-10 text-info">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div>
+        <div class="text-muted small fw-medium">Active Students</div>
+        <h3 class="fw-bold mb-0 text-white">{{ total_students }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Doubts Stat -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="dashboard-card stat-card">
+      <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+        <i class="bi bi-question-circle-fill"></i>
+      </div>
+      <div>
+        <div class="text-muted small fw-medium">Pending Doubts</div>
+        <h3 class="fw-bold mb-0 text-white">{{ pending_doubts_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Submissions Stat -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="dashboard-card stat-card">
+      <div class="stat-icon bg-success bg-opacity-10 text-success">
+        <i class="bi bi-check2-square"></i>
+      </div>
+      <div>
+        <div class="text-muted small fw-medium">Pending Reviews</div>
+        <h3 class="fw-bold mb-0 text-white">{{ pending_submissions_count }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Recent Doubts -->
+  <div class="col-lg-7">
+    <div class="dashboard-card h-100">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0 text-white">
+          <i class="bi bi-question-circle text-warning me-2"></i>Recent Student Doubts
+        </h6>
+        <a href="{% url 'instructor_panel:doubt_list' %}" class="btn btn-sm btn-outline-gold">View All</a>
+      </div>
+
+      {% if recent_doubts %}
+        <div class="list-group list-group-flush">
+          {% for doubt in recent_doubts %}
+            <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-3 d-flex justify-content-between align-items-center">
+              <div class="me-3">
+                <a href="{% url 'instructor_panel:doubt_detail' doubt.id %}" class="text-white fw-semibold text-decoration-none d-block">
+                  {{ doubt.subject }}
+                </a>
+                <div class="text-muted small">
+                  By <span class="text-white">{{ doubt.student.get_full_name|default:doubt.student.username }}</span>
+                  &bull; {{ doubt.lesson.title }}
+                </div>
+              </div>
+              <div class="text-end">
+                {% if doubt.status == 'open' or doubt.status == 'assigned' %}
+                  <span class="badge badge-soft-warning mb-1 d-block">{{ doubt.get_status_display }}</span>
+                {% elif doubt.status == 'answered' %}
+                  <span class="badge badge-soft-info mb-1 d-block">{{ doubt.get_status_display }}</span>
+                {% else %}
+                  <span class="badge badge-soft-success mb-1 d-block">{{ doubt.get_status_display }}</span>
+                {% endif %}
+                <a href="{% url 'instructor_panel:doubt_detail' doubt.id %}" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size:0.75rem;">Reply</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-chat-square-quote fs-1 d-block mb-2 opacity-50"></i>
+          No open doubts right now. Excellent job!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Upcoming Sessions & Assigned Courses -->
+  <div class="col-lg-5">
+    <div class="dashboard-card mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0 text-white">
+          <i class="bi bi-calendar-event text-info me-2"></i>Upcoming Sessions
+        </h6>
+        <a href="{% url 'instructor_panel:batch_list' %}" class="btn btn-sm btn-outline-gold">Batches</a>
+      </div>
+
+      {% if upcoming_sessions %}
+        <div class="list-group list-group-flush">
+          {% for session in upcoming_sessions %}
+            <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-2 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-white fw-semibold">{{ session.title }}</div>
+                <div class="text-muted small">
+                  {{ session.batch.name }} &bull; {{ session.date|date:"M d, Y" }} {{ session.start_time|time:"H:i" }}
+                </div>
+              </div>
+              <a href="{% url 'instructor_panel:session_attendance' session.batch.id session.id %}" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.78rem;">
+                Attendance
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">No upcoming live sessions scheduled.</p>
+      {% endif %}
+    </div>
+
+    <div class="dashboard-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0 text-white">
+          <i class="bi bi-journal-check text-success me-2"></i>Assigned Courses
+        </h6>
+        <a href="{% url 'instructor_panel:course_list' %}" class="btn btn-sm btn-outline-gold">View All</a>
+      </div>
+
+      {% if assigned_courses %}
+        <div class="list-group list-group-flush">
+          {% for course in assigned_courses %}
+            <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-2 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-white fw-semibold">{{ course.title }}</div>
+                <div class="text-muted small">{{ course.category.name|default:"General" }} &bull; Level: {{ course.get_level_display }}</div>
+              </div>
+              <a href="{% url 'instructor_panel:course_lessons' course.id %}" class="btn btn-sm btn-outline-light py-1 px-2" style="font-size:0.78rem;">
+                Curriculum
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">No courses assigned to your account yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

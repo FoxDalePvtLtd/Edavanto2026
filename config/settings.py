@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     # Local
     "core",
     "admin_panel",
+    "center_panel",
+    "instructor_panel",
 ]
 
 AUTH_USER_MODEL = "core.User"

@@ -1,0 +1,66 @@
+{% extends "instructor_panel/base.html" %}
+
+{% block title %}{{ course.title }} - Curriculum | Edvanto Instructor{% endblock %}
+{% block header_title %}Course Curriculum: {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <a href="{% url 'instructor_panel:course_list' %}" class="btn btn-sm btn-outline-secondary mb-2">
+      <i class="bi bi-arrow-left me-1"></i>Back to Courses
+    </a>
+    <h4 class="fw-bold text-white mb-0">{{ course.title }}</h4>
+    <div class="text-muted small">Course Code / Slug: {{ course.slug }}</div>
+  </div>
+</div>
+
+{% for module in modules %}
+  <div class="dashboard-card mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+      <div>
+        <h5 class="fw-bold text-warning mb-0">Module {{ module.order }}: {{ module.title }}</h5>
+        {% if module.description %}
+          <div class="text-muted small mt-1">{{ module.description }}</div>
+        {% endif %}
+      </div>
+      <span class="badge bg-dark border border-secondary">{{ module.lessons.count }} Lessons</span>
+    </div>
+
+    <div class="list-group list-group-flush">
+      {% for lesson in module.lessons.all %}
+        <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-semibold text-white">
+                <i class="bi bi-play-circle-fill text-warning me-2"></i>Lesson {{ lesson.order }}: {{ lesson.title }}
+                {% if lesson.is_preview %}
+                  <span class="badge badge-soft-info ms-2">Free Preview</span>
+                {% endif %}
+              </div>
+              <div class="text-muted small mt-1">
+                Duration: {{ lesson.duration_minutes }} mins &bull;
+                Content Type: {{ lesson.content_type|default:"Video" }}
+              </div>
+            </div>
+            <div>
+              {% if lesson.resources.exists %}
+                <span class="badge bg-secondary me-2"><i class="bi bi-paperclip me-1"></i>{{ lesson.resources.count }} Resources</span>
+              {% endif %}
+              {% if lesson.assessments.exists %}
+                <span class="badge bg-info text-dark"><i class="bi bi-check2-square me-1"></i>{{ lesson.assessments.count }} Assessments</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="text-muted small mb-0 py-2">No lessons added to this module yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% empty %}
+  <div class="dashboard-card text-center py-5">
+    <i class="bi bi-journal-x fs-1 text-muted mb-2 d-block"></i>
+    <p class="text-muted mb-0">No modules or syllabus configured for this course yet.</p>
+  </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}{{ page_title }} | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">{{ page_title }}</h1>
+    <p class="text-secondary mb-0">Configure title, description, instructor, pricing, and duration for your course.</p>
+  </div>
+  <a href="{% url 'center_panel:course_list' %}" class="btn btn-outline-light">
+    <i class="bi bi-arrow-left me-1"></i> Back to Courses
+  </a>
+</div>
+
+{% if course %}
+  <!-- APPROVAL STATUS CALLOUT -->
+  <div class="alert {% if course.approval_status == 'approved' %}alert-success{% elif course.approval_status == 'pending' %}alert-warning{% elif course.approval_status == 'rejected' %}alert-danger{% else %}alert-secondary{% endif %} d-flex justify-content-between align-items-center mb-4 border-0">
+    <div>
+      <h6 class="mb-1 fw-bold">
+        Approval State: {{ course.get_approval_status_display }}
+        {% if course.status == 'published' %}<span class="badge bg-success ms-2">Published</span>{% else %}<span class="badge bg-secondary ms-2">Draft</span>{% endif %}
+      </h6>
+      {% if course.approval_feedback %}
+        <p class="mb-0 small"><strong>Admin Feedback:</strong> {{ course.approval_feedback }}</p>
+      {% elif course.approval_status == 'approved' %}
+        <p class="mb-0 small">This course has been approved by the administrator and is eligible for publishing.</p>
+      {% elif course.approval_status == 'pending' %}
+        <p class="mb-0 small">This course is currently awaiting review by an Edvanto administrator.</p>
+      {% else %}
+        <p class="mb-0 small">Save your course details, add curriculum modules, and submit for administrator review when ready.</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <a href="{% url 'center_panel:syllabus_curriculum' course_id=course.id %}" class="btn btn-sm btn-dark">
+        <i class="bi bi-list-nested me-1"></i> Manage Curriculum &rarr;
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card-panel p-4">
+      
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger mb-4">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <h5 class="text-warning border-bottom border-secondary pb-2 mb-3">
+          <i class="bi bi-info-circle me-2"></i> Course Basic Details
+        </h5>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label text-light" for="{{ form.title.id_for_label }}">Course Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+            {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light" for="{{ form.slug.id_for_label }}">URL Slug (Auto-generated if empty)</label>
+            {{ form.slug }}
+            {% if form.slug.errors %}<div class="text-danger small mt-1">{{ form.slug.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light" for="{{ form.category.id_for_label }}">Category</label>
+            {{ form.category }}
+            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-light" for="{{ form.description.id_for_label }}">Description <span class="text-danger">*</span></label>
+            {{ form.description }}
+            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <h5 class="text-warning border-bottom border-secondary pb-2 mb-3">
+          <i class="bi bi-sliders me-2"></i> Mode, Delivery &amp; Assigned Instructor
+        </h5>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label text-light" for="{{ form.mode.id_for_label }}">Course Mode <span class="text-danger">*</span></label>
+            {{ form.mode }}
+            {% if form.mode.errors %}<div class="text-danger small mt-1">{{ form.mode.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label text-light" for="{{ form.duration_hours.id_for_label }}">Duration (Hours - Online)</label>
+            {{ form.duration_hours }}
+            {% if form.duration_hours.errors %}<div class="text-danger small mt-1">{{ form.duration_hours.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label text-light" for="{{ form.duration_weeks.id_for_label }}">Duration (Weeks - Offline)</label>
+            {{ form.duration_weeks }}
+            {% if form.duration_weeks.errors %}<div class="text-danger small mt-1">{{ form.duration_weeks.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light" for="{{ form.instructor.id_for_label }}">Assigned Instructor</label>
+            {{ form.instructor }}
+            <div class="form-text text-muted small">Only active instructors belonging to {{ center.name }} can be assigned.</div>
+            {% if form.instructor.errors %}<div class="text-danger small mt-1">{{ form.instructor.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light" for="{{ form.thumbnail.id_for_label }}">Course Thumbnail</label>
+            {{ form.thumbnail }}
+            {% if form.thumbnail.errors %}<div class="text-danger small mt-1">{{ form.thumbnail.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <h5 class="text-warning border-bottom border-secondary pb-2 mb-3">
+          <i class="bi bi-currency-rupee me-2"></i> Pricing &amp; Access Controls
+        </h5>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label text-light" for="{{ form.price.id_for_label }}">Regular Price (₹) <span class="text-danger">*</span></label>
+            {{ form.price }}
+            {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light" for="{{ form.discounted_price.id_for_label }}">Discounted Price (₹ Optional)</label>
+            {{ form.discounted_price }}
+            {% if form.discounted_price.errors %}<div class="text-danger small mt-1">{{ form.discounted_price.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-12">
+            <div class="form-check">
+              {{ form.requires_instructor_approval }}
+              <label class="form-check-label text-light" for="{{ form.requires_instructor_approval.id_for_label }}">
+                Require Instructor Approval for Enrollment Access
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM ACTION BUTTONS -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-4 border-top border-secondary">
+          <div class="d-flex gap-2">
+            <button type="submit" name="action" value="save_draft" class="btn btn-outline-light">
+              <i class="bi bi-save me-1"></i> Save as Draft
+            </button>
+            <button type="submit" name="action" value="save_continue" class="btn btn-outline-warning">
+              <i class="bi bi-arrow-right-circle me-1"></i> Save &amp; Continue
+            </button>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" name="action" value="submit_approval" class="btn btn-warning text-dark fw-bold">
+              <i class="bi bi-send-check me-1"></i> Submit for Admin Review
+            </button>
+
+            {% if course and course.approval_status == 'approved' %}
+              {% if course.status == 'published' %}
+                <button type="submit" name="action" value="unpublish" class="btn btn-outline-danger">
+                  <i class="bi bi-eye-slash me-1"></i> Unpublish Course
+                </button>
+              {% else %}
+                <button type="submit" name="action" value="publish" class="btn btn-success fw-bold">
+                  <i class="bi bi-check2-circle me-1"></i> Publish Course
+                </button>
+              {% endif %}
+            {% else %}
+              <button type="button" class="btn btn-secondary disabled" title="Requires Administrator Approval before publishing" data-bs-toggle="tooltip">
+                <i class="bi bi-lock me-1"></i> Publish (Approval Required)
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

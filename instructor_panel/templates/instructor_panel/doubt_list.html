@@ -1,0 +1,90 @@
+{% extends "instructor_panel/base.html" %}
+
+{% block title %}Student Doubts | Edvanto Instructor{% endblock %}
+{% block header_title %}Student Doubts Inbox{% endblock %}
+
+{% block content %}
+<div class="dashboard-card mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-transparent border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by student, subject, or lesson...">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-gold">Filter</button>
+      {% if query or status_filter %}
+        <a href="{% url 'instructor_panel:doubt_list' %}" class="btn btn-outline-secondary">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<div class="dashboard-card">
+  <div class="table-responsive">
+    <table class="table table-dark-custom align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Student</th>
+          <th>Subject / Topic</th>
+          <th>Course & Lesson</th>
+          <th>Status</th>
+          <th>Last Updated</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doubt in doubts %}
+          <tr>
+            <td><span class="text-muted">#{{ doubt.id }}</span></td>
+            <td>
+              <div class="fw-semibold text-white">{{ doubt.student.get_full_name|default:doubt.student.username }}</div>
+              <div class="text-muted small">{{ doubt.student.email }}</div>
+            </td>
+            <td>
+              <a href="{% url 'instructor_panel:doubt_detail' doubt.id %}" class="text-white fw-bold text-decoration-none">
+                {{ doubt.subject }}
+              </a>
+            </td>
+            <td>
+              <div class="small text-white">{{ doubt.lesson.title }}</div>
+              <div class="small text-muted">{{ doubt.lesson.module.course.title }}</div>
+            </td>
+            <td>
+              {% if doubt.status == 'open' or doubt.status == 'assigned' %}
+                <span class="badge badge-soft-warning">{{ doubt.get_status_display }}</span>
+              {% elif doubt.status == 'answered' %}
+                <span class="badge badge-soft-info">{{ doubt.get_status_display }}</span>
+              {% else %}
+                <span class="badge badge-soft-success">{{ doubt.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ doubt.updated_at|date:"M d, Y H:i" }}</td>
+            <td class="text-end">
+              <a href="{% url 'instructor_panel:doubt_detail' doubt.id %}" class="btn btn-sm btn-outline-gold">
+                <i class="bi bi-chat-dots me-1"></i>View & Reply
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">
+              No doubt threads matching your criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Attendance Overview | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Batch Attendance Records</h1>
+    <p class="text-secondary mb-0">Attendance marked by instructors for batch sessions at <strong>{{ center.name }}</strong>.</p>
+  </div>
+</div>
+
+<div class="card-panel">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Batch</th>
+          <th>Session Date &amp; Title</th>
+          <th>Status</th>
+          <th>Marked By</th>
+          <th>Marked At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for att in records %}
+          <tr>
+            <td>
+              <div class="fw-bold text-white">{{ att.student.get_full_name|default:att.student.username }}</div>
+              <small class="text-muted">{{ att.student.email }}</small>
+            </td>
+            <td>
+              <span class="badge bg-dark border">{{ att.session.batch.name }}</span>
+            </td>
+            <td>
+              <div class="text-light">{{ att.session.title }}</div>
+              <small class="text-muted">{{ att.session.date|date:"d M Y" }} ({{ att.session.start_time }} - {{ att.session.end_time }})</small>
+            </td>
+            <td>
+              {% if att.status == 'present' %}
+                <span class="badge bg-success">Present</span>
+              {% elif att.status == 'absent' %}
+                <span class="badge bg-danger">Absent</span>
+              {% elif att.status == 'late' %}
+                <span class="badge bg-warning text-dark">Late</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ att.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <small>{{ att.marked_by.get_full_name|default:att.marked_by.username }}</small>
+            </td>
+            <td>
+              <small class="text-muted">{{ att.marked_at|date:"d M Y, H:i" }}</small>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-5">
+              No attendance records have been submitted for {{ center.name }}'s sessions yet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

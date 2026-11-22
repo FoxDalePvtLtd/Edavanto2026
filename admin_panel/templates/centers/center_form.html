@@ -1,0 +1,134 @@
+{% extends "admin_base.html" %}
+
+{% block title %}{{ page_title }} | EDVANTO Admin{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'admin_panel:center_overview' %}" class="text-decoration-none">Centers</a>
+  <span class="mx-2">/</span> {{ page_title }}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">{{ page_title }}</h1>
+  {% if center %}
+    <a href="{% url 'admin_panel:center_detail' center_id=center.id %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Back to Center
+    </a>
+  {% else %}
+    <a href="{% url 'admin_panel:center_list' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Back to List
+    </a>
+  {% endif %}
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        
+        <form method="post">
+          {% csrf_token %}
+
+          <h5 class="border-bottom pb-2 mb-3 text-warning"><i class="bi bi-building me-2"></i> Center Details</h5>
+          
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Center Name <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control {% if errors.name %}is-invalid{% endif %}" value="{{ form_data.name|default:'' }}" required>
+              {% if errors.name %}<div class="invalid-feedback">{{ errors.name }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Official Email <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control {% if errors.email %}is-invalid{% endif %}" value="{{ form_data.email|default:'' }}" required {% if center %}readonly{% endif %}>
+              {% if errors.email %}<div class="invalid-feedback">{{ errors.email }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Contact Number</label>
+              <input type="text" name="contact_number" class="form-control" value="{{ form_data.contact_number|default:'' }}">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Website (Optional)</label>
+              <input type="url" name="website" class="form-control" value="{{ form_data.website|default:'' }}" placeholder="https://example.com">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Address</label>
+              <textarea name="address" class="form-control" rows="2">{{ form_data.address|default:'' }}</textarea>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              <input type="text" name="city" class="form-control" value="{{ form_data.city|default:'' }}">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">State</label>
+              <input type="text" name="state" class="form-control" value="{{ form_data.state|default:'' }}">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Postal Code</label>
+              <input type="text" name="postal_code" class="form-control" value="{{ form_data.postal_code|default:'' }}">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Description (Optional)</label>
+              <textarea name="description" class="form-control" rows="2">{{ form_data.description|default:'' }}</textarea>
+            </div>
+
+            {% if center %}
+              <div class="col-12">
+                <div class="form-check form-switch mt-2">
+                  <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if center.is_active %}checked{% endif %}>
+                  <label class="form-check-label" for="is_active">Center Active Status</label>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if not center %}
+            <h5 class="border-bottom pb-2 mb-3 text-warning"><i class="bi bi-person-badge me-2"></i> Owner Account (Administrator Link)</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label">Owner Full Name</label>
+                <input type="text" name="owner_name" class="form-control" value="{{ form_data.owner_name|default:'' }}" placeholder="Representative name">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Owner Email <span class="text-danger">*</span></label>
+                <input type="email" name="owner_email" class="form-control {% if errors.owner_email %}is-invalid{% endif %}" value="{{ form_data.owner_email|default:'' }}" required placeholder="owner@example.com">
+                {% if errors.owner_email %}<div class="invalid-feedback">{{ errors.owner_email }}</div>{% endif %}
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Owner Mobile</label>
+                <input type="text" name="owner_phone" class="form-control" value="{{ form_data.owner_phone|default:'' }}">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Initial Password (Optional)</label>
+                <input type="password" name="owner_password" class="form-control" placeholder="Leave empty for unusable/invite setup">
+                <div class="form-text">If set, owner can log in immediately.</div>
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <a href="{% url 'admin_panel:center_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-warning fw-bold text-dark">
+              <i class="bi bi-check-lg me-1"></i> Save Center
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

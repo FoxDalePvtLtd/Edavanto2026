@@ -1215,6 +1215,17 @@
             </a>
           </li>
 
+          {# ---------- Centers ---------- #}
+          <li>
+            <a href="{% url 'admin_panel:center_overview' %}"
+               class="edvanto-nav-link {% if request.resolver_match.url_name|csv_contains:'center_overview,center_applications,center_application_detail,center_list,center_create,center_detail,center_edit,center_subscription_plans,center_subscription_plan_edit,center_course_approvals,center_course_review' %}active{% endif %}"
+               title="Centers"
+               {% if request.resolver_match.url_name|csv_contains:'center_overview,center_applications,center_application_detail,center_list,center_create,center_detail,center_edit,center_subscription_plans,center_subscription_plan_edit,center_course_approvals,center_course_review' %}aria-current="page"{% endif %}>
+              <i class="bi bi-building-fill"></i>
+              <span>Centers</span>
+            </a>
+          </li>
+
           {# ---------- Courses ---------- #}
           <li>
             <a href="{% url 'admin_panel:course_dashboard' %}"

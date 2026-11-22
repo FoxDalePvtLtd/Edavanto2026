@@ -1,0 +1,274 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Dashboard | {{ center.name }} Center Panel{% endblock %}
+
+{% block content %}
+<style>
+  .stat-card {
+    background-color: var(--edvanto-card-bg);
+    border: 1px solid var(--edvanto-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+  .stat-title {
+    color: var(--edvanto-text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stat-number {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 0.25rem;
+  }
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Center Dashboard</h1>
+    <p class="text-secondary mb-0">Overview for <strong>{{ center.name }}</strong> &bull; Operating Center</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'center_panel:course_create' %}" class="btn btn-gold">
+      <i class="bi bi-plus-lg me-1"></i> Create Course
+    </a>
+    <a href="{% url 'center_panel:instructor_add' %}" class="btn btn-outline-light">
+      <i class="bi bi-person-plus me-1"></i> Add Instructor
+    </a>
+  </div>
+</div>
+
+<!-- STATS ROW 1: COURSES -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Total Courses</div>
+        <div class="stat-number">{{ total_courses }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(212, 166, 42, 0.15); color: #D4A62A;">
+        <i class="bi bi-journal-bookmark-fill"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Published Courses</div>
+        <div class="stat-number text-success">{{ published_courses }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Draft Courses</div>
+        <div class="stat-number text-secondary">{{ draft_courses }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">
+        <i class="bi bi-file-earmark-text-fill"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Pending Admin Approval</div>
+        <div class="stat-number text-warning">{{ pending_approval_courses }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS ROW 2: PEOPLE, BATCHES & SUBSCRIPTION -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Assigned Instructors</div>
+        <div class="stat-number text-info">{{ total_instructors }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+        <i class="bi bi-person-video3"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Enrolled Students</div>
+        <div class="stat-number text-primary">{{ total_enrolled_students }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+        <i class="bi bi-mortarboard-fill"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Active Batches</div>
+        <div class="stat-number text-light">{{ active_batches }}</div>
+      </div>
+      <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+        <i class="bi bi-calendar2-week-fill"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div>
+        <div class="stat-title">Subscription Status</div>
+        {% if subscription and subscription.is_valid %}
+          <div class="fs-5 fw-bold text-success mt-1">Active</div>
+          <small class="text-muted">{{ subscription.days_remaining }} days left</small>
+        {% else %}
+          <div class="fs-5 fw-bold text-danger mt-1">Expired / Inactive</div>
+          <a href="{% url 'center_panel:subscription_status' %}" class="small text-warning text-decoration-none">Renew &rarr;</a>
+        {% endif %}
+      </div>
+      <div class="stat-icon" style="background: rgba(212, 166, 42, 0.15); color: #D4A62A;">
+        <i class="bi bi-credit-card-2-front-fill"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLES ROW: RECENT COURSES & RECENT ENROLLMENTS -->
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card-panel">
+      <div class="card-panel-head">
+        <h5 class="mb-0 text-white"><i class="bi bi-journal-bookmark me-2 text-warning"></i> My Courses</h5>
+        <a href="{% url 'center_panel:course_list' %}" class="small text-warning text-decoration-none">View All &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Instructor</th>
+              <th>Approval</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in recent_courses %}
+              <tr>
+                <td>
+                  <div class="fw-bold text-white">{{ c.title }}</div>
+                  <small class="text-muted">{{ c.get_mode_display }} &bull; ₹{{ c.price|floatformat:0 }}</small>
+                </td>
+                <td>
+                  <small>{{ c.instructor.get_full_name|default:c.instructor.username|default:"Unassigned" }}</small>
+                </td>
+                <td>
+                  {% if c.approval_status == 'approved' %}
+                    <span class="badge bg-success-subtle text-success">Approved</span>
+                  {% elif c.approval_status == 'pending' %}
+                    <span class="badge bg-warning-subtle text-warning">Pending</span>
+                  {% elif c.approval_status == 'rejected' %}
+                    <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                  {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary">{{ c.get_approval_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if c.status == 'published' %}
+                    <span class="badge bg-success">Published</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ c.get_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'center_panel:course_edit' course_id=c.id %}" class="btn btn-sm btn-outline-light">Edit</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">No courses created yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card-panel">
+      <div class="card-panel-head">
+        <h5 class="mb-0 text-white"><i class="bi bi-people me-2 text-warning"></i> Recent Student Enrollments</h5>
+        <a href="{% url 'center_panel:student_list' %}" class="small text-warning text-decoration-none">View All &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Course</th>
+              <th>Payment</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in recent_enrollments %}
+              <tr>
+                <td>
+                  <div class="fw-bold text-white">{{ e.student.get_full_name|default:e.student.username }}</div>
+                  <small class="text-muted">{{ e.student.email }}</small>
+                </td>
+                <td><small>{{ e.course.title }}</small></td>
+                <td>
+                  {% if e.payment_status == 'paid' %}
+                    <span class="badge bg-success">Paid</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">{{ e.get_payment_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td><small class="text-muted">{{ e.enrolled_at|date:"d M Y" }}</small></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">No student enrollments yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

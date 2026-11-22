@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Subscription Checkout | Edvanto{% endblock %}
+
+{% block extra_css %}
+<style>
+  .checkout-card {
+    background: #11141a;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 12px;
+    padding: 35px 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+  .order-summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+  }
+  .order-summary-item.total {
+    border-bottom: none;
+    font-size: 20px;
+    font-weight: 700;
+    color: #d4af37;
+    margin-top: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-for-header"></div>
+
+<section class="tj-page-header">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="tj-page-header-content">
+          <div class="tj-page-link">
+            <span><i class="tji-home"></i></span>
+            <span><a href="{% url 'core:home' %}">Home</a></span>
+            <span><i class="tji-arrow-right-4"></i></span>
+            <span><span>Checkout</span></span>
+          </div>
+          <div class="shape">
+            <img src="{% static 'images/shapes/stars.png' %}" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-gap-bottom">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        
+        <div class="checkout-card">
+          <h3 class="text-white mb-4"><i class="bi bi-shield-lock text-warning me-2"></i> Center Subscription Checkout</h3>
+
+          <div class="mb-4">
+            <div class="order-summary-item">
+              <span class="text-muted">Center:</span>
+              <span class="fw-bold">{{ center.name }}</span>
+            </div>
+            <div class="order-summary-item">
+              <span class="text-muted">Selected Plan:</span>
+              <span class="fw-bold">{{ plan.name }}</span>
+            </div>
+            <div class="order-summary-item">
+              <span class="text-muted">Access Duration:</span>
+              <span>{{ plan.duration_months }} Calendar Months</span>
+            </div>
+            <div class="order-summary-item">
+              <span class="text-muted">Billing Currency:</span>
+              <span>INR (₹)</span>
+            </div>
+            <div class="order-summary-item total">
+              <span>Total Payable:</span>
+              <span>₹{{ plan.price|floatformat:2 }}</span>
+            </div>
+          </div>
+
+          {% if gateway_configured and razorpay_order_id %}
+            <!-- Razorpay Checkout Integration -->
+            <div class="text-center mt-4">
+              <button id="rzp-button" class="tj-primary-btn btn w-100 py-3">
+                <span class="btn-text"><i class="bi bi-credit-card me-2"></i> Pay ₹{{ plan.price|floatformat:2 }} via Razorpay</span>
+              </button>
+              <div class="text-muted small mt-2">
+                <i class="bi bi-lock-fill text-success"></i> 256-bit Secure Gateway Encryption
+              </div>
+            </div>
+
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+            <script>
+              var options = {
+                "key": "{{ razorpay_key_id }}",
+                "amount": "{{ amount_in_paise }}",
+                "currency": "INR",
+                "name": "Edvanto Platform",
+                "description": "{{ plan.name }} for {{ center.name }}",
+                "order_id": "{{ razorpay_order_id }}",
+                "handler": function (response){
+                  var form = document.createElement("form");
+                  form.setAttribute("method", "post");
+                  form.setAttribute("action", "{% url 'core:center_subscription_verify' %}");
+
+                  var csrfInput = document.createElement("input");
+                  csrfInput.setAttribute("type", "hidden");
+                  csrfInput.setAttribute("name", "csrfmiddlewaretoken");
+                  csrfInput.setAttribute("value", "{{ csrf_token }}");
+                  form.appendChild(csrfInput);
+
+                  var fields = {
+                    "razorpay_order_id": response.razorpay_order_id,
+                    "razorpay_payment_id": response.razorpay_payment_id,
+                    "razorpay_signature": response.razorpay_signature,
+                  };
+
+                  for (var key in fields) {
+                    var input = document.createElement("input");
+                    input.setAttribute("type", "hidden");
+                    input.setAttribute("name", key);
+                    input.setAttribute("value", fields[key]);
+                    form.appendChild(input);
+                  }
+
+                  document.body.appendChild(form);
+                  form.submit();
+                },
+                "prefill": {
+                  "name": "{{ request.user.get_full_name|default:center.name }}",
+                  "email": "{{ request.user.email }}",
+                  "contact": "{{ center.contact_number }}"
+                },
+                "theme": {
+                  "color": "#d4af37"
+                }
+              };
+              var rzp1 = new Razorpay(options);
+              document.getElementById('rzp-button').onclick = function(e){
+                rzp1.open();
+                e.preventDefault();
+              }
+            </script>
+          {% else %}
+            <!-- Gateway Pending / Offline Configuration Notice -->
+            <div class="alert alert-warning border-warning p-4 mt-3">
+              <h5 class="text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i> Payment Gateway Pending Configuration</h5>
+              <p class="mb-2">
+                Live online payment is currently disabled because Razorpay credentials (<code>RAZORPAY_KEY_ID</code> / <code>RAZORPAY_KEY_SECRET</code>) are not configured in the server environment.
+              </p>
+              <p class="mb-0 small text-muted">
+                Your subscription order has been recorded with reference: <strong>SUB-{{ subscription.id }}</strong>. Please contact the Edvanto administrator to arrange direct bank transfer or manual subscription activation.
+              </p>
+            </div>
+            <div class="text-center mt-3">
+              <a href="{% url 'core:center_subscription_select' %}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left me-1"></i> Back to Plans
+              </a>
+            </div>
+          {% endif %}
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

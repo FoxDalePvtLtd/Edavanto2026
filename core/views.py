@@ -784,6 +784,37 @@ def login_view(request):
         )
         return redirect("admin_panel:dashboard")
 
+    if user.role == User.Role.CENTER or (hasattr(user, "managed_center") and user.managed_center):
+        center = getattr(user, "managed_center", None)
+        if not center:
+            center = Center.objects.filter(owner=user).first()
+
+        if center:
+            if center.is_suspended:
+                logout(request)
+                messages.error(request, "Your center account has been suspended. Please contact Edvanto support.")
+                return redirect("core:login")
+            if center.has_active_subscription:
+                messages.success(request, f"Welcome to {center.name} Center Panel.", extra_tags="Welcome Back!")
+                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                    return redirect(next_url)
+                return redirect("center_panel:dashboard")
+            else:
+                messages.warning(request, "Please choose a subscription plan to activate your Center Dashboard.")
+                return redirect("core:center_subscription_select")
+        else:
+            app = CenterApplication.objects.filter(user=user).first() or CenterApplication.objects.filter(owner_email=user.email).first()
+            if app and app.status in [CenterApplication.Status.PENDING, CenterApplication.Status.UNDER_REVIEW]:
+                logout(request)
+                messages.info(request, "Your center application is currently under review by our administrator.")
+                return redirect("core:login")
+
+    if user.role == User.Role.INSTRUCTOR:
+        messages.success(request, "Welcome to the Edvanto Instructor Panel.", extra_tags="Welcome Back!")
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return redirect(next_url)
+        return redirect("instructor_panel:dashboard")
+
     if user.role == User.Role.STUDENT:
         messages.success(
             request,
@@ -2169,12 +2200,18 @@ def create_doubt(request, lesson_id):
         messages.error(request, "Please provide both a subject and details for your doubt.")
         return redirect("core:lesson", lesson_id=lesson.pk)
 
+    course = lesson.module.course
+    assigned_instructor = None
+    if course.instructor and course.instructor.is_active and course.instructor.role == User.Role.INSTRUCTOR:
+        assigned_instructor = course.instructor
+
     thread = DoubtThread.objects.create(
         student=user,
         enrollment=enrollment,
         lesson=lesson,
         subject=subject,
         status=DoubtThread.Status.OPEN,
+        assigned_instructor=assigned_instructor,
     )
     DoubtMessage.objects.create(
         thread=thread,
@@ -2183,27 +2220,38 @@ def create_doubt(request, lesson_id):
         attachment=attachment,
     )
 
-
-    recipients = User.objects.filter(
-        Q(is_staff=True) | Q(role__in=[User.Role.INSTRUCTOR, User.Role.ADMIN]),
-        is_active=True
-    ).distinct()
-
-    for recipient in recipients:
-        notification = Notification.objects.create(
-            recipient=recipient,
-            title="Doubt Raised by Student",
-            message=f"{user.get_full_name()} asked a doubt.",
-            notification_type = Notification.NotificationType.DOUBT,
-            is_read = False,
+    if assigned_instructor:
+        notif = Notification.objects.create(
+            recipient=assigned_instructor,
+            title="New Student Doubt Assigned",
+            message=f"Student {user.get_full_name() or user.username} asked a doubt on '{lesson.title}' ({course.title}).",
+            notification_type=Notification.NotificationType.DOUBT,
+            is_read=False,
         )
-
         NotificationDelivery.objects.create(
-            notification=notification,
+            notification=notif,
             channel=NotificationDelivery.Channel.IN_APP,
             status=NotificationDelivery.Status.SENT,
             sent_at=timezone.now(),
         )
+    else:
+        recipients = list(User.objects.filter(is_active=True).filter(Q(is_superuser=True) | Q(role=User.Role.ADMIN)))
+        if course.center and course.center.owner and course.center.owner.is_active:
+            recipients.append(course.center.owner)
+        for recipient in set(recipients):
+            notif = Notification.objects.create(
+                recipient=recipient,
+                title="Unassigned Student Doubt",
+                message=f"Student {user.get_full_name() or user.username} asked a doubt on '{course.title}' which requires an instructor assignment.",
+                notification_type=Notification.NotificationType.DOUBT,
+                is_read=False,
+            )
+            NotificationDelivery.objects.create(
+                notification=notif,
+                channel=NotificationDelivery.Channel.IN_APP,
+                status=NotificationDelivery.Status.SENT,
+                sent_at=timezone.now(),
+            )
  
 
 
@@ -2271,6 +2319,22 @@ def doubt_reply(request, thread_id):
         else:
             thread.status = DoubtThread.Status.OPEN
         thread.save()
+
+        if thread.assigned_instructor:
+            notif = Notification.objects.create(
+                recipient=thread.assigned_instructor,
+                title="Student Follow-up on Doubt",
+                message=f"Student {user.get_full_name() or user.username} posted a follow-up on '{thread.subject}'.",
+                notification_type=Notification.NotificationType.DOUBT,
+                is_read=False,
+            )
+            NotificationDelivery.objects.create(
+                notification=notif,
+                channel=NotificationDelivery.Channel.IN_APP,
+                status=NotificationDelivery.Status.SENT,
+                sent_at=timezone.now(),
+            )
+
         messages.success(request, "Follow-up message sent.")
 
     return redirect("core:doubt_detail", thread_id=thread.pk)
@@ -2537,3 +2601,294 @@ def notification(request):
         "notifications/list.html",
         {"notifications": notifications},
     )
+
+
+# ============================================================
+# CENTER REGISTRATION & SUBSCRIPTION VIEWS
+# ============================================================
+
+def join_as_center(request):
+    """
+    Public registration page for training centers to partner with Edvanto.
+    """
+    from core.center_services import (
+        validate_center_application_data,
+        send_center_registration_otp,
+        create_center_application,
+    )
+
+    if request.method == "GET":
+        return render(
+            request,
+            "join_as_center.html",
+            {"form_data": {}, "form_errors": {}},
+        )
+
+    if request.method != "POST":
+        return redirect("core:join_as_center")
+
+    validation = validate_center_application_data(request.POST, request.FILES)
+
+    if not validation["is_valid"]:
+        return render(
+            request,
+            "join_as_center.html",
+            {
+                "form_data": request.POST,
+                "form_errors": validation["errors"],
+            },
+            status=400,
+        )
+
+    cleaned = validation["cleaned_data"]
+
+    # Create the CenterApplication in PENDING status
+    app = create_center_application(
+        cleaned,
+        files=request.FILES,
+        ip_address=request.META.get("REMOTE_ADDR"),
+        user_agent=request.META.get("HTTP_USER_AGENT", ""),
+    )
+
+    # Generate and send OTP to owner email
+    try:
+        otp_record, otp = send_center_registration_otp(
+            owner_email=cleaned["owner_email"],
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+    except Exception as exc:
+        messages.error(request, f"Could not send verification OTP: {exc}")
+        return render(
+            request,
+            "join_as_center.html",
+            {"form_data": request.POST, "form_errors": {"general": str(exc)}},
+            status=400,
+        )
+
+    request.session["pending_center_application_id"] = app.id
+    request.session["pending_center_owner_email"] = cleaned["owner_email"]
+
+    messages.success(request, f"A 6-digit verification code has been sent to {cleaned['owner_email']}.")
+    return redirect("core:center_verify_otp")
+
+
+def center_verify_otp(request):
+    """
+    Verify OTP for center application submission.
+    """
+    app_id = request.session.get("pending_center_application_id")
+    owner_email = request.session.get("pending_center_owner_email")
+
+    if not app_id or not owner_email:
+        messages.error(request, "No pending center registration found. Please submit the form.")
+        return redirect("core:join_as_center")
+
+    application = get_object_or_404(CenterApplication, pk=app_id)
+
+    if request.method == "GET":
+        return render(
+            request,
+            "center_verify_otp.html",
+            {"email": owner_email, "error": None},
+        )
+
+    if request.method != "POST":
+        return redirect("core:center_verify_otp")
+
+    submitted_otp = request.POST.get("otp", "").strip()
+
+    otp_record = (
+        OTPVerification.objects
+        .filter(
+            email=owner_email,
+            purpose=OTPVerification.Purpose.CENTER_REGISTRATION,
+            is_verified=False,
+        )
+        .order_by("-created_at")
+        .first()
+    )
+
+    if not otp_record:
+        return render(
+            request,
+            "center_verify_otp.html",
+            {"email": owner_email, "error": "No pending OTP found. Please request a new code."},
+            status=400,
+        )
+
+    success, error_msg = verify_otp(otp_record, submitted_otp)
+
+    if not success:
+        return render(
+            request,
+            "center_verify_otp.html",
+            {"email": owner_email, "error": error_msg or "Invalid OTP code."},
+            status=400,
+        )
+
+    # Verification successful
+    request.session.pop("pending_center_application_id", None)
+    request.session.pop("pending_center_owner_email", None)
+
+    messages.success(request, "Your application has been verified and submitted for administrative review.")
+    return redirect("core:center_registration_success", application_id=application.id)
+
+
+def center_registration_success(request, application_id):
+    """
+    Confirmation screen showing application reference number and status.
+    """
+    application = get_object_or_404(CenterApplication, pk=application_id)
+    return render(
+        request,
+        "center_registration_success.html",
+        {"application": application},
+    )
+
+
+@login_required
+def center_subscription_select(request):
+    """
+    Allow an approved center owner to view and choose a subscription plan.
+    """
+    from core.center_services import ensure_default_subscription_plans
+    ensure_default_subscription_plans()
+
+    center = getattr(request.user, "managed_center", None)
+    if not center:
+        center = Center.objects.filter(owner=request.user).first()
+
+    if not center and not request.user.is_superuser:
+        messages.error(request, "You do not have an approved center associated with your account.")
+        return redirect("core:home")
+
+    plans = CenterSubscriptionPlan.objects.filter(is_active=True).order_by("duration_months")
+
+    return render(
+        request,
+        "center_subscription_select.html",
+        {
+            "center": center,
+            "plans": plans,
+        },
+    )
+
+
+@login_required
+def center_subscription_checkout(request, plan_id):
+    """
+    Initialize payment for the selected subscription plan.
+    """
+    from core.center_services import create_center_subscription_order
+
+    center = getattr(request.user, "managed_center", None)
+    if not center:
+        center = Center.objects.filter(owner=request.user).first()
+
+    if not center and not request.user.is_superuser:
+        messages.error(request, "You do not have an approved center associated with your account.")
+        return redirect("core:home")
+
+    plan = get_object_or_404(CenterSubscriptionPlan, pk=plan_id, is_active=True)
+
+    try:
+        subscription, payment, gateway_configured = create_center_subscription_order(center=center, plan=plan)
+    except ValueError as exc:
+        messages.error(request, str(exc))
+        return redirect("core:center_subscription_select")
+
+    context = {
+        "center": center,
+        "plan": plan,
+        "subscription": subscription,
+        "payment": payment,
+        "gateway_configured": gateway_configured,
+        "razorpay_order_id": payment.razorpay_order_id,
+        "razorpay_key_id": getattr(settings, "RAZORPAY_KEY_ID", ""),
+        "amount_in_paise": int(plan.price * 100),
+    }
+
+    return render(request, "center_subscription_checkout.html", context)
+
+
+@login_required
+@require_POST
+def center_subscription_verify(request):
+    """
+    Verify payment signature and activate subscription.
+    """
+    from core.center_services import verify_center_subscription_payment
+
+    razorpay_order_id = request.POST.get("razorpay_order_id", "").strip()
+    razorpay_payment_id = request.POST.get("razorpay_payment_id", "").strip()
+    razorpay_signature = request.POST.get("razorpay_signature", "").strip()
+
+    if not razorpay_order_id or not razorpay_payment_id:
+        messages.error(request, "Missing payment verification parameters.")
+        return redirect("core:center_subscription_select")
+
+    try:
+        subscription, payment = verify_center_subscription_payment(
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+            razorpay_signature=razorpay_signature,
+        )
+        messages.success(
+            request,
+            f"Payment successful! Your {subscription.plan.name} has been activated until {subscription.end_date:%d %B %Y}.",
+        )
+        return redirect("center_panel:dashboard")
+    except ValueError as exc:
+        messages.error(request, f"Payment verification error: {exc}")
+        return redirect("core:center_subscription_select")
+
+
+@csrf_exempt
+def center_subscription_webhook(request):
+    """
+    Handle asynchronous webhook notifications from Razorpay for center subscriptions.
+    Idempotent.
+    """
+    if request.method != "POST":
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
+
+    webhook_secret = getattr(settings, "RAZORPAY_WEBHOOK_SECRET", "")
+    webhook_signature = request.headers.get("X-Razorpay-Signature", "")
+    payload_body = request.body
+
+    client = get_razorpay_client()
+    if client and webhook_secret and webhook_signature:
+        try:
+            client.utility.verify_webhook_signature(
+                payload_body.decode("utf-8"),
+                webhook_signature,
+                webhook_secret,
+            )
+        except Exception as exc:
+            return JsonResponse({"detail": f"Invalid webhook signature: {exc}"}, status=400)
+
+    try:
+        data = json.loads(payload_body)
+    except json.JSONDecodeError:
+        return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+    event = data.get("event")
+    if event in ("payment.captured", "order.paid"):
+        payment_entity = data.get("payload", {}).get("payment", {}).get("entity", {})
+        rp_order_id = payment_entity.get("order_id")
+        rp_payment_id = payment_entity.get("id")
+
+        if rp_order_id:
+            from core.center_services import verify_center_subscription_payment
+            try:
+                verify_center_subscription_payment(
+                    razorpay_order_id=rp_order_id,
+                    razorpay_payment_id=rp_payment_id,
+                    razorpay_signature="",
+                    is_webhook=True,
+                )
+            except Exception as exc:
+                logger.error(f"Error processing subscription webhook: {exc}")
+
+    return JsonResponse({"status": "ok"})

@@ -21,6 +21,23 @@ urlpatterns = [
         name="user_toggle_active",
     ),
 
+    # CENTERS
+    path("centers/", views.center_overview, name="center_overview"),
+    path("centers/applications/", views.center_applications, name="center_applications"),
+    path("centers/applications/<int:app_id>/", views.center_application_detail, name="center_application_detail"),
+    path("centers/applications/<int:app_id>/approve/", views.center_application_approve, name="center_application_approve"),
+    path("centers/applications/<int:app_id>/reject/", views.center_application_reject, name="center_application_reject"),
+    path("centers/list/", views.center_list, name="center_list"),
+    path("centers/new/", views.center_create, name="center_create"),
+    path("centers/<int:center_id>/", views.center_detail, name="center_detail"),
+    path("centers/<int:center_id>/edit/", views.center_edit, name="center_edit"),
+    path("centers/<int:center_id>/toggle-suspend/", views.center_toggle_suspend, name="center_toggle_suspend"),
+    path("centers/<int:center_id>/subscription/manual-activate/", views.center_manual_subscription_activate, name="center_manual_subscription_activate"),
+    path("centers/subscription-plans/", views.center_subscription_plans, name="center_subscription_plans"),
+    path("centers/subscription-plans/<int:plan_id>/edit/", views.center_subscription_plan_edit, name="center_subscription_plan_edit"),
+    path("centers/course-approvals/", views.center_course_approvals, name="center_course_approvals"),
+    path("centers/course-approvals/<int:course_id>/", views.center_course_review, name="center_course_review"),
+
     # COURSES
     path("courses/", views.course_dashboard, name="course_dashboard"),
     path("courses/new/", views.course_form, name="course_create"),

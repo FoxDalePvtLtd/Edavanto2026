@@ -1,0 +1,227 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Review Application: {{ application.center_name }} | EDVANTO Admin{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'admin_panel:center_overview' %}" class="text-decoration-none">Centers</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'admin_panel:center_applications' %}" class="text-decoration-none">Applications</a>
+  <span class="mx-2">/</span> Review Application
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ application.center_name }}</h1>
+    <p class="text-secondary mb-0">Application Ref: #{{ application.id }} &bull; Submitted on {{ application.created_at|date:"d M Y, H:i" }}</p>
+  </div>
+  <div>
+    {% if application.status == 'pending' %}
+      <span class="badge bg-warning text-dark px-3 py-2 fs-6">Pending Review</span>
+    {% elif application.status == 'approved' %}
+      <span class="badge bg-success px-3 py-2 fs-6">Approved</span>
+    {% elif application.status == 'rejected' %}
+      <span class="badge bg-danger px-3 py-2 fs-6">Rejected</span>
+    {% else %}
+      <span class="badge bg-secondary px-3 py-2 fs-6">{{ application.get_status_display }}</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- LEFT: CENTER & OWNER DETAILS -->
+  <div class="col-lg-8">
+    
+    <!-- 1. Center Information -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0"><i class="bi bi-building me-2 text-warning"></i> Center Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="text-muted small">Center Name</label>
+            <div class="fw-bold fs-6">{{ application.center_name }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small">Official Email</label>
+            <div><a href="mailto:{{ application.official_email }}">{{ application.official_email }}</a></div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small">Contact Number</label>
+            <div>{{ application.contact_number }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small">Website</label>
+            <div>
+              {% if application.website %}
+                <a href="{{ application.website }}" target="_blank" rel="noopener">{{ application.website }}</a>
+              {% else %}
+                <span class="text-muted">Not provided</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="text-muted small">Address</label>
+            <div>{{ application.address }}</div>
+            <small class="text-muted">{{ application.city }}, {{ application.state }} — {{ application.postal_code }}</small>
+          </div>
+          {% if application.description %}
+            <div class="col-12">
+              <label class="text-muted small">Description</label>
+              <div class="p-3 bg-light rounded">{{ application.description|linebreaks }}</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Owner Information -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0"><i class="bi bi-person-badge me-2 text-warning"></i> Owner / Authorized Representative</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="text-muted small">Owner Name</label>
+            <div class="fw-bold">{{ application.owner_name }}</div>
+          </div>
+          <div class="col-md-4">
+            <label class="text-muted small">Owner Login Email</label>
+            <div><a href="mailto:{{ application.owner_email }}">{{ application.owner_email }}</a></div>
+          </div>
+          <div class="col-md-4">
+            <label class="text-muted small">Mobile Number</label>
+            <div>{{ application.owner_phone }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Submitted Documents -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0"><i class="bi bi-file-earmark-check me-2 text-warning"></i> Verification Documents</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group list-group-flush">
+          <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <div>
+              <div class="fw-bold"><i class="bi bi-file-earmark-pdf me-2"></i> Business Registration Document</div>
+              <small class="text-muted">Trade License, Incorporation, or GST certificate</small>
+            </div>
+            {% if application.business_registration_doc %}
+              <a href="{{ application.business_registration_doc.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                <i class="bi bi-eye me-1"></i> View Document
+              </a>
+            {% else %}
+              <span class="text-muted small">Not provided</span>
+            {% endif %}
+          </div>
+
+          <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <div>
+              <div class="fw-bold"><i class="bi bi-person-vcard me-2"></i> Identity Document</div>
+              <small class="text-muted">Owner Government ID proof</small>
+            </div>
+            {% if application.identity_doc %}
+              <a href="{{ application.identity_doc.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                <i class="bi bi-eye me-1"></i> View Document
+              </a>
+            {% else %}
+              <span class="text-muted small">Not provided</span>
+            {% endif %}
+          </div>
+
+          <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <div>
+              <div class="fw-bold"><i class="bi bi-file-earmark-text me-2"></i> Additional Supporting Document</div>
+              <small class="text-muted">Affiliation letter, center brochure, or accreditation</small>
+            </div>
+            {% if application.supporting_doc %}
+              <a href="{{ application.supporting_doc.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                <i class="bi bi-eye me-1"></i> View Document
+              </a>
+            {% else %}
+              <span class="text-muted small">Not provided</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: APPROVAL / REJECTION ACTIONS -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">Application Actions</h5>
+      </div>
+      <div class="card-body">
+        
+        {% if application.status == 'pending' or application.status == 'under_review' %}
+          <!-- APPROVE FORM -->
+          <form method="post" action="{% url 'admin_panel:center_application_approve' app_id=application.id %}" class="mb-4">
+            {% csrf_token %}
+            <h6 class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i> Approve Center</h6>
+            <p class="small text-muted mb-2">
+              Approving creates the Center record and grants the owner account access to the subscription setup.
+            </p>
+            <div class="mb-3">
+              <label class="form-label small">Approval Notes (Optional)</label>
+              <textarea name="admin_notes" class="form-control" rows="2" placeholder="Welcome note or internal remarks"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success w-100 fw-bold" onclick="return confirm('Confirm approval of this center application?');">
+              <i class="bi bi-check-lg me-1"></i> Approve Application
+            </button>
+          </form>
+
+          <hr>
+
+          <!-- REJECT FORM -->
+          <form method="post" action="{% url 'admin_panel:center_application_reject' app_id=application.id %}">
+            {% csrf_token %}
+            <h6 class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i> Reject Application</h6>
+            <div class="mb-3">
+              <label class="form-label small">Reason for Rejection <span class="text-danger">*</span></label>
+              <textarea name="reason" class="form-control" rows="3" required placeholder="Explain why the application is rejected (e.g. illegible documents)"></textarea>
+            </div>
+            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to reject this application?');">
+              <i class="bi bi-x-lg me-1"></i> Reject Application
+            </button>
+          </form>
+
+        {% else %}
+          <div class="alert alert-light border">
+            <h6 class="fw-bold mb-1">Decision Recorded</h6>
+            <p class="small text-muted mb-2">Status: <strong>{{ application.get_status_display }}</strong></p>
+            {% if application.reviewed_by %}
+              <p class="small text-muted mb-1">Reviewed by: {{ application.reviewed_by.get_full_name|default:application.reviewed_by.username }}</p>
+            {% endif %}
+            {% if application.reviewed_at %}
+              <p class="small text-muted mb-1">Date: {{ application.reviewed_at|date:"d M Y, H:i" }}</p>
+            {% endif %}
+            {% if application.admin_notes %}
+              <div class="mt-2 p-2 bg-white rounded border small">
+                <strong>Notes / Reason:</strong><br>{{ application.admin_notes }}
+              </div>
+            {% endif %}
+            {% if application.center %}
+              <div class="mt-3">
+                <a href="{% url 'admin_panel:center_detail' center_id=application.center.id %}" class="btn btn-sm btn-dark w-100">
+                  <i class="bi bi-building me-1"></i> Go to Center Record
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

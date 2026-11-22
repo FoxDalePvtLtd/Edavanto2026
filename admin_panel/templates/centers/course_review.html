@@ -1,0 +1,220 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Review Course: {{ course.title }} | EDVANTO Admin{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'admin_panel:center_overview' %}" class="text-decoration-none">Centers</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'admin_panel:center_course_approvals' %}" class="text-decoration-none">Course Approvals</a>
+  <span class="mx-2">/</span> Review Course
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ course.title }}</h1>
+    <p class="text-secondary mb-0">
+      Center: <strong>{{ course.center.name }}</strong> &bull;
+      Category: {{ course.get_category_display|default:course.category }} &bull;
+      Mode: {{ course.get_mode_display }} &bull;
+      Price: ₹{{ course.price|floatformat:2 }}
+    </p>
+  </div>
+  <div>
+    {% if course.approval_status == 'pending' %}
+      <span class="badge bg-warning text-dark px-3 py-2 fs-6">Pending Admin Approval</span>
+    {% elif course.approval_status == 'approved' %}
+      <span class="badge bg-success px-3 py-2 fs-6">Approved</span>
+    {% elif course.approval_status == 'rejected' %}
+      <span class="badge bg-danger px-3 py-2 fs-6">Rejected</span>
+    {% elif course.approval_status == 'changes_requested' %}
+      <span class="badge bg-info text-dark px-3 py-2 fs-6">Changes Requested</span>
+    {% else %}
+      <span class="badge bg-secondary px-3 py-2 fs-6">{{ course.get_approval_status_display }}</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- LEFT: COURSE DETAILS, MODULES & LESSONS -->
+  <div class="col-lg-8">
+    
+    <!-- COURSE DESCRIPTION -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2 text-warning"></i> Course Overview</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="text-muted small">Description</label>
+          <div class="p-3 bg-light rounded">{{ course.description|linebreaks }}</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-sm-4">
+            <span class="text-muted small">Assigned Instructor:</span>
+            <div class="fw-bold">{{ course.instructor.get_full_name|default:course.instructor.username|default:"None assigned" }}</div>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted small">Estimated Duration:</span>
+            <div>
+              {% if course.mode == 'online' %}
+                {{ course.duration_hours|default:"—" }} Hours
+              {% else %}
+                {{ course.duration_weeks|default:"—" }} Weeks
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted small">Publishing State:</span>
+            <div>
+              {% if course.status == 'published' %}
+                <span class="badge bg-primary">Published</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ course.get_status_display }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CURRICULUM INSPECTION -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0"><i class="bi bi-list-nested me-2 text-warning"></i> Curriculum Inspection ({{ modules.count }} Modules)</h5>
+      </div>
+      <div class="card-body p-0">
+        {% if modules %}
+          <div class="accordion accordion-flush" id="curriculumAccordion">
+            {% for mod in modules %}
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ mod.id }}">
+                  <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ mod.id }}">
+                    <span class="fw-bold me-2">Module {{ forloop.counter }}:</span> {{ mod.title }}
+                    <span class="badge bg-light text-dark border ms-auto me-3">{{ mod.lessons.count }} Lessons</span>
+                  </button>
+                </h2>
+                <div id="collapse{{ mod.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#curriculumAccordion">
+                  <div class="accordion-body bg-light">
+                    {% if mod.description %}
+                      <p class="small text-muted mb-2">{{ mod.description }}</p>
+                    {% endif %}
+                    
+                    <ul class="list-group list-group-flush border rounded bg-white">
+                      {% for les in mod.lessons.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                          <div>
+                            <span class="fw-semibold">Lesson {{ forloop.counter }}: {{ les.title }}</span>
+                            <div class="small text-muted">
+                              Duration: {{ les.duration_seconds }}s &bull; Status: {{ les.get_status_display }}
+                              {% if les.video_asset %}
+                                &bull; <span class="badge bg-info-subtle text-info"><i class="bi bi-play-circle"></i> Video uploaded</span>
+                              {% endif %}
+                              {% if les.materials.count %}
+                                &bull; <span class="badge bg-success-subtle text-success"><i class="bi bi-file-earmark-lock"></i> {{ les.materials.count }} Material(s)</span>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </li>
+                      {% empty %}
+                        <li class="list-group-item text-muted small fst-italic">No lessons added to this module.</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">No curriculum modules have been created for this course yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- PREVIOUS REVIEW HISTORY -->
+    {% if history %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+          <h5 class="card-title mb-0"><i class="bi bi-clock-history me-2 text-warning"></i> Review History</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% for item in history %}
+              <li class="list-group-item px-0">
+                <div class="d-flex justify-content-between">
+                  <strong>Decision: {{ item.decision|title }}</strong>
+                  <small class="text-muted">{{ item.created_at|date:"d M Y, H:i" }}</small>
+                </div>
+                <div class="small text-muted">Reviewer: {{ item.reviewer.get_full_name|default:item.reviewer.username|default:"Admin" }}</div>
+                {% if item.feedback %}
+                  <div class="p-2 bg-light rounded mt-1 small">
+                    <strong>Feedback:</strong> {{ item.feedback }}
+                  </div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <!-- RIGHT: APPROVAL / REJECTION ACTIONS -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+      <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">Review Decision</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Select Decision <span class="text-danger">*</span></label>
+            <select name="decision" class="form-select" required id="decisionSelect" onchange="toggleFeedbackRequirement()">
+              <option value="">-- Choose Decision --</option>
+              <option value="approved" {% if course.approval_status == 'approved' %}selected{% endif %}>Approve Course</option>
+              <option value="changes_requested" {% if course.approval_status == 'changes_requested' %}selected{% endif %}>Request Changes</option>
+              <option value="rejected" {% if course.approval_status == 'rejected' %}selected{% endif %}>Reject Course</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold" id="feedbackLabel">Feedback / Instructions for Center</label>
+            <textarea name="feedback" id="feedbackTextarea" class="form-control" rows="4" placeholder="Explain required revisions or congratulatory remarks...">{{ course.approval_feedback }}</textarea>
+            <div class="form-text small" id="feedbackHelp">Required if rejecting or requesting changes.</div>
+          </div>
+
+          <button type="submit" class="btn btn-warning w-100 fw-bold text-dark py-2">
+            <i class="bi bi-check2-circle me-1"></i> Submit Review Decision
+          </button>
+        </form>
+
+        <script>
+          function toggleFeedbackRequirement() {
+            var val = document.getElementById('decisionSelect').value;
+            var ta = document.getElementById('feedbackTextarea');
+            var lbl = document.getElementById('feedbackLabel');
+            if (val === 'rejected' || val === 'changes_requested') {
+              ta.setAttribute('required', 'required');
+              lbl.innerHTML = 'Feedback / Instructions for Center <span class="text-danger">*</span>';
+            } else {
+              ta.removeAttribute('required');
+              lbl.innerHTML = 'Feedback / Instructions for Center (Optional)';
+            }
+          }
+          toggleFeedbackRequirement();
+        </script>
+
+        <div class="mt-4 pt-3 border-top text-muted small">
+          <i class="bi bi-shield-check me-1"></i> Approving a course makes it eligible for the center to publish under established requirements.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

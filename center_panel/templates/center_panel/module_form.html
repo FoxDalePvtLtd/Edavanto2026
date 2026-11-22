@@ -1,0 +1,66 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}{{ page_title }} | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'center_panel:course_list' %}" class="text-decoration-none">Courses</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'center_panel:syllabus_curriculum' course_id=course.id %}" class="text-decoration-none">{{ course.title }}</a>
+  <span class="mx-2">/</span> {{ page_title }}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0 text-white">{{ page_title }}</h1>
+  <a href="{% url 'center_panel:syllabus_curriculum' course_id=course.id %}" class="btn btn-outline-light">
+    <i class="bi bi-arrow-left me-1"></i> Back to Curriculum
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-panel p-4">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label text-light">Module Title <span class="text-danger">*</span></label>
+          {{ form.title }}
+          {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-light">Module Description</label>
+          {{ form.description }}
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <label class="form-label text-light">Order</label>
+            {{ form.order }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-light">Unlock Order</label>
+            {{ form.unlock_order }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-light">Duration (Hours)</label>
+            {{ form.duration_hours }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-light">Duration (Weeks)</label>
+            {{ form.duration_weeks }}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary">
+          <a href="{% url 'center_panel:syllabus_curriculum' course_id=course.id %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-gold">
+            <i class="bi bi-check-lg me-1"></i> Save Module
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Add Instructor | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'center_panel:instructor_list' %}" class="text-decoration-none">Instructors</a>
+  <span class="mx-2">/</span> Add Instructor
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Register Center Instructor</h1>
+    <p class="text-secondary mb-0">Create an instructor account associated with <strong>{{ center.name }}</strong>.</p>
+  </div>
+  <a href="{% url 'center_panel:instructor_list' %}" class="btn btn-outline-light">
+    <i class="bi bi-arrow-left me-1"></i> Back to Instructors
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-panel p-4">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger mb-4">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label text-light">First Name <span class="text-danger">*</span></label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Instructor Email <span class="text-danger">*</span></label>
+            {{ form.email }}
+            <div class="form-text text-muted small">Will be used for instructor login and student doubt routing.</div>
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Mobile Number</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-light">Specialization / Domain</label>
+            {{ form.specialization }}
+            {% if form.specialization.errors %}<div class="text-danger small mt-1">{{ form.specialization.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Initial Password (Optional)</label>
+            {{ form.password }}
+            <div class="form-text text-muted small">Optional initial password. If omitted, instructor can use password reset.</div>
+            {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label text-light">Profile Photo (Optional)</label>
+            {{ form.profile_photo }}
+            {% if form.profile_photo.errors %}<div class="text-danger small mt-1">{{ form.profile_photo.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary">
+          <a href="{% url 'center_panel:instructor_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-gold">
+            <i class="bi bi-check-lg me-1"></i> Register Instructor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

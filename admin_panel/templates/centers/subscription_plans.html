@@ -1,0 +1,58 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Center Subscription Plans | EDVANTO Admin{% endblock %}
+
+{% block content %}
+<div class="small mb-2">
+  <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+  <span class="mx-2">/</span>
+  <a href="{% url 'admin_panel:center_overview' %}" class="text-decoration-none">Centers</a>
+  <span class="mx-2">/</span> Subscription Plans
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Center Subscription Plans</h1>
+    <p class="text-secondary mb-0">Configure pricing and active status for center dashboard access plans.</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% for plan in plans %}
+    <div class="col-md-6 col-lg-5">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h4 class="card-title mb-0">{{ plan.name }}</h4>
+              {% if plan.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </div>
+            <p class="text-muted small mb-3">{{ plan.description }}</p>
+
+            <div class="display-6 fw-bold text-dark my-3">
+              ₹{{ plan.price|floatformat:2 }}
+              <span class="fs-6 text-muted fw-normal">/ {{ plan.duration_months }} Months</span>
+            </div>
+
+            <ul class="list-unstyled text-muted small">
+              <li class="mb-1"><i class="bi bi-calendar3 me-2 text-warning"></i> Exact calendar-month calculation</li>
+              <li class="mb-1"><i class="bi bi-shield-check me-2 text-warning"></i> Unlimited courses &amp; instructors</li>
+              <li class="mb-1"><i class="bi bi-clock-history me-2 text-warning"></i> Last updated: {{ plan.updated_at|date:"d M Y" }}</li>
+            </ul>
+          </div>
+
+          <div class="mt-4 pt-3 border-top">
+            <a href="{% url 'admin_panel:center_subscription_plan_edit' plan_id=plan.id %}" class="btn btn-outline-dark w-100">
+              <i class="bi bi-pencil me-1"></i> Edit Plan Pricing &amp; Details
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

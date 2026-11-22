@@ -1,0 +1,160 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}My Courses | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Course Management</h1>
+    <p class="text-secondary mb-0">Create and manage courses, curriculum modules, and lessons for {{ center.name }}.</p>
+  </div>
+  <a href="{% url 'center_panel:course_create' %}" class="btn btn-gold">
+    <i class="bi bi-plus-lg me-1"></i> Add New Course
+  </a>
+</div>
+
+<!-- SEARCH & FILTER -->
+<div class="card-panel p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <input type="search" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by course title or keyword...">
+    </div>
+    <div class="col-md-3">
+      <select name="approval" class="form-select">
+        <option value="">All Approval States</option>
+        {% for val, label in approval_choices %}
+          <option value="{{ val }}" {% if approval_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-dark w-100">Filter</button>
+      {% if search_query or approval_filter or status_filter %}
+        <a href="{% url 'center_panel:course_list' %}" class="btn btn-outline-secondary">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- COURSES TABLE -->
+<div class="card-panel">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Course Title</th>
+          <th>Instructor</th>
+          <th>Mode</th>
+          <th>Price</th>
+          <th>Modules</th>
+          <th>Approval Status</th>
+          <th>Publish Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in courses %}
+          <tr>
+            <td>
+              <div class="fw-bold text-white">{{ c.title }}</div>
+              <small class="text-muted">{{ c.slug }} &bull; {{ c.get_category_display|default:c.category }}</small>
+            </td>
+            <td>
+              {% if c.instructor %}
+                <small class="text-white">{{ c.instructor.get_full_name|default:c.instructor.username }}</small>
+              {% else %}
+                <span class="text-muted small fst-italic">None assigned</span>
+              {% endif %}
+            </td>
+            <td><span class="badge bg-dark border">{{ c.get_mode_display }}</span></td>
+            <td>
+              <div class="fw-semibold text-warning">₹{{ c.price|floatformat:2 }}</div>
+              {% if c.discounted_price %}
+                <small class="text-muted text-decoration-line-through">₹{{ c.discounted_price|floatformat:2 }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'center_panel:syllabus_curriculum' course_id=c.id %}" class="badge bg-secondary-subtle text-light text-decoration-none border p-2">
+                <i class="bi bi-list-nested me-1"></i> {{ c.modules.count }} Modules
+              </a>
+            </td>
+            <td>
+              {% if c.approval_status == 'approved' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                  <i class="bi bi-check-circle me-1"></i> Approved
+                </span>
+              {% elif c.approval_status == 'pending' %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                  <i class="bi bi-hourglass-split me-1"></i> Pending Review
+                </span>
+              {% elif c.approval_status == 'rejected' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" title="{{ c.approval_feedback }}">
+                  <i class="bi bi-x-circle me-1"></i> Rejected
+                </span>
+              {% elif c.approval_status == 'changes_requested' %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle" title="{{ c.approval_feedback }}">
+                  <i class="bi bi-pencil me-1"></i> Changes Requested
+                </span>
+              {% else %}
+                <span class="badge bg-secondary">{{ c.get_approval_status_display }}</span>
+              {% endif %}
+
+              {% if c.approval_feedback %}
+                <div class="small text-danger mt-1 text-truncate" style="max-width: 140px;" title="{{ c.approval_feedback }}">
+                  Note: {{ c.approval_feedback }}
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.status == 'published' %}
+                <span class="badge bg-success">Published</span>
+              {% else %}
+                <span class="badge bg-secondary">Draft</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a href="{% url 'center_panel:course_edit' course_id=c.id %}" class="btn btn-outline-light" title="Edit Course Details">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'center_panel:syllabus_curriculum' course_id=c.id %}" class="btn btn-outline-warning" title="Curriculum &amp; Lessons">
+                  <i class="bi bi-list-nested"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">
+              No courses found for {{ center.name }}.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="card-panel-head p-3 d-flex justify-content-between align-items-center">
+      <small class="text-muted">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} courses</small>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link bg-dark text-white border-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&approval={{ approval_filter }}&status={{ status_filter }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link bg-warning text-dark border-warning">{{ page_obj.number }}</span></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link bg-dark text-white border-secondary" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&approval={{ approval_filter }}&status={{ status_filter }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -18,6 +18,7 @@ from django.views.decorators.http import require_GET, require_POST, require_http
 from .permissions import admin_required
 from core.services.video_probe import probe_video
 from django.contrib.auth.decorators import login_required
+from .views_centers import *
 
 def _dbg(msg):
     """Single-line debug helper — visible in runserver console."""

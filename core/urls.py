@@ -66,6 +66,15 @@ urlpatterns = [
     path("dashboard/assessments/", views.student_assessments, name="student_assessments"),
     path("dashboard/assessment/<int:assessment_id>/take/", views.take_assessment, name="take_assessment"),
     path("dashboard/assessment/submission/<int:submission_id>/result/", views.assessment_result, name="assessment_result"),
+
+    # CENTER REGISTRATION & SUBSCRIPTION
+    path("join-as-center/", views.join_as_center, name="join_as_center"),
+    path("join-as-center/verify-otp/", views.center_verify_otp, name="center_verify_otp"),
+    path("join-as-center/success/<int:application_id>/", views.center_registration_success, name="center_registration_success"),
+    path("center-subscription/", views.center_subscription_select, name="center_subscription_select"),
+    path("center-subscription/checkout/<int:plan_id>/", views.center_subscription_checkout, name="center_subscription_checkout"),
+    path("center-subscription/verify/", views.center_subscription_verify, name="center_subscription_verify"),
+    path("center-subscription/webhook/", views.center_subscription_webhook, name="center_subscription_webhook"),
 ]
 
 

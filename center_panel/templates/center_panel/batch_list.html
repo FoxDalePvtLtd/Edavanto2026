@@ -1,0 +1,73 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Batches | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Center Batches</h1>
+    <p class="text-secondary mb-0">Schedule offline &amp; online cohort batches for <strong>{{ center.name }}</strong>.</p>
+  </div>
+  <a href="{% url 'center_panel:batch_create' %}" class="btn btn-gold">
+    <i class="bi bi-plus-lg me-1"></i> Create Batch
+  </a>
+</div>
+
+<div class="card-panel">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Batch Name</th>
+          <th>Course</th>
+          <th>Instructor</th>
+          <th>Dates</th>
+          <th>Capacity</th>
+          <th>Status</th>
+          <th>Sessions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in batches %}
+          <tr>
+            <td>
+              <div class="fw-bold text-white">{{ b.name }}</div>
+            </td>
+            <td>
+              <div class="text-light">{{ b.course.title }}</div>
+              <small class="text-muted">{{ b.course.get_mode_display }}</small>
+            </td>
+            <td>
+              <small>{{ b.instructor.get_full_name|default:b.instructor.username }}</small>
+            </td>
+            <td>
+              <small class="text-muted">{{ b.start_date|date:"d M Y" }} &rarr; {{ b.end_date|date:"d M Y"|default:"TBD" }}</small>
+            </td>
+            <td>{{ b.capacity }} seats</td>
+            <td>
+              {% if b.status == 'active' %}
+                <span class="badge bg-success">Active</span>
+              {% elif b.status == 'upcoming' %}
+                <span class="badge bg-info text-dark">Upcoming</span>
+              {% elif b.status == 'completed' %}
+                <span class="badge bg-secondary">Completed</span>
+              {% else %}
+                <span class="badge bg-danger">{{ b.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-dark border">{{ b.sessions.count }} Sessions</span>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">
+              No batches created for {{ center.name }} yet. Click "+ Create Batch" to set up your first cohort.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

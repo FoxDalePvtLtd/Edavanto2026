@@ -1,0 +1,69 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Doubts Overview | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Student Doubts Overview</h1>
+    <p class="text-secondary mb-0">Read-only monitoring of questions and doubts raised on courses offered by <strong>{{ center.name }}</strong>.</p>
+  </div>
+</div>
+
+<div class="card-panel">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Course &amp; Lesson</th>
+          <th>Subject</th>
+          <th>Assigned Instructor</th>
+          <th>Status</th>
+          <th>Submitted</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in doubts %}
+          <tr>
+            <td>
+              <div class="fw-bold text-white">{{ d.student.get_full_name|default:d.student.username }}</div>
+              <small class="text-muted">{{ d.student.email }}</small>
+            </td>
+            <td>
+              <div class="text-light">{{ d.enrollment.course.title }}</div>
+              <small class="text-muted">{{ d.lesson.title }}</small>
+            </td>
+            <td>
+              <div class="text-warning fw-semibold">{{ d.subject }}</div>
+            </td>
+            <td>
+              {% if d.assigned_instructor %}
+                <small class="text-white">{{ d.assigned_instructor.get_full_name|default:d.assigned_instructor.username }}</small>
+              {% else %}
+                <span class="badge bg-warning-subtle text-warning">Pending Assignment</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if d.status == 'answered' or d.status == 'resolved' %}
+                <span class="badge bg-success">{{ d.get_status_display }}</span>
+              {% elif d.status == 'in_progress' or d.status == 'assigned' %}
+                <span class="badge bg-info text-dark">{{ d.get_status_display }}</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">{{ d.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td><small class="text-muted">{{ d.created_at|date:"d M Y, H:i" }}</small></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-5">
+              No doubt queries have been submitted for your courses yet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

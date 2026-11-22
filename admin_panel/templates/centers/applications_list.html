@@ -1,0 +1,127 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Center Applications | EDVANTO Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <div class="small mb-2">
+      <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none">Edvanto</a>
+      <span class="mx-2">/</span>
+      <a href="{% url 'admin_panel:center_overview' %}" class="text-decoration-none">Centers</a>
+      <span class="mx-2">/</span> Applications
+    </div>
+    <h1 class="h3 mb-1">Center Registration Applications</h1>
+    <p class="text-secondary mb-0">Review pending, approved, and rejected partner training center applications.</p>
+  </div>
+  <a href="{% url 'admin_panel:center_create' %}" class="btn btn-warning fw-bold text-dark">
+    <i class="bi bi-plus-lg me-1"></i> Add Center Directly
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body p-3">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-6 col-lg-5">
+        <input type="search" name="q" value="{{ search_query }}" class="form-control" placeholder="Search center, owner name, email or city...">
+      </div>
+      <div class="col-md-4 col-lg-3">
+        <select name="status" class="form-select">
+          <option value="">All Application Statuses</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-dark w-100">Filter</button>
+      </div>
+      {% if search_query or status_filter %}
+        <div class="col-md-2">
+          <a href="{% url 'admin_panel:center_applications' %}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Ref</th>
+          <th>Center Details</th>
+          <th>Owner Details</th>
+          <th>Location</th>
+          <th>Documents</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+          <tr>
+            <td><span class="badge bg-light text-dark border">#{{ app.id }}</span></td>
+            <td>
+              <div class="fw-bold">{{ app.center_name }}</div>
+              <small class="text-muted">{{ app.official_email }} | {{ app.contact_number }}</small>
+            </td>
+            <td>
+              <div>{{ app.owner_name }}</div>
+              <small class="text-muted">{{ app.owner_email }}</small>
+            </td>
+            <td>{{ app.city }}, {{ app.state }}</td>
+            <td>
+              {% if app.business_registration_doc or app.identity_doc or app.supporting_doc %}
+                <span class="badge bg-info-subtle text-info"><i class="bi bi-paperclip"></i> Uploaded</span>
+              {% else %}
+                <span class="text-muted small">None</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if app.status == 'pending' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% elif app.status == 'approved' %}
+                <span class="badge bg-success">Approved</span>
+              {% elif app.status == 'rejected' %}
+                <span class="badge bg-danger">Rejected</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ app.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td><small class="text-muted">{{ app.created_at|date:"d M Y" }}</small></td>
+            <td>
+              <a href="{% url 'admin_panel:center_application_detail' app_id=app.id %}" class="btn btn-sm btn-outline-dark">
+                Review &rarr;
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">
+              No applications found matching your criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+      <small class="text-muted">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} applications</small>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

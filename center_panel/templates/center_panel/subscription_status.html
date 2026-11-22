@@ -1,0 +1,139 @@
+{% extends "center_panel/base.html" %}
+
+{% block title %}Subscription Status | {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-white">Center Subscription &amp; Billing</h1>
+    <p class="text-secondary mb-0">Monitor your Edvanto center license, active term, and renewal details.</p>
+  </div>
+  <a href="{% url 'core:center_subscription_select' %}" class="btn btn-gold">
+    <i class="bi bi-arrow-repeat me-1"></i> Renew / Change Plan
+  </a>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- CURRENT STATUS CARD -->
+  <div class="col-lg-7">
+    <div class="card-panel p-4 h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h4 class="text-white mb-0">Current Plan Status</h4>
+          {% if subscription and subscription.is_valid %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+              <i class="bi bi-shield-check me-1"></i> Active
+            </span>
+          {% else %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-6">
+              <i class="bi bi-exclamation-octagon me-1"></i> Inactive / Expired
+            </span>
+          {% endif %}
+        </div>
+
+        {% if subscription and subscription.is_valid %}
+          <div class="display-6 fw-bold text-warning mb-2">{{ subscription.plan.name }}</div>
+          <p class="text-muted small mb-4">{{ subscription.plan.description }}</p>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <span class="text-muted small">Activation Date:</span>
+              <div class="text-white fw-semibold">{{ subscription.start_date|date:"d F Y" }}</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted small">Expiry Date:</span>
+              <div class="text-white fw-semibold">{{ subscription.end_date|date:"d F Y" }}</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted small">Time Remaining:</span>
+              <div class="text-warning fw-bold fs-5">{{ subscription.days_remaining }} Days</div>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted small">Plan Fee:</span>
+              <div class="text-white">₹{{ subscription.plan.price|floatformat:2 }}</div>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-warning border-0 p-3 my-3">
+            <h6 class="text-warning mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Subscription Inactive</h6>
+            <p class="small mb-0">
+              Your center dashboard currently has restricted operational capabilities. Renew or select a subscription plan to continue publishing courses and managing cohorts.
+            </p>
+          </div>
+          <a href="{% url 'core:center_subscription_select' %}" class="btn btn-warning text-dark fw-bold mt-2">
+            <i class="bi bi-credit-card me-1"></i> Choose a Subscription Plan
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="pt-4 border-top border-secondary mt-4 text-muted small">
+        <i class="bi bi-info-circle me-1"></i> When a subscription expires, your courses and data remain securely preserved.
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAN FEATURES CARD -->
+  <div class="col-lg-5">
+    <div class="card-panel p-4 h-100">
+      <h5 class="text-white mb-3"><i class="bi bi-star-fill text-warning me-2"></i> Center Privileges Included</h5>
+      <ul class="list-unstyled text-muted">
+        <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i> Unlimited course creation and module curation</li>
+        <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i> Verified instructor onboarding &amp; assignment</li>
+        <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i> Batch cohort scheduling and attendance tracking</li>
+        <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i> Direct administrative course review pathway</li>
+        <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i> Student enrollment progress reporting</li>
+      </ul>
+      <div class="mt-4 p-3 bg-dark rounded border border-secondary">
+        <small class="text-muted">Need an extended enterprise tier? Contact Edvanto platform administrators directly.</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT TRANSACTIONS TABLE -->
+<div class="card-panel">
+  <div class="card-panel-head">
+    <h5 class="mb-0 text-white"><i class="bi bi-receipt me-2 text-warning"></i> Payment History</h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Transaction ID</th>
+          <th>Plan</th>
+          <th>Amount</th>
+          <th>Payment Method</th>
+          <th>Status</th>
+          <th>Paid Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payments %}
+          <tr>
+            <td>
+              <small class="font-monospace text-warning">{{ pay.razorpay_payment_id|default:pay.id }}</small>
+            </td>
+            <td>{{ pay.subscription.plan.name }}</td>
+            <td><strong>₹{{ pay.amount|floatformat:2 }}</strong></td>
+            <td><span class="badge bg-dark border">{{ pay.payment_method }}</span></td>
+            <td>
+              {% if pay.status == 'success' %}
+                <span class="badge bg-success">Success</span>
+              {% elif pay.status == 'pending' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% else %}
+                <span class="badge bg-danger">{{ pay.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td><small class="text-muted">{{ pay.paid_at|date:"d M Y, H:i"|default:pay.created_at|date:"d M Y" }}</small></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No payment transactions recorded for this center.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
