@@ -39,6 +39,7 @@ ALLOWED_HOSTS = env.list(
         "localhost",
         "192.168.1.26:8000",
         "192.168.1.26"
+        "edavanto2026.onrender.com",
     ],
 )
 
@@ -56,6 +57,8 @@ INSTALLED_APPS = [
 
     # Third-party
     "django_rq",
+
+    "anymail",
 
     # Local
     "core",
@@ -295,48 +298,61 @@ LOGOUT_REDIRECT_URL = "core:home"
 # EMAIL CONFIGURATION
 # =================================
 
-EMAIL_BACKEND = env(
-    "EMAIL_BACKEND",
-    default="django.core.mail.backends.console.EmailBackend",
-)
+# EMAIL_BACKEND = env(
+#     "EMAIL_BACKEND",
+#     default="django.core.mail.backends.console.EmailBackend",
+# )
 
-EMAIL_HOST = env(
-    "EMAIL_HOST",
-    default="",
-)
+# EMAIL_HOST = env(
+#     "EMAIL_HOST",
+#     default="",
+# )
 
-EMAIL_PORT = env.int(
-    "EMAIL_PORT",
-    default=587,
-)
+# EMAIL_PORT = env.int(
+#     "EMAIL_PORT",
+#     default=587,
+# )
 
-EMAIL_HOST_USER = env(
-    "EMAIL_HOST_USER",
-    default="",
-)
+# EMAIL_HOST_USER = env(
+#     "EMAIL_HOST_USER",
+#     default="",
+# )
 
-EMAIL_HOST_PASSWORD = env(
-    "EMAIL_HOST_PASSWORD",
-    default="",
-)
+# EMAIL_HOST_PASSWORD = env(
+#     "EMAIL_HOST_PASSWORD",
+#     default="",
+# )
 
-EMAIL_USE_TLS = env.bool(
-    "EMAIL_USE_TLS",
-    default=True,
-)
+# EMAIL_USE_TLS = env.bool(
+#     "EMAIL_USE_TLS",
+#     default=True,
+# )
 
-EMAIL_USE_SSL = env.bool(
-    "EMAIL_USE_SSL",
-    default=False,
-)
+# EMAIL_USE_SSL = env.bool(
+#     "EMAIL_USE_SSL",
+#     default=False,
+# )
 
-EMAIL_TIMEOUT = 20
+# EMAIL_TIMEOUT = 20
+
+# DEFAULT_FROM_EMAIL = env(
+#     "DEFAULT_FROM_EMAIL",
+#     default="noreply@edvanto.local",
+# )
+# =================================
+# EMAIL CONFIGURATION (BREVO API)
+# =================================
+
+EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+
+ANYMAIL = {
+    "BREVO_API_KEY": env("BREVO_API_KEY", default="").strip(),
+}
 
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL",
-    default="noreply@edvanto.local",
+    default="Edvanto <edvantoindia@gmail.com>",
 )
-
 
 
 # Redis
