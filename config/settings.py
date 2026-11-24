@@ -38,7 +38,7 @@ ALLOWED_HOSTS = env.list(
         "127.0.0.1",
         "localhost",
         "192.168.1.26:8000",
-        "192.168.1.26"
+        "192.168.1.26",
         "edavanto2026.onrender.com",
     ],
 )
